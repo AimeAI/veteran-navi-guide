@@ -2,6 +2,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import JobListing from '@/components/JobListing';
+import { ArrowRight } from 'lucide-react';
 
 // Sample job data
 const featuredJobs = [
@@ -25,6 +26,38 @@ const featuredJobs = [
     company: 'Veterans Medical Center',
     location: 'Remote',
     description: 'Join our team dedicated to improving healthcare for veterans. Looking for organized professionals with healthcare experience from military settings.',
+  }
+];
+
+// Recommended jobs data
+const recommendedJobs = [
+  {
+    id: '4',
+    title: 'Cybersecurity Analyst',
+    company: 'DefenseNet Systems',
+    location: 'Arlington, VA',
+    description: 'Ideal for veterans with intelligence or cybersecurity background. Monitor network security and respond to incidents. Secret clearance required.',
+  },
+  {
+    id: '5',
+    title: 'Project Manager',
+    company: 'Veterans Construction Group',
+    location: 'Dallas, TX',
+    description: 'Looking for veterans with leadership experience to manage construction projects from planning to completion. Strong organizational skills required.',
+  },
+  {
+    id: '6',
+    title: 'Emergency Medical Technician',
+    company: 'First Responders Alliance',
+    location: 'Colorado Springs, CO',
+    description: 'Former military medics and corpsmen encouraged to apply. Provide emergency medical care in civilian settings. Training assistance available.',
+  },
+  {
+    id: '7',
+    title: 'Aviation Maintenance Technician',
+    company: 'SkyWorks Aerospace',
+    location: 'Seattle, WA',
+    description: 'Perfect transition for military aircraft mechanics. Maintain and repair commercial aircraft. FAA certification assistance provided.',
   }
 ];
 
@@ -87,6 +120,41 @@ const Index = () => {
               className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 transition-colors duration-200"
             >
               View More Jobs
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </a>
+          </div>
+        </section>
+
+        {/* Recommended Jobs Section */}
+        <section className="mt-20 py-10 px-6 bg-blue-50 rounded-2xl max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <span className="inline-block px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full mb-3">
+              Personalized For You
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Recommended Jobs</h2>
+            <p className="mt-3 text-gray-600">Based on your military background and skills</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+            {recommendedJobs.map(job => (
+              <JobListing
+                key={job.id}
+                jobId={job.id}
+                title={job.title}
+                company={job.company}
+                location={job.location}
+                description={job.description}
+                className="h-full"
+              />
+            ))}
+          </div>
+          
+          <div className="mt-10 text-center">
+            <a 
+              href="/recommendations" 
+              className="inline-flex items-center justify-center px-6 py-3 text-sm md:text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-colors duration-200"
+            >
+              View All Recommendations
               <ArrowRight className="ml-2 h-4 w-4" />
             </a>
           </div>
