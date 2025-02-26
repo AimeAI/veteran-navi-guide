@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -97,5 +91,55 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute w-full scale-x-0 h-0.5 bg-primary bottom-0 left-0 transform transition-transform duration-300 ease-in-out origin-bottom-right;
+  }
+
+  .nav-link:hover::after {
+    @apply scale-x-100 origin-bottom-left;
+  }
+
+  .dropdown-item {
+    @apply flex items-center w-full px-4 py-2 text-sm transition-colors duration-150 rounded-md hover:bg-nav-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+
+  .dropdown-fade-in {
+    animation: dropdown-fade-in 0.2s ease-out forwards;
+  }
+
+  .dropdown-fade-out {
+    animation: dropdown-fade-out 0.2s ease-out forwards;
+  }
+
+  @keyframes dropdown-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes dropdown-fade-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
   }
 }
