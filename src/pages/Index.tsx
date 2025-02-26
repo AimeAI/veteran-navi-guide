@@ -1,6 +1,32 @@
 
 import React from 'react';
 import Navbar from '@/components/Navbar';
+import JobListing from '@/components/JobListing';
+
+// Sample job data
+const featuredJobs = [
+  {
+    id: '1',
+    title: 'Security Operations Manager',
+    company: 'TechDefense Solutions',
+    location: 'San Diego, CA',
+    description: 'Seeking a veteran with security background to lead our operations team. Must have experience in risk assessment and team leadership. TS/SCI clearance preferred.',
+  },
+  {
+    id: '2',
+    title: 'Logistics Coordinator',
+    company: 'Global Supply Chain Inc.',
+    location: 'Norfolk, VA',
+    description: 'Perfect for veterans with logistics MOS. Coordinate shipments, manage inventory, and optimize supply chain processes. Competitive salary with benefits package.',
+  },
+  {
+    id: '3',
+    title: 'Healthcare Administrator',
+    company: 'Veterans Medical Center',
+    location: 'Remote',
+    description: 'Join our team dedicated to improving healthcare for veterans. Looking for organized professionals with healthcare experience from military settings.',
+  }
+];
 
 const Index = () => {
   return (
@@ -32,6 +58,37 @@ const Index = () => {
                 View Resources
               </a>
             </div>
+          </div>
+        </section>
+
+        {/* Featured Jobs Section */}
+        <section className="mt-20 max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold">Featured Opportunities</h2>
+            <p className="mt-3 text-gray-600">Discover jobs from employers who value your military experience</p>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6">
+            {featuredJobs.map(job => (
+              <JobListing
+                key={job.id}
+                jobId={job.id}
+                title={job.title}
+                company={job.company}
+                location={job.location}
+                description={job.description}
+              />
+            ))}
+          </div>
+          
+          <div className="mt-8 text-center">
+            <a 
+              href="/jobs/search" 
+              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 transition-colors duration-200"
+            >
+              View More Jobs
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </a>
           </div>
         </section>
 
