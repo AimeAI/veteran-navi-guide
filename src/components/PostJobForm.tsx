@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Briefcase, Building, MapPin, FileText, DollarSign, Tag, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -44,7 +43,7 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
   const commonMosCodes = [
     { code: '11B', description: 'Infantryman (Army)' },
     { code: '0311', description: 'Rifleman (Marines)' },
-    { code: 'BM', description: "Boatswain's Mate (Navy)" },
+    { code: 'BM', description: `Boatswain's Mate (Navy)` },
     { code: '1N0X1', description: 'Intelligence Analyst (Air Force)' },
     { code: 'OS', description: 'Operations Specialist (Coast Guard)' }
   ];
