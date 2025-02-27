@@ -2,7 +2,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import ApplicationHistory from '@/components/ApplicationHistory';
-import { FileText } from 'lucide-react';
+import { FileText, AlertCircle } from 'lucide-react';
 
 // Sample application data
 const applicationData = [
