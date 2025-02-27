@@ -42,8 +42,8 @@ const navSections = [
     title: 'Employers',
     icon: <Building className="h-4 w-4" />,
     items: [
-      { label: 'Post a Job', href: '/employers/post-job' },
-      { label: 'Manage Applications', href: '/employers/applications' },
+      { label: 'Post a Job', href: '/jobs/post' },
+      { label: 'Manage Applications', href: '/employer/dashboard' },
       { label: 'Search Veteran Profiles', href: '/employers/search-veterans' },
     ],
   },
