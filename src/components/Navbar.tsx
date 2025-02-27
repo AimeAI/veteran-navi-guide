@@ -1,64 +1,100 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { cn } from "@/lib/utils";
-import MobileMenu from './MobileMenu';
+import { Briefcase, User, BookOpen, Building } from 'lucide-react';
 import NavDropdown from './NavDropdown';
-import { Button } from './ui/button';
+import MobileMenu from './MobileMenu';
+import { cn } from '@/lib/utils';
 
-const Navbar = () => {
+// Navigation data
+const navSections = [
+  {
+    title: 'Job Search',
+    icon: <Briefcase className="h-4 w-4" />,
+    items: [
+      { label: 'Search Jobs', href: '/jobs/search' },
+      { label: 'Saved Jobs', href: '/jobs/saved' },
+      { label: 'Recommended Jobs', href: '/jobs/recommended' },
+      { label: 'Job Alerts', href: '/jobs/alerts' },
+    ],
+  },
+  {
+    title: 'Profile',
+    icon: <User className="h-4 w-4" />,
+    items: [
+      { label: 'My Profile', href: '/profile' },
+      { label: 'Resume/CV', href: '/profile/resume' },
+      { label: 'Application History', href: '/profile/applications' },
+      { label: 'Settings', href: '/profile/settings' },
+    ],
+  },
+  {
+    title: 'Resources',
+    icon: <BookOpen className="h-4 w-4" />,
+    items: [
+      { label: 'Career Counseling', href: '/resources/career-counseling' },
+      { label: 'Resume Writing Assistance', href: '/resources/resume-assistance' },
+      { label: 'Interview Preparation', href: '/resources/interview-prep' },
+      { label: 'Military Transition Resources', href: '/resources/military-transition' },
+      { label: 'Community Forums', href: '/resources/forums' },
+    ],
+  },
+  {
+    title: 'Employers',
+    icon: <Building className="h-4 w-4" />,
+    items: [
+      { label: 'Post a Job', href: '/employers/post-job' },
+      { label: 'Manage Applications', href: '/employers/applications' },
+      { label: 'Search Veteran Profiles', href: '/employers/search-veterans' },
+    ],
+  },
+];
+
+const Navbar: React.FC = () => {
   return (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-xl font-bold text-primary">
-                VeteranJobBoard
-              </Link>
+    <header className="sticky top-0 z-40 w-full backdrop-blur supports-backdrop-blur:bg-nav/80">
+      <div className="border-b border-nav-border bg-nav/85 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center">
+              <a href="/" className="flex items-center">
+                <span className="text-xl font-semibold tracking-tight">VeteranJobBoard</span>
+              </a>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link 
-                to="/jobs/search"
-                className={cn(
-                  "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700",
-                  "border-b-2 border-transparent hover:border-gray-300"
-                )}
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex lg:items-center lg:space-x-6">
+              {navSections.map((section) => (
+                <NavDropdown
+                  key={section.title}
+                  label={section.title}
+                  items={section.items}
+                  icon={section.icon}
+                />
+              ))}
+            </nav>
+
+            {/* Mobile Menu */}
+            <MobileMenu sections={navSections} />
+
+            {/* Login/Register buttons for desktop */}
+            <div className="hidden lg:flex lg:items-center lg:space-x-4">
+              <a
+                href="/login"
+                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200"
               >
-                Find Jobs
-              </Link>
-              <Link 
-                to="/jobs/saved"
-                className={cn(
-                  "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700",
-                  "border-b-2 border-transparent hover:border-gray-300"
-                )}
+                Log in
+              </a>
+              <a
+                href="/register"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200"
               >
-                Saved Jobs
-              </Link>
-              <Link 
-                to="/applications"
-                className={cn(
-                  "inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700",
-                  "border-b-2 border-transparent hover:border-gray-300"
-                )}
-              >
-                Applications
-              </Link>
+                Sign up
+              </a>
             </div>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-            <Link to="/jobs/post">
-              <Button variant="secondary">Post a Job</Button>
-            </Link>
-            <Link to="/profile">
-              <Button variant="ghost">Profile</Button>
-            </Link>
-          </div>
-          <MobileMenu />
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
