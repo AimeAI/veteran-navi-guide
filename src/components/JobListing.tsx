@@ -1,94 +1,59 @@
 
 import React from 'react';
-import { Briefcase, MapPin, ArrowRight } from 'lucide-react';
+import { Briefcase, Building, MapPin, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface JobListingProps {
+  jobId: string;
   title: string;
   company: string;
   location: string;
   description: string;
-  jobId: string;
-  logoUrl?: string;
   className?: string;
 }
 
 const JobListing: React.FC<JobListingProps> = ({
+  jobId,
   title,
   company,
   location,
   description,
-  jobId,
-  logoUrl,
-  className,
+  className
 }) => {
   return (
-    <div 
+    <Link 
+      to={`/job/${jobId}`}
       className={cn(
-        "bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200",
+        "block bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden",
         className
       )}
     >
       <div className="p-6">
-        <div className="flex items-start gap-4">
-          {/* Company Logo */}
-          <div className="hidden sm:block flex-shrink-0">
-            <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
-              {logoUrl ? (
-                <img 
-                  src={logoUrl} 
-                  alt={`${company} logo`} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Briefcase className="w-8 h-8 text-gray-400" />
-              )}
+        <div className="sm:flex sm:items-start sm:justify-between">
+          <div className="mb-4 sm:mb-0">
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+              <div className="flex items-center">
+                <Building className="h-4 w-4 mr-1.5 text-gray-400" />
+                {company}
+              </div>
+              <div className="flex items-center">
+                <MapPin className="h-4 w-4 mr-1.5 text-gray-400" />
+                {location}
+              </div>
             </div>
+            
+            <p className="mt-3 text-sm text-gray-600 line-clamp-2">{description}</p>
           </div>
           
-          {/* Job Content */}
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 hover:text-primary transition-colors">
-                  {title}
-                </h3>
-                <p className="text-gray-700 font-medium">{company}</p>
-                <div className="flex items-center mt-1 text-gray-500">
-                  <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                  <span className="text-sm">{location}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-3">
-              <p className="text-sm text-gray-600 line-clamp-2">{description}</p>
-            </div>
-            
-            <div className="mt-4 flex items-center justify-between">
-              {/* Add any badges or tags here */}
-              <div className="flex gap-2">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Full-time
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Veteran-friendly
-                </span>
-              </div>
-              
-              {/* View Details Button */}
-              <a
-                href={`/jobs/${jobId}`}
-                className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                View Details
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
-            </div>
+          <div className="ml-0 sm:ml-4 flex items-center justify-end sm:justify-center self-start flex-shrink-0">
+            <ChevronRight className="h-5 w-5 text-gray-400" />
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

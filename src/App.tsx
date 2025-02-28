@@ -12,6 +12,7 @@ import ApplicationsPage from "./pages/ApplicationsPage";
 import PostJobPage from "./pages/PostJobPage";
 import EmployerDashboardPage from "./pages/EmployerDashboardPage";
 import EmployerSearchVeteransPage from "./pages/EmployerSearchVeteransPage";
+import JobDetailsPage from "./pages/JobDetailsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/job-search" element={<JobSearch />} />
+          <Route path="/job/:id" element={<JobDetailsPage />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/recommended" element={<JobSearch />} /> {/* Using JobSearch as placeholder */}
           <Route path="/saved" element={<SavedJobs />} />
