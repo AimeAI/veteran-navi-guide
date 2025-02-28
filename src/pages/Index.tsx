@@ -4,60 +4,60 @@ import Navbar from '@/components/Navbar';
 import JobListing from '@/components/JobListing';
 import { ArrowRight } from 'lucide-react';
 
-// Sample job data
+// Sample job data with Canadian locations
 const featuredJobs = [
   {
     id: '1',
     title: 'Security Operations Manager',
     company: 'TechDefense Solutions',
-    location: 'San Diego, CA',
-    description: 'Seeking a veteran with security background to lead our operations team. Must have experience in risk assessment and team leadership. TS/SCI clearance preferred.',
+    location: 'Ottawa, ON',
+    description: 'Seeking a veteran with security background to lead our operations team. Must have experience in risk assessment and team leadership. Secret clearance preferred.',
   },
   {
     id: '2',
     title: 'Logistics Coordinator',
-    company: 'Global Supply Chain Inc.',
-    location: 'Norfolk, VA',
-    description: 'Perfect for veterans with logistics MOS. Coordinate shipments, manage inventory, and optimize supply chain processes. Competitive salary with benefits package.',
+    company: 'Canadian Supply Chain Inc.',
+    location: 'Halifax, NS',
+    description: 'Perfect for veterans with logistics MOSID. Coordinate shipments, manage inventory, and optimize supply chain processes. Competitive salary with benefits package.',
   },
   {
     id: '3',
     title: 'Healthcare Administrator',
-    company: 'Veterans Medical Center',
-    location: 'Remote',
+    company: 'Veterans Medical Centre',
+    location: 'Remote - Canada',
     description: 'Join our team dedicated to improving healthcare for veterans. Looking for organized professionals with healthcare experience from military settings.',
   }
 ];
 
-// Recommended jobs data
+// Recommended jobs data with Canadian locations
 const recommendedJobs = [
   {
     id: '4',
     title: 'Cybersecurity Analyst',
-    company: 'DefenseNet Systems',
-    location: 'Arlington, VA',
+    company: 'DefenceNet Systems',
+    location: 'Toronto, ON',
     description: 'Ideal for veterans with intelligence or cybersecurity background. Monitor network security and respond to incidents. Secret clearance required.',
   },
   {
     id: '5',
     title: 'Project Manager',
     company: 'Veterans Construction Group',
-    location: 'Dallas, TX',
+    location: 'Edmonton, AB',
     description: 'Looking for veterans with leadership experience to manage construction projects from planning to completion. Strong organizational skills required.',
   },
   {
     id: '6',
     title: 'Emergency Medical Technician',
     company: 'First Responders Alliance',
-    location: 'Colorado Springs, CO',
-    description: 'Former military medics and corpsmen encouraged to apply. Provide emergency medical care in civilian settings. Training assistance available.',
+    location: 'Calgary, AB',
+    description: 'Former military medics encouraged to apply. Provide emergency medical care in civilian settings. Training assistance available.',
   },
   {
     id: '7',
     title: 'Aviation Maintenance Technician',
     company: 'SkyWorks Aerospace',
-    location: 'Seattle, WA',
-    description: 'Perfect transition for military aircraft mechanics. Maintain and repair commercial aircraft. FAA certification assistance provided.',
+    location: 'Vancouver, BC',
+    description: 'Perfect transition for military aircraft technicians. Maintain and repair commercial aircraft. Transport Canada certification assistance provided.',
   }
 ];
 
@@ -69,13 +69,13 @@ const Index = () => {
         <section className="max-w-4xl mx-auto text-center">
           <div className="mb-10">
             <span className="inline-block px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-full mb-4">
-              Career Opportunities for Veterans
+              Career Opportunities for Canadian Armed Forces Veterans
             </span>
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6">
               Connect with employers who value your military experience
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              Our platform bridges the gap between military service and civilian careers. Find opportunities that recognize your skills, discipline, and leadership.
+              Our platform bridges the gap between military service and civilian careers across Canada. Find opportunities that recognize your skills, discipline, and leadership.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a 
@@ -98,7 +98,7 @@ const Index = () => {
         <section className="mt-20 max-w-5xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold">Featured Opportunities</h2>
-            <p className="mt-3 text-gray-600">Discover jobs from employers who value your military experience</p>
+            <p className="mt-3 text-gray-600">Discover jobs from Canadian employers who value your military experience</p>
           </div>
           
           <div className="grid grid-cols-1 gap-6">
@@ -132,7 +132,7 @@ const Index = () => {
               Personalized For You
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Recommended Jobs</h2>
-            <p className="mt-3 text-gray-600">Based on your military background and skills</p>
+            <p className="mt-3 text-gray-600">Based on your Canadian Armed Forces background and skills</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
@@ -161,7 +161,7 @@ const Index = () => {
         </section>
 
         <section className="mt-20 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-12">Trusted by leading employers</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-12">Trusted by leading Canadian employers</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center items-center">
             {[1, 2, 3, 4].map((item) => (
               <div key={item} className="h-12 w-32 bg-gray-200 rounded-md animate-pulse"></div>
@@ -171,14 +171,27 @@ const Index = () => {
 
         <section className="mt-20">
           <div className="grid md:grid-cols-3 gap-8">
-            {['Career Transition', 'Resume Builder', 'Interview Prep'].map((title) => (
-              <div key={title} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            {[
+              {
+                title: 'CAF to Civilian Transition',
+                description: 'Resources designed specifically for Canadian Armed Forces members transitioning to civilian careers.'
+              },
+              {
+                title: 'Canadian Resume Builder',
+                description: 'Tools to help translate your military experience into civilian terminology that Canadian employers understand.'
+              },
+              {
+                title: 'Interview Preparation',
+                description: 'Practice answering common interview questions and learn how to effectively communicate your military experience.'
+              }
+            ].map((item) => (
+              <div key={item.title} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <div className="w-6 h-6 bg-primary rounded"></div>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{title}</h3>
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                 <p className="text-gray-600">
-                  Tools and resources designed specifically for veterans transitioning to civilian careers.
+                  {item.description}
                 </p>
               </div>
             ))}
