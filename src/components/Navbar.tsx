@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Briefcase, User, BookOpen, Building } from 'lucide-react';
 import NavDropdown from './NavDropdown';
 import MobileMenu from './MobileMenu';
@@ -11,10 +12,10 @@ const navSections = [
     title: 'Job Search',
     icon: <Briefcase className="h-4 w-4" />,
     items: [
-      { label: 'Search Jobs', href: '/jobs/search' },
-      { label: 'Saved Jobs', href: '/jobs/saved' },
-      { label: 'Recommended Jobs', href: '/jobs/recommended' },
-      { label: 'Job Alerts', href: '/jobs/alerts' },
+      { label: 'Search Jobs', href: '/job-search' },
+      { label: 'Saved Jobs', href: '/saved' },
+      { label: 'Recommended Jobs', href: '/recommended' },
+      { label: 'Job Alerts', href: '/job-alerts' },
     ],
   },
   {
@@ -23,7 +24,7 @@ const navSections = [
     items: [
       { label: 'My Profile', href: '/profile' },
       { label: 'Resume/CV', href: '/profile/resume' },
-      { label: 'Application History', href: '/profile/applications' },
+      { label: 'Application History', href: '/history' },
       { label: 'Settings', href: '/profile/settings' },
     ],
   },
@@ -42,9 +43,9 @@ const navSections = [
     title: 'Employers',
     icon: <Building className="h-4 w-4" />,
     items: [
-      { label: 'Post a Job', href: '/jobs/post' },
-      { label: 'Manage Applications', href: '/employer/dashboard' },
-      { label: 'Search Veteran Profiles', href: '/employers/search-veterans' },
+      { label: 'Post a Job', href: '/employer/post-job' },
+      { label: 'Manage Applications', href: '/employer/manage-applications' },
+      { label: 'Search Veteran Profiles', href: '/employer/search-veterans' },
     ],
   },
 ];
@@ -56,9 +57,9 @@ const Navbar: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <a href="/" className="flex items-center">
+              <Link to="/" className="flex items-center">
                 <span className="text-xl font-semibold tracking-tight">VeteranJobBoard</span>
-              </a>
+              </Link>
             </div>
             
             {/* Desktop Navigation */}
@@ -78,18 +79,18 @@ const Navbar: React.FC = () => {
 
             {/* Login/Register buttons for desktop */}
             <div className="hidden lg:flex lg:items-center lg:space-x-4">
-              <a
-                href="/login"
+              <Link
+                to="/login"
                 className="px-4 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200"
               >
                 Log in
-              </a>
-              <a
-                href="/register"
+              </Link>
+              <Link
+                to="/register"
                 className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200"
               >
                 Sign up
-              </a>
+              </Link>
             </div>
           </div>
         </div>

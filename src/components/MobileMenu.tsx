@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Menu, X, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -76,13 +77,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
                   {expandedSection === section.title && (
                     <div className="mt-2 pl-4 space-y-2 animate-fade-in">
                       {section.items.map((item, idx) => (
-                        <a
+                        <Link
                           key={idx}
-                          href={item.href}
+                          to={item.href}
                           className="block py-2 text-sm text-nav-muted hover:text-primary transition-colors"
+                          onClick={toggleMenu}
                         >
                           {item.label}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   )}

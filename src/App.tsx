@@ -24,13 +24,14 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/jobs/search" element={<JobSearch />} />
-          <Route path="/jobs/saved" element={<SavedJobs />} />
-          <Route path="/jobs/post" element={<PostJobPage />} />
-          <Route path="/applications" element={<ApplicationsPage />} />
+          <Route path="/job-search" element={<JobSearch />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/employer/dashboard" element={<EmployerDashboardPage />} />
-          <Route path="/employers/search-veterans" element={<EmployerSearchVeteransPage />} />
+          <Route path="/recommended" element={<JobSearch />} /> {/* Using JobSearch as placeholder */}
+          <Route path="/saved" element={<SavedJobs />} />
+          <Route path="/history" element={<ApplicationsPage />} />
+          <Route path="/employer/post-job" element={<PostJobPage />} />
+          <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
+          <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
