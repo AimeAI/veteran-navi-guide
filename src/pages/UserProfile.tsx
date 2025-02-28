@@ -37,13 +37,13 @@ const UserProfile = () => {
     skills: [],
   });
 
+  // Canadian Armed Forces branches
   const militaryBranches = [
-    'Army',
-    'Navy',
-    'Air Force',
-    'Marines',
-    'Coast Guard',
-    'Space Force',
+    'Canadian Army',
+    'Royal Canadian Navy',
+    'Royal Canadian Air Force',
+    'Canadian Special Operations Forces Command',
+    'Canadian Joint Operations Command',
   ];
 
   const handlePersonalInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,7 +197,7 @@ const UserProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
-                      Branch
+                      Service Element
                     </label>
                     <select
                       id="branch"
@@ -206,7 +206,7 @@ const UserProfile = () => {
                       onChange={handleMilitaryBackgroundChange}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                     >
-                      <option value="">Select Branch</option>
+                      <option value="">Select Service Element</option>
                       {militaryBranches.map(branch => (
                         <option key={branch} value={branch}>
                           {branch}
@@ -226,7 +226,7 @@ const UserProfile = () => {
                       value={profile.militaryBackground.rank}
                       onChange={handleMilitaryBackgroundChange}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                      placeholder="E-5, O-3, etc."
+                      placeholder="Cpl, Sgt, Capt, etc."
                     />
                   </div>
                 </div>
@@ -234,7 +234,7 @@ const UserProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="mos" className="block text-sm font-medium text-gray-700 mb-1">
-                      MOS / Rating / AFSC
+                      MOSID / Military Occupation
                     </label>
                     <input
                       type="text"
@@ -243,7 +243,7 @@ const UserProfile = () => {
                       value={profile.militaryBackground.mos}
                       onChange={handleMilitaryBackgroundChange}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                      placeholder="11B, 68W, etc."
+                      placeholder="00005, 00339, etc."
                     />
                   </div>
                   

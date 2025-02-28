@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Briefcase, Building, MapPin, FileText, DollarSign, Tag, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -39,13 +40,18 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
   const [currentSkill, setCurrentSkill] = useState<string>('');
   const [currentMosCode, setCurrentMosCode] = useState<string>('');
 
-  // Common MOS codes for suggestion
+  // Common MOS codes for Canadian Army
   const commonMosCodes = [
-    { code: '11B', description: 'Infantryman (Army)' },
-    { code: '0311', description: 'Rifleman (Marines)' },
-    { code: 'BM', description: `Boatswain's Mate (Navy)` },
-    { code: '1N0X1', description: 'Intelligence Analyst (Air Force)' },
-    { code: 'OS', description: 'Operations Specialist (Coast Guard)' }
+    { code: '00005', description: 'Combat Arms' },
+    { code: '00008', description: 'Combat Engineer' },
+    { code: '00120', description: 'Signal Operator' },
+    { code: '00171', description: 'Communications and Information Systems Specialist' },
+    { code: '00178', description: 'Military Police' },
+    { code: '00214', description: 'Artillery Soldier' },
+    { code: '00306', description: 'Vehicle Technician' },
+    { code: '00328', description: 'Supply Technician' },
+    { code: '00334', description: 'Cook' },
+    { code: '00339', description: 'Intelligence Operator' },
   ];
 
   // Handle text input changes
@@ -177,7 +183,7 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
               value={formData.location}
               onChange={handleInputChange}
               className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-              placeholder="e.g. San Diego, CA"
+              placeholder="e.g. Ottawa, ON"
             />
           </div>
         </div>
@@ -349,10 +355,10 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
         {/* MOS Codes */}
         <div className="space-y-2">
           <label htmlFor="mosCodes" className="block text-sm font-medium text-gray-700">
-            Military Occupation Specialty (MOS) Codes
+            Military Occupation Specialty (MOSID) Codes
           </label>
           <p className="text-xs text-gray-500">
-            Add relevant MOS codes to help veterans with matching skills find your job posting.
+            Add relevant MOSID codes to help veterans with matching skills find your job posting.
           </p>
           <div className="flex space-x-2">
             <div className="relative rounded-md shadow-sm flex-grow">
@@ -371,7 +377,7 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
                   }
                 }}
                 className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                placeholder="e.g. 11B or 0311"
+                placeholder="e.g. 00005 or 00339"
               />
             </div>
             <button
@@ -385,7 +391,7 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
           
           {/* Common MOS code suggestions */}
           <div className="mt-2">
-            <p className="text-xs font-medium text-gray-700 mb-1">Common MOS codes:</p>
+            <p className="text-xs font-medium text-gray-700 mb-1">Common MOSID codes:</p>
             <div className="flex flex-wrap gap-2">
               {commonMosCodes.map((mos) => (
                 <button

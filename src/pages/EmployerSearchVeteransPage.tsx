@@ -212,7 +212,7 @@ const EmployerSearchVeteransPage: React.FC = () => {
                   {/* MOS Filter */}
                   <div>
                     <label htmlFor="mos" className="block text-sm font-medium text-gray-700 mb-1">
-                      Military Occupation Specialty (MOS)
+                      Military Occupation Specialty (MOSID)
                     </label>
                     <select
                       id="mos"
@@ -220,7 +220,7 @@ const EmployerSearchVeteransPage: React.FC = () => {
                       value={selectedMOS}
                       onChange={e => setSelectedMOS(e.target.value)}
                     >
-                      <option value="">All MOS Codes</option>
+                      <option value="">All MOSID Codes</option>
                       {canadianMOSCodes.map(mos => (
                         <option key={mos.code} value={mos.code}>
                           {mos.code} - {mos.title}
