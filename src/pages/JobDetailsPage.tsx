@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Building, MapPin, DollarSign, Calendar, Clock, Shield } from 'lucide-react';
+import { Briefcase, Building, MapPin, DollarSign, Calendar, Clock, Shield, FileText, Upload, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 // Sample job data
@@ -76,12 +76,52 @@ const jobData = {
 
 const JobDetailsPage: React.FC = () => {
   const { toast } = useToast();
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [coverLetter, setCoverLetter] = useState('');
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeFileName, setResumeFileName] = useState('');
 
   const handleApply = () => {
+    setShowApplicationForm(true);
+  };
+
+  const handleCancelApplication = () => {
+    setShowApplicationForm(false);
+    setCoverLetter('');
+    setResumeFile(null);
+    setResumeFileName('');
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setResumeFile(file);
+      setResumeFileName(file.name);
+    }
+  };
+
+  const handleSubmitApplication = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Log application data to console
+    console.log({
+      jobId: jobData.id,
+      jobTitle: jobData.title,
+      coverLetter,
+      resumeFile
+    });
+    
+    // Show success toast
     toast({
       title: "Application Submitted",
       description: "Your application has been successfully submitted for this position.",
     });
+    
+    // Reset form
+    setShowApplicationForm(false);
+    setCoverLetter('');
+    setResumeFile(null);
+    setResumeFileName('');
   };
 
   const formatSalary = (min: number, max: number, currency: string, period: string) => {
@@ -136,23 +176,116 @@ const JobDetailsPage: React.FC = () => {
               </div>
               
               <div className="mt-4 md:mt-0 md:ml-6 flex flex-col sm:flex-row md:flex-col gap-3">
-                <Button 
-                  className="w-full sm:w-auto md:w-full" 
-                  size="lg"
-                  onClick={handleApply}
-                >
-                  Apply Now
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full sm:w-auto md:w-full"
-                  size="lg"
-                >
-                  Save Job
-                </Button>
+                {!showApplicationForm && (
+                  <>
+                    <Button 
+                      className="w-full sm:w-auto md:w-full" 
+                      size="lg"
+                      onClick={handleApply}
+                    >
+                      Apply Now
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full sm:w-auto md:w-full"
+                      size="lg"
+                    >
+                      Save Job
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
+          
+          {/* Application Form */}
+          {showApplicationForm && (
+            <div className="p-6 sm:p-8 border-b border-gray-200 bg-blue-50">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Apply for {jobData.title}</h2>
+                <Button variant="ghost" size="icon" onClick={handleCancelApplication}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              
+              <form onSubmit={handleSubmitApplication} className="space-y-6">
+                {/* Cover Letter */}
+                <div className="space-y-2">
+                  <label htmlFor="coverLetter" className="block text-sm font-medium text-gray-700">
+                    Cover Letter
+                  </label>
+                  <textarea 
+                    id="coverLetter"
+                    rows={6}
+                    value={coverLetter}
+                    onChange={(e) => setCoverLetter(e.target.value)}
+                    placeholder="Tell us why you're interested in this position and how your military experience is relevant..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                    required
+                  />
+                </div>
+                
+                {/* Resume Upload */}
+                <div className="space-y-2">
+                  <label htmlFor="resume" className="block text-sm font-medium text-gray-700">
+                    Resume
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('resume')?.click()}
+                      className="flex items-center"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {resumeFileName ? 'Change File' : 'Upload Resume'}
+                    </Button>
+                    <input
+                      type="file"
+                      id="resume"
+                      className="hidden"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileChange}
+                      required
+                    />
+                    {resumeFileName && (
+                      <div className="flex items-center bg-white px-3 py-2 rounded-md border border-gray-200">
+                        <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                        <span className="text-sm text-gray-700">{resumeFileName}</span>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          className="ml-2 h-6 w-6"
+                          onClick={() => {
+                            setResumeFile(null);
+                            setResumeFileName('');
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">Accepted formats: PDF, DOC, DOCX</p>
+                </div>
+                
+                {/* Submit Button */}
+                <div className="flex justify-end space-x-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleCancelApplication}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    Submit Application
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
           
           {/* Job Details */}
           <div className="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -184,9 +317,11 @@ const JobDetailsPage: React.FC = () => {
             <div className="lg:col-span-1 space-y-6">
               {/* Apply Button (Mobile Sticky) */}
               <div className="lg:hidden sticky top-4 z-10 bg-white p-4 rounded-lg shadow-md border border-gray-200 mb-6">
-                <Button className="w-full" size="lg" onClick={handleApply}>
-                  Apply Now
-                </Button>
+                {!showApplicationForm && (
+                  <Button className="w-full" size="lg" onClick={handleApply}>
+                    Apply Now
+                  </Button>
+                )}
               </div>
               
               {/* Company Info */}
@@ -240,12 +375,16 @@ const JobDetailsPage: React.FC = () => {
                 This position offers an excellent opportunity for Canadian Armed Forces veterans to leverage their military experience in cybersecurity.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button size="lg" onClick={handleApply}>
-                  Apply for This Position
-                </Button>
-                <Button variant="outline" size="lg">
-                  Share Job
-                </Button>
+                {!showApplicationForm && (
+                  <>
+                    <Button size="lg" onClick={handleApply}>
+                      Apply for This Position
+                    </Button>
+                    <Button variant="outline" size="lg">
+                      Share Job
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
