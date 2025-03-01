@@ -1,8 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Briefcase, Filter, ChevronDown, Banknote, Medal, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Navbar from '@/components/Navbar';
+import JobListing from '@/components/JobListing';
+import { toast } from 'sonner';
 
 interface FilterState {
   keywords: string;
@@ -12,6 +12,19 @@ interface FilterState {
   mosCodes: string[];
   clearanceLevel: string[];
   remote: boolean;
+}
+
+interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  category: string;
+  salaryRange: string;
+  remote: boolean;
+  clearanceLevel: string;
+  mosCode: string;
 }
 
 const JobSearch = () => {
@@ -25,6 +38,96 @@ const JobSearch = () => {
     clearanceLevel: [],
     remote: false
   });
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const mockJobs: Job[] = [
+    {
+      id: '1',
+      title: 'Security Operations Manager',
+      company: 'TechDefense Solutions',
+      location: 'Ottawa, ON',
+      description: 'Seeking a veteran with security background to lead our operations team. Must have experience in risk assessment and team leadership. Secret clearance preferred.',
+      category: 'security',
+      salaryRange: 'range3',
+      remote: false,
+      clearanceLevel: 'secret',
+      mosCode: '31B'
+    },
+    {
+      id: '2',
+      title: 'Logistics Coordinator',
+      company: 'Canadian Supply Chain Inc.',
+      location: 'Halifax, NS',
+      description: 'Perfect for veterans with logistics MOSID. Coordinate shipments, manage inventory, and optimize supply chain processes. Competitive salary with benefits package.',
+      category: 'logistics',
+      salaryRange: 'range2',
+      remote: false,
+      clearanceLevel: 'none',
+      mosCode: '88M'
+    },
+    {
+      id: '3',
+      title: 'Software Developer',
+      company: 'Tech Innovations',
+      location: 'Toronto, ON',
+      description: 'Looking for developers with experience in React, Node.js, and cloud technologies. Join our growing team building enterprise applications.',
+      category: 'tech',
+      salaryRange: 'range4',
+      remote: true,
+      clearanceLevel: 'none',
+      mosCode: '25B'
+    },
+    {
+      id: '4',
+      title: 'Healthcare Administrator',
+      company: 'Veterans Medical Centre',
+      location: 'Vancouver, BC',
+      description: 'Join our team dedicated to improving healthcare for veterans. Looking for organized professionals with healthcare experience from military settings.',
+      category: 'healthcare',
+      salaryRange: 'range2',
+      remote: false,
+      clearanceLevel: 'confidential',
+      mosCode: '68W'
+    },
+    {
+      id: '5',
+      title: 'Project Manager',
+      company: 'Veterans Construction Group',
+      location: 'Edmonton, AB',
+      description: 'Looking for veterans with leadership experience to manage construction projects from planning to completion. Strong organizational skills required.',
+      category: 'management',
+      salaryRange: 'range3',
+      remote: false,
+      clearanceLevel: 'none',
+      mosCode: '11B'
+    },
+    {
+      id: '6',
+      title: 'Cybersecurity Analyst',
+      company: 'DefenceNet Systems',
+      location: 'Ottawa, ON',
+      description: 'Protect critical infrastructure from cyber threats. Looking for veterans with cybersecurity background or willingness to learn.',
+      category: 'tech',
+      salaryRange: 'range3',
+      remote: true,
+      clearanceLevel: 'topsecret',
+      mosCode: '25B'
+    },
+    {
+      id: '7',
+      title: 'Administrative Assistant',
+      company: 'Government Services',
+      location: 'Montreal, QC',
+      description: 'Support executive team with administrative tasks, scheduling, and document management. Excellent organizational skills required.',
+      category: 'admin',
+      salaryRange: 'range1',
+      remote: false,
+      clearanceLevel: 'confidential',
+      mosCode: '42A'
+    }
+  ];
 
   const jobCategories = [
     { id: 'tech', name: 'Technology' },
@@ -63,6 +166,58 @@ const JobSearch = () => {
     { id: 'sci', level: 'TS/SCI' }
   ];
 
+  useEffect(() => {
+    setJobs(mockJobs);
+    setFilteredJobs(mockJobs);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    filterJobs();
+  }, [filters]);
+
+  const filterJobs = () => {
+    let results = [...jobs];
+
+    if (filters.keywords) {
+      const keywords = filters.keywords.toLowerCase();
+      results = results.filter(job => 
+        job.title.toLowerCase().includes(keywords) || 
+        job.company.toLowerCase().includes(keywords) || 
+        job.description.toLowerCase().includes(keywords)
+      );
+    }
+
+    if (filters.location) {
+      const location = filters.location.toLowerCase();
+      results = results.filter(job => 
+        job.location.toLowerCase().includes(location)
+      );
+    }
+
+    if (filters.category) {
+      results = results.filter(job => job.category === filters.category);
+    }
+
+    if (filters.salaryRange && filters.salaryRange !== 'any') {
+      results = results.filter(job => job.salaryRange === filters.salaryRange);
+    }
+
+    if (filters.mosCodes.length > 0) {
+      results = results.filter(job => filters.mosCodes.includes(job.mosCode));
+    }
+
+    if (filters.clearanceLevel.length > 0) {
+      results = results.filter(job => filters.clearanceLevel.includes(job.clearanceLevel));
+    }
+
+    if (filters.remote) {
+      results = results.filter(job => job.remote === true);
+    }
+
+    setFilteredJobs(results);
+  };
+
   const toggleFilter = () => {
     setIsFiltersOpen(!isFiltersOpen);
   };
@@ -100,19 +255,17 @@ const JobSearch = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search filters:', filters);
-    // In a real application, we would send these filters to an API
+    filterJobs();
+    toast.success("Search results updated");
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
-      
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-primary/5 rounded-lg px-6 py-8 mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-6">Find Your Next Career</h1>
             
-            {/* Main search form */}
             <form onSubmit={handleSearch} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative">
@@ -163,7 +316,6 @@ const JobSearch = () => {
                 </div>
               </div>
               
-              {/* Advanced filters toggle */}
               <div className="flex items-center pt-2">
                 <button
                   type="button"
@@ -179,11 +331,9 @@ const JobSearch = () => {
                 </button>
               </div>
               
-              {/* Advanced filters panel */}
               {isFiltersOpen && (
                 <div className="bg-white p-6 rounded-md shadow-sm border border-gray-100 animate-fade-in">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Salary Range */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
                         <Banknote className="h-4 w-4 mr-2 text-primary" />
@@ -203,7 +353,6 @@ const JobSearch = () => {
                       </select>
                     </div>
                     
-                    {/* MOS Codes */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
                         <Medal className="h-4 w-4 mr-2 text-primary" />
@@ -229,7 +378,6 @@ const JobSearch = () => {
                       </div>
                     </div>
                     
-                    {/* Clearance Level */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
                         <Shield className="h-4 w-4 mr-2 text-primary" />
@@ -256,7 +404,6 @@ const JobSearch = () => {
                     </div>
                   </div>
                   
-                  {/* Remote option */}
                   <div className="mt-4">
                     <div className="flex items-center">
                       <input
@@ -275,7 +422,6 @@ const JobSearch = () => {
                 </div>
               )}
               
-              {/* Search button */}
               <div className="flex justify-end">
                 <button
                   type="submit"
@@ -288,20 +434,40 @@ const JobSearch = () => {
             </form>
           </div>
           
-          {/* Results placeholder */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-medium text-gray-900">Search Results</h2>
-              <span className="text-sm text-gray-500">0 jobs found</span>
+              <span className="text-sm text-gray-500">{filteredJobs.length} jobs found</span>
             </div>
             
-            <div className="text-center py-12">
-              <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-lg font-medium text-gray-900">No jobs found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Try adjusting your search criteria or adding more filters.
-              </p>
-            </div>
+            {isLoading ? (
+              <div className="py-12 space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse bg-gray-100 h-32 rounded-lg"></div>
+                ))}
+              </div>
+            ) : filteredJobs.length > 0 ? (
+              <div className="space-y-4">
+                {filteredJobs.map(job => (
+                  <JobListing
+                    key={job.id}
+                    jobId={job.id}
+                    title={job.title}
+                    company={job.company}
+                    location={job.location}
+                    description={job.description}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-lg font-medium text-gray-900">No jobs found</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Try adjusting your search criteria or adding more filters.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </main>
