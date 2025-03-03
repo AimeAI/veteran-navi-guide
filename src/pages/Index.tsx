@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
 import JobListing from '@/components/JobListing';
 import { ArrowRight } from 'lucide-react';
 
@@ -64,7 +63,6 @@ const recommendedJobs = [
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
       <main className="flex-grow container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <section className="max-w-4xl mx-auto text-center">
           <div className="mb-10">
