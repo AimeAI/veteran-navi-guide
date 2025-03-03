@@ -80,13 +80,13 @@ const Navbar: React.FC = () => {
             {/* Login/Register buttons for desktop */}
             <div className="hidden lg:flex lg:items-center lg:space-x-4">
               <Link
-                to="/login"
+                to="/auth"
                 className="px-4 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200"
               >
                 Log in
               </Link>
               <Link
-                to="/register"
+                to="/auth?tab=signup"
                 className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200"
               >
                 Sign up

@@ -13,6 +13,7 @@ import EmployerDashboardPage from "./pages/EmployerDashboardPage";
 import EmployerSearchVeteransPage from "./pages/EmployerSearchVeteransPage";
 import CommunityForums from "./pages/CommunityForums";
 import RecommendedJobs from "./pages/RecommendedJobs";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/sonner";
 import "./App.css";
@@ -34,6 +35,7 @@ function App() {
           <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
           <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
           <Route path="/resources/forums" element={<CommunityForums />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
