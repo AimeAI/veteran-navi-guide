@@ -8,9 +8,27 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import JobAlertForm from "@/components/JobAlertForm";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const UserProfile = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // User profile data state
+  const [profile, setProfile] = useState({
+    name: "John Doe",
+    email: "john.doe@example.com",
+    phone: "555-123-4567",
+    location: "San Diego, CA",
+    militaryBranch: "U.S. Marine Corps",
+    yearsOfService: "2010-2018",
+    rank: "Staff Sergeant",
+    bio: "Software Engineer with 5 years of experience. Marine Corps veteran with expertise in cybersecurity and leadership."
+  });
+
+  // Form input state (for editing)
+  const [formData, setFormData] = useState({ ...profile });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -25,16 +43,157 @@ const UserProfile = () => {
       console.log("File name:", selectedFile.name);
       console.log("File size:", selectedFile.size, "bytes");
       console.log("File type:", selectedFile.type);
-      alert("Resume uploaded successfully! (Check console for details)");
+      toast.success("Resume uploaded successfully!");
     } else {
-      alert("Please select a file first!");
+      toast.error("Please select a file first!");
     }
   };
 
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // Cancel editing, reset form data
+      setFormData({ ...profile });
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSaveProfile = () => {
+    console.log("Profile data to be saved:", formData);
+    setProfile({ ...formData });
+    setIsEditing(false);
+    toast.success("Profile updated successfully!");
+  };
+
+  const renderProfileViewMode = () => (
+    <div className="grid gap-6">
+      <div className="grid gap-2">
+        <Label className="text-sm font-medium text-muted-foreground">Name</Label>
+        <p className="text-base">{profile.name}</p>
+      </div>
+      <div className="grid gap-2">
+        <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+        <p className="text-base">{profile.email}</p>
+      </div>
+      <div className="grid gap-2">
+        <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
+        <p className="text-base">{profile.phone}</p>
+      </div>
+      <div className="grid gap-2">
+        <Label className="text-sm font-medium text-muted-foreground">Location</Label>
+        <p className="text-base">{profile.location}</p>
+      </div>
+      <Separator className="my-1" />
+      <div className="grid gap-2">
+        <Label className="text-sm font-medium text-muted-foreground">Military Background</Label>
+        <div className="space-y-1">
+          <p className="text-base">{profile.militaryBranch}</p>
+          <p className="text-sm text-muted-foreground">Service: {profile.yearsOfService}</p>
+          <p className="text-sm text-muted-foreground">Rank: {profile.rank}</p>
+        </div>
+      </div>
+      <Separator className="my-1" />
+      <div className="grid gap-2">
+        <Label className="text-sm font-medium text-muted-foreground">Bio</Label>
+        <p className="text-base">{profile.bio}</p>
+      </div>
+    </div>
+  );
+
+  const renderProfileEditMode = () => (
+    <div className="grid gap-4">
+      <div className="grid gap-2">
+        <Label htmlFor="name">Name</Label>
+        <Input 
+          id="name" 
+          name="name" 
+          value={formData.name} 
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="email">Email</Label>
+        <Input 
+          id="email" 
+          name="email" 
+          type="email" 
+          value={formData.email} 
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="phone">Phone</Label>
+        <Input 
+          id="phone" 
+          name="phone" 
+          value={formData.phone} 
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="location">Location</Label>
+        <Input 
+          id="location" 
+          name="location" 
+          value={formData.location} 
+          onChange={handleInputChange}
+        />
+      </div>
+      <Separator className="my-1" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid gap-2">
+          <Label htmlFor="militaryBranch">Military Branch</Label>
+          <Input 
+            id="militaryBranch" 
+            name="militaryBranch" 
+            value={formData.militaryBranch} 
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="yearsOfService">Years of Service</Label>
+          <Input 
+            id="yearsOfService" 
+            name="yearsOfService" 
+            value={formData.yearsOfService} 
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="rank">Rank</Label>
+          <Input 
+            id="rank" 
+            name="rank" 
+            value={formData.rank} 
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
+      <Separator className="my-1" />
+      <div className="grid gap-2">
+        <Label htmlFor="bio">Bio</Label>
+        <Textarea 
+          id="bio" 
+          name="bio" 
+          className="min-h-[100px]" 
+          value={formData.bio} 
+          onChange={handleInputChange}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="container mx-auto py-10">
-      <Tabs defaultValue="profile" className="w-[400px]">
-        <TabsList>
+      <Tabs defaultValue="profile" className="w-full max-w-3xl mx-auto">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="resume">Resume/CV</TabsTrigger>
           <TabsTrigger value="alerts">Job Alerts</TabsTrigger>
@@ -43,28 +202,29 @@ const UserProfile = () => {
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>User Profile</CardTitle>
-              <CardDescription>
-                Manage your profile information here.
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>User Profile</CardTitle>
+                  <CardDescription>
+                    Manage your profile information here.
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant={isEditing ? "outline" : "default"} 
+                  onClick={handleEditToggle}
+                >
+                  {isEditing ? "Cancel" : "Edit Profile"}
+                </Button>
+              </div>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value="John Doe" disabled />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" value="john.doe@example.com" disabled />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Input id="bio" value="Software Engineer" disabled />
-              </div>
+            <CardContent>
+              {isEditing ? renderProfileEditMode() : renderProfileViewMode()}
             </CardContent>
-            <CardFooter>
-              <Button>Update Profile</Button>
-            </CardFooter>
+            {isEditing && (
+              <CardFooter>
+                <Button onClick={handleSaveProfile}>Save Changes</Button>
+              </CardFooter>
+            )}
           </Card>
         </TabsContent>
         <TabsContent value="resume">
