@@ -1,51 +1,14 @@
 
-import React, { useState } from 'react';
-import Navbar from '@/components/Navbar';
+import React from 'react';
 import JobListing from '@/components/JobListing';
 import { Bookmark, X, AlertCircle } from 'lucide-react';
-
-// Sample saved jobs data
-const initialSavedJobs = [
-  {
-    id: '1',
-    title: 'Cybersecurity Specialist',
-    company: 'Defense Technologies Inc.',
-    location: 'Colorado Springs, CO',
-    description: 'Join our team of security experts to protect critical infrastructure. Looking for veterans with security clearance and technical experience.',
-  },
-  {
-    id: '2',
-    title: 'Operations Manager',
-    company: 'Global Logistics Group',
-    location: 'Norfolk, VA',
-    description: 'Leverage your military leadership experience in a fast-paced logistics environment. Oversee daily operations and team management.',
-  },
-  {
-    id: '3',
-    title: 'Aviation Technician',
-    company: 'AeroTech Industries',
-    location: 'San Diego, CA',
-    description: 'Perfect position for former military aircraft mechanics. Maintain and repair commercial and private aircraft. FAA certification a plus.',
-  },
-  {
-    id: '4',
-    title: 'Emergency Response Coordinator',
-    company: 'National Disaster Relief',
-    location: 'Remote',
-    description: 'Help coordinate emergency response teams during natural disasters. Military experience in logistics and crisis management highly desired.',
-  }
-];
+import { useJobs } from '@/context/JobContext';
 
 const SavedJobs = () => {
-  const [savedJobs, setSavedJobs] = useState(initialSavedJobs);
-
-  const removeJob = (jobId: string) => {
-    setSavedJobs(savedJobs.filter((job) => job.id !== jobId));
-  };
+  const { savedJobs, removeSavedJob } = useJobs();
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
       <main className="flex-grow container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center mb-8">
@@ -65,7 +28,7 @@ const SavedJobs = () => {
                     description={job.description}
                   />
                   <button
-                    onClick={() => removeJob(job.id)}
+                    onClick={() => removeSavedJob(job.id)}
                     className="absolute top-4 right-4 p-1.5 bg-white rounded-full border border-gray-200 shadow-sm hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
                     aria-label={`Remove ${job.title} from saved jobs`}
                   >

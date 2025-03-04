@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,25 +9,43 @@ import { Label } from "@/components/ui/label";
 import JobAlertForm from "@/components/JobAlertForm";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useUser } from "@/context/UserContext";
+import { useJobs } from "@/context/JobContext";
 
 const UserProfile = () => {
+  const { user, updateProfile } = useUser();
+  const { savedJobs, appliedJobs } = useJobs();
+  
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
-  // User profile data state
-  const [profile, setProfile] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "555-123-4567",
-    location: "San Diego, CA",
-    militaryBranch: "U.S. Marine Corps",
-    yearsOfService: "2010-2018",
-    rank: "Staff Sergeant",
-    bio: "Software Engineer with 5 years of experience. Marine Corps veteran with expertise in cybersecurity and leadership."
+  // Form input state (for editing)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    militaryBranch: "",
+    yearsOfService: "",
+    rank: "",
+    bio: ""
   });
 
-  // Form input state (for editing)
-  const [formData, setFormData] = useState({ ...profile });
+  // Set form data from user profile when it loads or changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        location: user.location,
+        militaryBranch: user.militaryBranch,
+        yearsOfService: user.yearsOfService,
+        rank: user.rank,
+        bio: user.bio
+      });
+    }
+  }, [user]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -52,7 +69,18 @@ const UserProfile = () => {
   const handleEditToggle = () => {
     if (isEditing) {
       // Cancel editing, reset form data
-      setFormData({ ...profile });
+      if (user) {
+        setFormData({
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          location: user.location,
+          militaryBranch: user.militaryBranch,
+          yearsOfService: user.yearsOfService,
+          rank: user.rank,
+          bio: user.bio
+        });
+      }
     }
     setIsEditing(!isEditing);
   };
@@ -67,42 +95,41 @@ const UserProfile = () => {
 
   const handleSaveProfile = () => {
     console.log("Profile data to be saved:", formData);
-    setProfile({ ...formData });
+    updateProfile(formData);
     setIsEditing(false);
-    toast.success("Profile updated successfully!");
   };
 
   const renderProfileViewMode = () => (
     <div className="grid gap-6">
       <div className="grid gap-2">
         <Label className="text-sm font-medium text-muted-foreground">Name</Label>
-        <p className="text-base">{profile.name}</p>
+        <p className="text-base">{user?.name}</p>
       </div>
       <div className="grid gap-2">
         <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-        <p className="text-base">{profile.email}</p>
+        <p className="text-base">{user?.email}</p>
       </div>
       <div className="grid gap-2">
         <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
-        <p className="text-base">{profile.phone}</p>
+        <p className="text-base">{user?.phone}</p>
       </div>
       <div className="grid gap-2">
         <Label className="text-sm font-medium text-muted-foreground">Location</Label>
-        <p className="text-base">{profile.location}</p>
+        <p className="text-base">{user?.location}</p>
       </div>
       <Separator className="my-1" />
       <div className="grid gap-2">
         <Label className="text-sm font-medium text-muted-foreground">Military Background</Label>
         <div className="space-y-1">
-          <p className="text-base">{profile.militaryBranch}</p>
-          <p className="text-sm text-muted-foreground">Service: {profile.yearsOfService}</p>
-          <p className="text-sm text-muted-foreground">Rank: {profile.rank}</p>
+          <p className="text-base">{user?.militaryBranch}</p>
+          <p className="text-sm text-muted-foreground">Service: {user?.yearsOfService}</p>
+          <p className="text-sm text-muted-foreground">Rank: {user?.rank}</p>
         </div>
       </div>
       <Separator className="my-1" />
       <div className="grid gap-2">
         <Label className="text-sm font-medium text-muted-foreground">Bio</Label>
-        <p className="text-base">{profile.bio}</p>
+        <p className="text-base">{user?.bio}</p>
       </div>
     </div>
   );
@@ -199,6 +226,8 @@ const UserProfile = () => {
           <TabsTrigger value="alerts">Job Alerts</TabsTrigger>
           <TabsTrigger value="applications">Applications</TabsTrigger>
         </TabsList>
+        
+        {/* Profile tab content */}
         <TabsContent value="profile">
           <Card>
             <CardHeader>
@@ -227,6 +256,8 @@ const UserProfile = () => {
             )}
           </Card>
         </TabsContent>
+        
+        {/* Resume tab content */}
         <TabsContent value="resume">
           <Card>
             <CardHeader>
@@ -273,6 +304,8 @@ const UserProfile = () => {
             </CardFooter>
           </Card>
         </TabsContent>
+        
+        {/* Job alerts tab content */}
         <TabsContent value="alerts">
           <Card>
             <CardHeader>
@@ -286,6 +319,8 @@ const UserProfile = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        
+        {/* Applications tab content */}
         <TabsContent value="applications">
           <Card>
             <CardHeader>
@@ -295,7 +330,14 @@ const UserProfile = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>No applications found.</p>
+              {appliedJobs && appliedJobs.length > 0 ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">You have applied to {appliedJobs.length} jobs.</p>
+                  {/* We would map through applied jobs here */}
+                </div>
+              ) : (
+                <p>No applications found.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

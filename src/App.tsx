@@ -16,31 +16,34 @@ import RecommendedJobs from "./pages/RecommendedJobs";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/sonner";
+import { AppProvider } from "./context/AppContext";
 import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <main className="min-h-screen pt-16">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/job-search" element={<JobSearch />} />
-          <Route path="/saved" element={<SavedJobs />} />
-          <Route path="/job/:id" element={<JobDetailsPage />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/history" element={<ApplicationsPage />} />
-          <Route path="/recommendations" element={<RecommendedJobs />} />
-          <Route path="/employer/post-job" element={<PostJobPage />} />
-          <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
-          <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
-          <Route path="/resources/forums" element={<CommunityForums />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-      <Toaster position="top-right" />
-    </Router>
+    <AppProvider>
+      <Router>
+        <Navbar />
+        <main className="min-h-screen pt-16">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/job-search" element={<JobSearch />} />
+            <Route path="/saved" element={<SavedJobs />} />
+            <Route path="/job/:id" element={<JobDetailsPage />} />
+            <Route path="/profile" element={<UserProfile />} />
+            <Route path="/history" element={<ApplicationsPage />} />
+            <Route path="/recommendations" element={<RecommendedJobs />} />
+            <Route path="/employer/post-job" element={<PostJobPage />} />
+            <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
+            <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
+            <Route path="/resources/forums" element={<CommunityForums />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Toaster position="top-right" />
+      </Router>
+    </AppProvider>
   );
 }
 

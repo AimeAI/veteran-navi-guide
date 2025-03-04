@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, signup, isLoading } = useUser();
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -22,39 +22,31 @@ const AuthPage: React.FC = () => {
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
   const [militaryBranch, setMilitaryBranch] = useState("");
   
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate API call delay
-    setTimeout(() => {
-      console.log("Login successful for:", loginEmail);
-      toast.success("Login successful!");
-      setIsLoading(false);
+    try {
+      await login(loginEmail, loginPassword);
       navigate("/");
-    }, 1000);
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   };
   
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (signupPassword !== signupConfirmPassword) {
-      toast.error("Passwords do not match!");
+      // Error handling is now in the context
       return;
     }
     
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      console.log("Signup successful for:", { 
-        email: signupEmail, 
-        militaryBranch 
-      });
-      toast.success("Account created successfully!");
-      setIsLoading(false);
+    try {
+      await signup(signupEmail, signupPassword, militaryBranch);
       navigate("/");
-    }, 1000);
+    } catch (error) {
+      console.error("Signup error:", error);
+    }
   };
 
   return (
