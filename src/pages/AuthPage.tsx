@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import LoadingButton from "@/components/ui/LoadingButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,26 +19,22 @@ const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, signup, isLoading, user } = useUser();
   
-  // Redirect if already authenticated
   useEffect(() => {
     if (user?.isAuthenticated) {
       navigate("/");
     }
   }, [user, navigate]);
   
-  // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginErrors, setLoginErrors] = useState<FormError>({});
   
-  // Signup form state
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
   const [militaryBranch, setMilitaryBranch] = useState("");
   const [signupErrors, setSignupErrors] = useState<FormError>({});
   
-  // Validate login form
   const validateLoginForm = (): boolean => {
     const errors: FormError = {};
     
@@ -56,7 +52,6 @@ const AuthPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
   
-  // Validate signup form
   const validateSignupForm = (): boolean => {
     const errors: FormError = {};
     
@@ -200,13 +195,14 @@ const AuthPage: React.FC = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button 
+                  <LoadingButton 
                     type="submit" 
                     className="w-full" 
-                    disabled={isLoading}
+                    isLoading={isLoading}
+                    loadingText="Logging in..."
                   >
-                    {isLoading ? "Logging in..." : "Login"}
-                  </Button>
+                    Login
+                  </LoadingButton>
                 </CardFooter>
               </form>
             </Card>
@@ -307,13 +303,14 @@ const AuthPage: React.FC = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button 
+                  <LoadingButton 
                     type="submit" 
                     className="w-full" 
-                    disabled={isLoading}
+                    isLoading={isLoading}
+                    loadingText="Creating account..."
                   >
-                    {isLoading ? "Creating account..." : "Create Account"}
-                  </Button>
+                    Create Account
+                  </LoadingButton>
                 </CardFooter>
               </form>
             </Card>

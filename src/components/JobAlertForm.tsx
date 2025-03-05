@@ -1,6 +1,6 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import LoadingButton from "@/components/ui/LoadingButton";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,6 @@ const JobAlertForm = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form validation
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -46,7 +45,6 @@ const JobAlertForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     if (!validateForm()) {
       return;
     }
@@ -54,10 +52,8 @@ const JobAlertForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Create alert object with form data
       const alertData = {
         keywords,
         location,
@@ -65,15 +61,12 @@ const JobAlertForm = () => {
         createdAt: new Date().toISOString(),
       };
       
-      // Log the alert data to console (for now)
       console.log("Job Alert Created:", alertData);
       
-      // Show success toast
       toast.success("Job alert created successfully", {
         description: "You'll receive notifications when new matching jobs are posted."
       });
       
-      // Reset form
       setKeywords("");
       setLocation("");
       setCategory("");
@@ -87,7 +80,6 @@ const JobAlertForm = () => {
     }
   };
 
-  // Function to render error message
   const renderErrorMessage = (field: string) => {
     if (!errors[field]) return null;
     
@@ -157,14 +149,15 @@ const JobAlertForm = () => {
         </form>
       </CardContent>
       <CardFooter>
-        <Button 
+        <LoadingButton 
           type="submit" 
           onClick={handleSubmit}
           className="w-full"
-          disabled={isSubmitting}
+          isLoading={isSubmitting}
+          loadingText="Creating Alert..."
         >
-          {isSubmitting ? "Creating Alert..." : "Create Alert"}
-        </Button>
+          Create Alert
+        </LoadingButton>
       </CardFooter>
     </Card>
   );

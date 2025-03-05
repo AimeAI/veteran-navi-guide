@@ -1,9 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import JobListing from '@/components/JobListing';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import JobRecommendationsLoading from '@/components/JobRecommendationsLoading';
 import { mockJobs } from '@/data/mockJobs';
 import { currentUserProfile, getRecommendedJobs, RecommendationResult } from '@/utils/recommendationAlgorithm';
 
@@ -73,10 +74,7 @@ const RecommendedJobs = () => {
 
         {/* Loading state */}
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-800 mb-4"></div>
-            <p className="text-gray-600">Finding your best matches...</p>
-          </div>
+          <JobRecommendationsLoading />
         ) : (
           <div className="space-y-6">
             <p className="text-sm text-gray-600">
