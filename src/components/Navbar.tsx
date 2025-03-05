@@ -58,12 +58,12 @@ const Navbar: React.FC = () => {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <Link to="/" className="flex items-center" aria-label="VeteranJobBoard Home">
-                <span className="text-xl font-semibold tracking-tight">VeteranJobBoard</span>
+                <span className="text-lg sm:text-xl font-semibold tracking-tight truncate">VeteranJobBoard</span>
               </Link>
             </div>
             
             {/* Desktop Navigation */}
-            <nav aria-label="Main Navigation" className="hidden lg:flex lg:items-center lg:space-x-6">
+            <nav aria-label="Main Navigation" className="hidden lg:flex lg:items-center lg:space-x-4 xl:space-x-6">
               {navSections.map((section) => (
                 <NavDropdown
                   key={section.title}
@@ -81,14 +81,14 @@ const Navbar: React.FC = () => {
             <div className="hidden lg:flex lg:items-center lg:space-x-4">
               <Link
                 to="/auth"
-                className="px-4 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
                 aria-label="Log in to your account"
               >
                 Log in
               </Link>
               <Link
                 to="/auth?tab=signup"
-                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
                 aria-label="Create a new account"
               >
                 Sign up

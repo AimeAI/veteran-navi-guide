@@ -13,16 +13,23 @@ const LoadingButton: React.FC<LoadingButtonProps> = ({
   isLoading = false,
   loadingText,
   disabled,
+  className,
   ...props
 }) => {
   return (
     <Button 
       disabled={isLoading || disabled} 
       aria-busy={isLoading}
+      className={cn("w-full sm:w-auto flex justify-center items-center", className)}
       {...props}
     >
-      {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-      <span>{isLoading && loadingText ? loadingText : children}</span>
+      {isLoading && (
+        <Loader 
+          className="mr-2 h-4 w-4 animate-spin" 
+          aria-hidden="true" 
+        />
+      )}
+      <span className="truncate">{isLoading && loadingText ? loadingText : children}</span>
     </Button>
   );
 };

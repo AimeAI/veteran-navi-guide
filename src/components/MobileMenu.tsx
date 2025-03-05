@@ -76,8 +76,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
             id="mobile-menu"
             ref={menuRef}
             className={cn(
-              "fixed inset-y-0 left-0 w-full max-w-sm bg-nav-dropdown shadow-xl animate-slide-in",
-              "p-6 overflow-y-auto"
+              "fixed inset-y-0 left-0 w-full sm:max-w-sm bg-nav-dropdown shadow-xl animate-slide-in",
+              "p-4 sm:p-6 overflow-y-auto"
             )}
             role="dialog"
             aria-modal="true"
@@ -87,19 +87,19 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
               <h2 className="text-xl font-semibold" id="mobile-menu-title">Menu</h2>
               <button
                 onClick={toggleMenu}
-                className="p-2 text-nav-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                className="p-2 text-nav-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-md"
                 aria-label="Close menu"
               >
                 <X className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
             
-            <nav className="space-y-6" aria-labelledby="mobile-menu-title">
+            <nav className="space-y-4" aria-labelledby="mobile-menu-title">
               {sections.map((section) => (
                 <div key={section.title} className="border-b border-nav-border pb-4">
                   <button
                     onClick={() => toggleSection(section.title)}
-                    className="flex items-center justify-between w-full py-2 text-left text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                    className="flex items-center justify-between w-full py-2 text-left text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-md"
                     aria-expanded={expandedSection === section.title}
                     aria-controls={`section-${section.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
@@ -133,6 +133,26 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
                 </div>
               ))}
             </nav>
+
+            {/* Mobile login/signup buttons */}
+            <div className="mt-8 pt-4 border-t border-nav-border">
+              <div className="flex flex-col space-y-3">
+                <Link
+                  to="/auth"
+                  className="w-full py-2.5 px-4 text-center text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 border border-gray-200"
+                  onClick={toggleMenu}
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/auth?tab=signup"
+                  className="w-full py-2.5 px-4 text-center text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                  onClick={toggleMenu}
+                >
+                  Sign up
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       )}

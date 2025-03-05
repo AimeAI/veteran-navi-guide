@@ -48,7 +48,7 @@ const NavDropdown: React.FC<NavDropdownProps> = ({ label, items, icon }) => {
         ref={buttonRef}
         onClick={toggleDropdown}
         className={cn(
-          "nav-link group",
+          "nav-link group w-full md:w-auto text-left",
           isOpen ? "text-primary" : "text-nav-foreground hover:text-primary"
         )}
         aria-expanded={isOpen}
@@ -71,7 +71,7 @@ const NavDropdown: React.FC<NavDropdownProps> = ({ label, items, icon }) => {
       {isOpen && (
         <div 
           id={dropdownId}
-          className="absolute z-10 mt-1 w-56 origin-top-right rounded-md bg-nav-dropdown shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-fade-in backdrop-blur-sm"
+          className="absolute z-10 mt-1 w-full min-w-[200px] max-w-[300px] origin-top-right rounded-md bg-nav-dropdown shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-fade-in backdrop-blur-sm"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="menu-button"
