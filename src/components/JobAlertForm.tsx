@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
+import { isEmptyOrWhitespace } from "@/utils/validation";
 
 const jobCategories = [
   { value: "cybersecurity", label: "Cybersecurity" },
@@ -18,34 +20,83 @@ const jobCategories = [
   { value: "maintenance", label: "Maintenance & Repair" },
 ];
 
+interface FormErrors {
+  [key: string]: string;
+}
+
 const JobAlertForm = () => {
   const [keywords, setKeywords] = useState("");
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Form validation
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (isEmptyOrWhitespace(keywords)) {
+      newErrors.keywords = "Keywords are required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create alert object with form data
-    const alertData = {
-      keywords,
-      location,
-      category,
-      createdAt: new Date().toISOString(),
-    };
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
     
-    // Log the alert data to console (for now)
-    console.log("Job Alert Created:", alertData);
+    setIsSubmitting(true);
     
-    // Show success toast
-    toast.success("Job alert created successfully", {
-      description: "You'll receive notifications when new matching jobs are posted."
-    });
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create alert object with form data
+      const alertData = {
+        keywords,
+        location,
+        category,
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Log the alert data to console (for now)
+      console.log("Job Alert Created:", alertData);
+      
+      // Show success toast
+      toast.success("Job alert created successfully", {
+        description: "You'll receive notifications when new matching jobs are posted."
+      });
+      
+      // Reset form
+      setKeywords("");
+      setLocation("");
+      setCategory("");
+    } catch (error) {
+      console.error("Error creating job alert:", error);
+      toast.error("Failed to create job alert", {
+        description: "Please try again later."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Function to render error message
+  const renderErrorMessage = (field: string) => {
+    if (!errors[field]) return null;
     
-    // Reset form
-    setKeywords("");
-    setLocation("");
-    setCategory("");
+    return (
+      <div className="flex items-center mt-1 text-red-500 text-sm">
+        <AlertCircle className="h-4 w-4 mr-1" />
+        <span>{errors[field]}</span>
+      </div>
+    );
   };
 
   return (
@@ -59,14 +110,23 @@ const JobAlertForm = () => {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="keywords">Keywords</Label>
+            <Label htmlFor="keywords" className={errors.keywords ? "text-red-500" : ""}>
+              Keywords
+            </Label>
             <Input 
               id="keywords" 
               placeholder="Job title, skills, or keywords" 
               value={keywords}
-              onChange={(e) => setKeywords(e.target.value)}
+              onChange={(e) => {
+                setKeywords(e.target.value);
+                if (errors.keywords) {
+                  setErrors({ ...errors, keywords: "" });
+                }
+              }}
+              className={errors.keywords ? "border-red-500 focus-visible:ring-red-500" : ""}
               required
             />
+            {renderErrorMessage("keywords")}
           </div>
           
           <div className="space-y-2">
@@ -101,8 +161,9 @@ const JobAlertForm = () => {
           type="submit" 
           onClick={handleSubmit}
           className="w-full"
+          disabled={isSubmitting}
         >
-          Create Alert
+          {isSubmitting ? "Creating Alert..." : "Create Alert"}
         </Button>
       </CardFooter>
     </Card>

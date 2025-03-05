@@ -73,14 +73,30 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // In a real app, this would be an API call to verify credentials
-      console.log("Login request for:", email, password);
+      console.log("Login request for:", email);
+      
+      // Simulate authentication failure (for demo purposes)
+      if (password === "wrongpassword") {
+        throw new Error("Invalid email or password");
+      }
       
       // Hardcoded authentication for demo purposes
       setUser({ ...initialUserProfile, email, isAuthenticated: true });
       toast.success("Login successful!");
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please try again.");
+      
+      // Show appropriate error message
+      if (error instanceof Error) {
+        toast.error("Login failed", {
+          description: error.message || "Please try again"
+        });
+      } else {
+        toast.error("Login failed", {
+          description: "An unexpected error occurred. Please try again."
+        });
+      }
+      
       throw error;
     } finally {
       setIsLoading(false);
@@ -95,7 +111,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // In a real app, this would be an API call to create an account
-      console.log("Signup request for:", { email, password, militaryBranch });
+      console.log("Signup request for:", { email, militaryBranch });
+      
+      // Simulate email already in use error (for demo purposes)
+      if (email === "taken@example.com") {
+        throw new Error("Email is already registered");
+      }
       
       // Create new user with provided data
       setUser({
@@ -108,7 +129,18 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toast.success("Account created successfully!");
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("Signup failed. Please try again.");
+      
+      // Show appropriate error message
+      if (error instanceof Error) {
+        toast.error("Sign up failed", {
+          description: error.message || "Please try again"
+        });
+      } else {
+        toast.error("Sign up failed", {
+          description: "An unexpected error occurred. Please try again."
+        });
+      }
+      
       throw error;
     } finally {
       setIsLoading(false);
@@ -123,9 +155,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateProfile = (updatedProfile: Partial<UserProfile>) => {
     if (user) {
-      const newProfile = { ...user, ...updatedProfile };
-      setUser(newProfile);
-      toast.success("Profile updated successfully!");
+      try {
+        // Simulate API call in a real app
+        const newProfile = { ...user, ...updatedProfile };
+        setUser(newProfile);
+        toast.success("Profile updated successfully!");
+      } catch (error) {
+        console.error("Profile update error:", error);
+        toast.error("Failed to update profile", {
+          description: "Please try again later."
+        });
+      }
     }
   };
 
