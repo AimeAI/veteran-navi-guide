@@ -21,14 +21,22 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   return (
-    <div className={cn("flex flex-col items-center justify-center", className)}>
-      <Loader className={cn(
-        "animate-spin text-primary", 
-        sizeClasses[size]
-      )} />
+    <div 
+      className={cn("flex flex-col items-center justify-center", className)}
+      role="status"
+      aria-live="polite"
+    >
+      <Loader 
+        className={cn(
+          "animate-spin text-primary", 
+          sizeClasses[size]
+        )}
+        aria-hidden="true"
+      />
       {text && (
         <p className="mt-2 text-sm text-muted-foreground">{text}</p>
       )}
+      <span className="sr-only">Loading{text ? `: ${text}` : ''}</span>
     </div>
   );
 };

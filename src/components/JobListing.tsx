@@ -22,26 +22,29 @@ const JobListing: React.FC<JobListingProps> = ({
   className
 }) => {
   return (
-    <Link 
-      to={`/job/${jobId}`}
+    <article 
       className={cn(
         "block bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden",
         className
       )}
     >
-      <div className="p-6">
+      <Link 
+        to={`/job/${jobId}`}
+        className="block p-6 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+        aria-labelledby={`job-title-${jobId}`}
+      >
         <div className="sm:flex sm:items-start sm:justify-between">
           <div className="mb-4 sm:mb-0">
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <h3 id={`job-title-${jobId}`} className="text-lg font-semibold text-gray-900">{title}</h3>
             
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
               <div className="flex items-center">
-                <Building className="h-4 w-4 mr-1.5 text-gray-400" />
-                {company}
+                <Building className="h-4 w-4 mr-1.5 text-gray-400" aria-hidden="true" />
+                <span>{company}</span>
               </div>
               <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-1.5 text-gray-400" />
-                {location}
+                <MapPin className="h-4 w-4 mr-1.5 text-gray-400" aria-hidden="true" />
+                <span>{location}</span>
               </div>
             </div>
             
@@ -49,11 +52,11 @@ const JobListing: React.FC<JobListingProps> = ({
           </div>
           
           <div className="ml-0 sm:ml-4 flex items-center justify-end sm:justify-center self-start flex-shrink-0">
-            <ChevronRight className="h-5 w-5 text-gray-400" />
+            <ChevronRight className="h-5 w-5 text-gray-400" aria-hidden="true" />
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </article>
   );
 };
 

@@ -5,7 +5,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const JobRecommendationsLoading = () => {
   return (
-    <div className="space-y-4">
+    <div 
+      className="space-y-4" 
+      role="status" 
+      aria-live="polite"
+    >
       <div className="flex items-center justify-between">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-20" />
@@ -32,6 +36,7 @@ const JobRecommendationsLoading = () => {
           </CardContent>
         </Card>
       ))}
+      <span className="sr-only">Loading job recommendations</span>
     </div>
   );
 };

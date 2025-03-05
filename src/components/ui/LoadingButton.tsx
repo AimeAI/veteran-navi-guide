@@ -16,9 +16,13 @@ const LoadingButton: React.FC<LoadingButtonProps> = ({
   ...props
 }) => {
   return (
-    <Button disabled={isLoading || disabled} {...props}>
-      {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-      {isLoading && loadingText ? loadingText : children}
+    <Button 
+      disabled={isLoading || disabled} 
+      aria-busy={isLoading}
+      {...props}
+    >
+      {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+      <span>{isLoading && loadingText ? loadingText : children}</span>
     </Button>
   );
 };

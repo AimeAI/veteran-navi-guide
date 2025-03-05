@@ -105,7 +105,7 @@ const CommunityForums = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-primary mb-2">Community Forums</h1>
           <p className="text-muted-foreground">
@@ -118,76 +118,93 @@ const CommunityForums = () => {
         >
           Create New Topic
         </Button>
-      </div>
+      </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
         {/* Sidebar with categories */}
-        <div className="lg:col-span-1">
+        <aside className="lg:col-span-1" aria-labelledby="categories-heading">
           <Card>
             <CardHeader className="pb-3">
-              <h3 className="text-lg font-semibold">Categories</h3>
+              <h2 id="categories-heading" className="text-lg font-semibold">Categories</h2>
             </CardHeader>
             <CardContent className="space-y-1 pt-0">
-              {categories.map(category => (
-                <button
-                  key={category.value}
-                  onClick={() => setActiveCategory(category.value)}
-                  className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                    activeCategory === category.value
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-secondary"
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
+              <nav aria-label="Forum Categories">
+                {categories.map(category => (
+                  <button
+                    key={category.value}
+                    onClick={() => setActiveCategory(category.value)}
+                    className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                      activeCategory === category.value
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-secondary"
+                    }`}
+                    aria-pressed={activeCategory === category.value}
+                    aria-label={`${category.name} category${activeCategory === category.value ? ', selected' : ''}`}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </nav>
             </CardContent>
           </Card>
-        </div>
+        </aside>
 
         {/* Forums main content */}
-        <div className="lg:col-span-3">
+        <main className="lg:col-span-3">
           {/* Search bar */}
           <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <label htmlFor="search-topics" className="sr-only">Search topics</label>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
             <Input
+              id="search-topics"
               placeholder="Search topics or authors..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search topics or authors"
             />
           </div>
 
           {/* Topics list */}
-          <div className="space-y-4">
-            {filteredTopics.length > 0 ? (
-              filteredTopics.map(topic => (
-                <Card key={topic.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
-                        {topic.title}
-                      </h3>
-                      <Badge variant="outline" className="mt-2 sm:mt-0 w-fit">
-                        {categories.find(c => c.value === topic.category)?.name || topic.category}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-6 gap-y-2">
-                      <span>Posted by <span className="font-medium">{topic.author}</span></span>
-                      <span>Last post: {formatDate(topic.lastPostDate)}</span>
-                      <span>{topic.replies} replies</span>
-                      <span>{topic.views} views</span>
-                    </div>
-                  </div>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No topics found matching your criteria</p>
-              </div>
-            )}
-          </div>
-        </div>
+          <section aria-label="Forum topics" aria-live="polite">
+            <h2 id="topics-heading" className="sr-only">Forum Topics</h2>
+            <div className="space-y-4">
+              {filteredTopics.length > 0 ? (
+                filteredTopics.map(topic => (
+                  <article 
+                    key={topic.id} 
+                    className="overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    <Card>
+                      <div className="p-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3">
+                          <h3 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
+                            <a href={`/topic/${topic.id}`} className="focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-sm">
+                              {topic.title}
+                            </a>
+                          </h3>
+                          <Badge variant="outline" className="mt-2 sm:mt-0 w-fit">
+                            {categories.find(c => c.value === topic.category)?.name || topic.category}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-6 gap-y-2">
+                          <span>Posted by <span className="font-medium">{topic.author}</span></span>
+                          <span>Last post: <time dateTime={topic.lastPostDate}>{formatDate(topic.lastPostDate)}</time></span>
+                          <span>{topic.replies} replies</span>
+                          <span>{topic.views} views</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </article>
+                ))
+              ) : (
+                <div className="text-center py-8" role="status">
+                  <p className="text-muted-foreground">No topics found matching your criteria</p>
+                </div>
+              )}
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   );
