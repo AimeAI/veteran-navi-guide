@@ -12,9 +12,14 @@ import { searchJobs } from "@/data/jobs";
 
 interface JobAlertFormProps {
   onSuccess?: () => void;
+  initialData?: {
+    keywords: string;
+    location: string;
+    category: string;
+  };
 }
 
-const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
+const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) => {
   const { addJobAlert } = useJobAlerts();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
