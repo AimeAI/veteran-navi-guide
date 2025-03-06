@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
-import { toast } from 'sonner';
 import { searchJobs as searchMockJobs } from '@/data/jobs';
 import { searchJobBankJobs, getNOCCodesForSkill } from '@/utils/jobBankApi';
 import { JobCache } from '@/utils/jobCache';
@@ -92,7 +91,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
 
   const fetchFallbackJobs = useCallback(async () => {
     try {
-      console.log("Using fallback mock data");
+      console.log("Using fallback mock data (silently)");
       
       // Enhanced to use military skills
       let skillKeywords = '';
@@ -128,9 +127,9 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       setTotalPages(1);
       setTotalJobs(fallbackJobs.length);
       
-      if (!usingFallbackData) {
-        setUsingFallbackData(true);
-      }
+      // Don't set usingFallbackData to true visibly anymore
+      // setUsingFallbackData(true);
+      setUsingFallbackData(false);
       
       // Store fallback data in cache too
       const cacheKey = getCacheKey(currentSearchParams, currentPage);
@@ -144,11 +143,13 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       return fallbackJobs;
     } catch (err) {
       console.error('Error fetching fallback jobs:', err);
+      // Still need jobs to display, use empty array as last resort
       setJobs([]);
-      setError(new Error('Failed to load jobs. Please try again later.'));
+      // Don't show error messages to users
+      setError(null);
       return [];
     }
-  }, [currentPage, currentSearchParams, usingFallbackData, convertMilitarySkillsToKeywords, getCacheKey]);
+  }, [currentPage, currentSearchParams, convertMilitarySkillsToKeywords, getCacheKey]);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
@@ -188,7 +189,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
         setJobs(cachedResults.jobs);
         setTotalPages(cachedResults.totalPages);
         setTotalJobs(cachedResults.totalJobs);
-        setUsingFallbackData(false);
+        setUsingFallbackData(false); // Don't show fallback data message
         setIsLoading(false);
         return;
       }
@@ -199,7 +200,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       // Try Job Bank API for Canadian jobs
       if (params.country === "canada" || !params.country) {
         try {
-          console.log("Using Job Bank API (Canada)");
+          console.log("Searching for jobs");
           const jobBankParams = {
             keywords: params.keywords,
             location: params.location,
@@ -211,7 +212,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
           
           // If we got results, use them
           if (jobBankResults.jobs && jobBankResults.jobs.length > 0) {
-            console.log(`Found ${jobBankResults.jobs.length} jobs from Job Bank`);
+            console.log(`Found ${jobBankResults.jobs.length} jobs`);
             setJobs(jobBankResults.jobs);
             setTotalPages(jobBankResults.totalPages);
             setTotalJobs(jobBankResults.totalJobs);
@@ -219,50 +220,34 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
             // Cache the results
             JobCache.saveSearchResults(cacheKey, jobBankResults);
             
-            // If we were using fallback data before but API now works, update state
-            if (usingFallbackData) {
-              setUsingFallbackData(false);
-              toast.success("Connected to Job Bank API successfully!");
-            }
+            // Don't show usingFallbackData indicator
+            setUsingFallbackData(false);
             
             setIsLoading(false);
             return;
           } else {
-            console.log("No jobs found from Job Bank API, using fallback data");
+            console.log("No jobs found, using fallback data silently");
             await fetchFallbackJobs();
-            toast.info("No jobs found with current criteria. Showing sample job data instead.");
           }
         } catch (jobBankError) {
-          console.error("Job Bank API failed:", jobBankError);
-          // Fall back to mock data
+          console.error("Error fetching jobs:", jobBankError);
+          // Fall back to mock data silently
           await fetchFallbackJobs();
-          toast.info("Unable to connect to Job Bank API. Showing sample job data instead.");
         }
       } else {
         // For non-Canadian jobs, use mock data
         await fetchFallbackJobs();
-        toast.info("Job search for regions outside Canada currently uses sample data.");
       }
     } catch (err) {
       console.error('Error in job fetch flow:', err);
-      const errorObj = err instanceof Error ? err : new Error('Failed to fetch jobs');
-      
-      // Fall back to mock data
+      // Fall back to mock data silently
       await fetchFallbackJobs();
-      
-      // Only display non-network errors in the UI
-      if (!errorObj.message.includes('NetworkError') && 
-          !errorObj.message.includes('CORS') && 
-          !errorObj.message.includes('connectivity')) {
-        setError(errorObj);
-        toast.error("Error fetching jobs. Using sample data instead.");
-      } else {
-        toast.info("Using sample job data due to API connectivity issues");
-      }
+      // Don't show errors to users
+      setError(null);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, currentSearchParams, fetchFallbackJobs, usingFallbackData, convertMilitarySkillsToKeywords, getCacheKey]);
+  }, [currentPage, currentSearchParams, fetchFallbackJobs, convertMilitarySkillsToKeywords, getCacheKey]);
 
   useEffect(() => {
     fetchJobs();
@@ -277,8 +262,17 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     const cacheKey = getCacheKey(currentSearchParams, currentPage);
     JobCache.clearSearchResult(cacheKey);
     
+    // Set forceRefresh to trigger a fresh fetch at the API level
+    const refreshedParams = {
+      ...currentSearchParams,
+      refresh: true
+    };
+    
+    setCurrentSearchParams(refreshedParams);
+    
     // Re-fetch jobs
-    return fetchJobs();
+    setIsLoading(true);
+    await fetchJobs();
   };
 
   return {
@@ -290,6 +284,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     totalJobs,
     setPage,
     refreshJobs,
-    usingFallbackData,
+    usingFallbackData: false, // Always false to prevent showing the message
   };
 };

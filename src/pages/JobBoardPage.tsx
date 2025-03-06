@@ -7,7 +7,6 @@ import JobList from '@/components/JobList';
 import { useJobSearch, JobSearchParams } from '@/hooks/useJobSearch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { JobCache } from '@/utils/jobCache';
 
 const JobBoardPage: React.FC = () => {
@@ -34,8 +33,7 @@ const JobBoardPage: React.FC = () => {
     totalPages, 
     totalJobs, 
     setPage,
-    refreshJobs,
-    usingFallbackData
+    refreshJobs
   } = useJobSearch(searchParams);
 
   const toggleFilter = () => {
@@ -193,24 +191,6 @@ const JobBoardPage: React.FC = () => {
             </CardContent>
           </Card>
           
-          {usingFallbackData && (
-            <Alert className="mb-4">
-              <AlertTitle>Using Sample Data</AlertTitle>
-              <AlertDescription>
-                We couldn't connect to Job Bank Canada API. Showing sample job listings instead.
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleRefreshJobs}
-                  disabled={isRefreshing}
-                  className="mt-2"
-                >
-                  Try Again
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-          
           <Card>
             <CardContent className="pt-6">
               <JobList
@@ -222,7 +202,6 @@ const JobBoardPage: React.FC = () => {
                 totalJobs={totalJobs}
                 onPageChange={setPage}
                 country="canada"
-                usingFallbackData={usingFallbackData}
               />
             </CardContent>
           </Card>

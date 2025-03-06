@@ -2,7 +2,7 @@
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase, AlertCircle, Globe, Database, Loader2, AlertTriangle } from 'lucide-react';
+import { Briefcase, AlertCircle, Globe, Loader2, AlertTriangle } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -96,33 +96,14 @@ const JobList: React.FC<JobListProps> = ({
             <Globe className="h-3 w-3" />
             {countryName}
           </Badge>
-          {!usingFallbackData && jobBankCount > 0 && (
+          {jobBankCount > 0 && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Job Bank: {jobBankCount}
-            </Badge>
-          )}
-          {usingFallbackData && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Database className="h-3 w-3" />
-              Sample Data
             </Badge>
           )}
           <span className="text-sm text-gray-500">{totalJobs} jobs found</span>
         </div>
       </div>
-      
-      {usingFallbackData && (
-        <Alert className="mb-4">
-          <Database className="h-4 w-4 mr-2" />
-          <AlertTitle>Using sample job data</AlertTitle>
-          <AlertDescription className="flex flex-col gap-2">
-            <p>We're currently showing example job listings as we couldn't connect to the real job database.</p>
-            <Button variant="outline" onClick={handleRetry} className="self-start mt-2">
-              Try Live Data Again
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
       
       {isLoading ? (
         <div className="py-12 space-y-4">

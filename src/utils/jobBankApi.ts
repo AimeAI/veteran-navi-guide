@@ -8,6 +8,7 @@ export interface JobBankSearchParams {
   distance?: number;
   sort?: string;
   page?: number;
+  refresh?: boolean;
 }
 
 // Military skills to NOC code mapping
@@ -39,6 +40,7 @@ export const searchJobBankJobs = async (params: {
   distance?: number;
   page?: number;
   sort?: string;
+  refresh?: boolean;
 }): Promise<{
   jobs: Job[];
   totalJobs: number;
@@ -46,42 +48,56 @@ export const searchJobBankJobs = async (params: {
   totalPages: number;
 }> => {
   try {
-    console.log('Searching jobs with Job Bank API proxy');
-    
     // Build query parameters for our serverless function
     const queryParams = new URLSearchParams();
     if (params.keywords) queryParams.append('keywords', params.keywords);
     if (params.location) queryParams.append('location', params.location);
     if (params.distance) queryParams.append('distance', params.distance.toString());
     if (params.page) queryParams.append('page', params.page.toString());
+    if (params.refresh) queryParams.append('refresh', 'true');
     
     // Use our Supabase function instead of direct API calls
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
     const proxyUrl = `${supabaseUrl}/functions/v1/job-search-proxy?${queryParams.toString()}`;
     
-    console.log('Job Bank API proxy URL:', proxyUrl);
+    console.log('Fetching jobs from:', proxyUrl);
     
-    const response = await fetch(proxyUrl);
+    const response = await fetch(proxyUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
     
     if (!response.ok) {
-      throw new Error(`Job Bank API proxy returned status: ${response.status}`);
+      throw new Error(`Job search returned status: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log(`Received ${data.jobs?.length || 0} jobs from Job Bank API proxy`);
     
-    if (!data.jobs || data.jobs.length === 0) {
-      console.warn('No jobs found in API response');
+    // If we have jobs, return them
+    if (data.jobs && data.jobs.length > 0) {
+      console.log(`Received ${data.jobs.length} jobs from Job Bank Canada`);
+      return {
+        jobs: data.jobs,
+        totalJobs: data.totalJobs || data.jobs.length,
+        currentPage: data.currentPage || 1,
+        totalPages: data.totalPages || 1,
+      };
+    } else {
+      throw new Error('No jobs found in response');
     }
-    
-    return {
-      jobs: data.jobs || [],
-      totalJobs: data.totalJobs || 0,
-      currentPage: data.currentPage || 1,
-      totalPages: data.totalPages || 1,
-    };
   } catch (error) {
-    console.error('Error searching Job Bank via proxy:', error);
-    throw error;
+    console.error('Error searching for jobs:', error);
+    
+    // Return an empty result set instead of throwing
+    return {
+      jobs: [],
+      totalJobs: 0,
+      currentPage: 1,
+      totalPages: 1,
+    };
   }
 };

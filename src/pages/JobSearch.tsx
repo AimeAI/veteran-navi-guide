@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import { useJobs, JobFilterState } from '@/context/JobContext';
@@ -53,8 +54,7 @@ const JobSearch: React.FC = () => {
     totalPages,
     totalJobs,
     setPage,
-    refreshJobs,
-    usingFallbackData
+    refreshJobs
   } = useJobSearch({
     keywords: filters.keywords,
     location: filters.location,
@@ -224,7 +224,6 @@ const JobSearch: React.FC = () => {
             totalJobs={totalJobs}
             onPageChange={handlePageChange}
             country={filters.country}
-            usingFallbackData={usingFallbackData}
           />
         </TabsContent>
         
