@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
-import { searchJobs as searchMockJobs } from '@/data/jobs';
 import { searchJobBankJobs, getNOCCodesForSkill } from '@/utils/jobBankApi';
 import { JobCache } from '@/utils/jobCache';
 import { toast } from 'sonner';
@@ -39,7 +38,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
   const [totalJobs, setTotalJobs] = useState(0);
   const [currentSearchParams, setCurrentSearchParams] = useState<JobSearchParams>({
     ...searchParams,
-    country: searchParams.country || "canada" // Default to Canada for Job Bank API
+    country: searchParams.country || "canada" // Default to Canada for consistency
   });
 
   // Create a cache key based on search parameters
@@ -84,65 +83,9 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       nocCodes.push(...codes);
     });
     
-    // Return as a comma-separated string for the Job Bank API
+    // Return as a comma-separated string
     return nocCodes.join(',');
   }, []);
-
-  const fetchFallbackJobs = useCallback(async () => {
-    try {
-      console.log("Using fallback mock data");
-      
-      // Enhanced to use military skills
-      let skillKeywords = '';
-      if (currentSearchParams.keywords && currentSearchParams.keywords.includes("skill:")) {
-        // Extract skill names from format "skill:leadership,skill:logistics"
-        const skillMatches = currentSearchParams.keywords.match(/skill:([a-z]+)/g) || [];
-        const skills = skillMatches.map(s => s.replace('skill:', ''));
-        
-        // Convert to NOC codes as keywords
-        skillKeywords = convertMilitarySkillsToKeywords(skills);
-        
-        // Remove skill: prefixes from keywords
-        const cleanKeywords = currentSearchParams.keywords.replace(/skill:[a-z]+,?/g, '').trim();
-        
-        // Use the cleaned keywords
-        currentSearchParams.keywords = cleanKeywords || skillKeywords;
-      }
-      
-      const fallbackJobs = await searchMockJobs({
-        keywords: currentSearchParams.keywords ? [currentSearchParams.keywords] : [],
-        locations: currentSearchParams.location ? [currentSearchParams.location] : [],
-        radius: currentSearchParams.radius,
-        jobType: currentSearchParams.jobType,
-        industry: currentSearchParams.industry,
-        experienceLevel: currentSearchParams.experienceLevel,
-        educationLevel: currentSearchParams.educationLevel,
-        remote: currentSearchParams.remote,
-        country: currentSearchParams.country as "us" | "canada",
-      });
-      
-      setJobs(fallbackJobs);
-      // Set some reasonable defaults for pagination with mock data
-      setTotalPages(1);
-      setTotalJobs(fallbackJobs.length);
-      
-      // Store fallback data in cache too
-      const cacheKey = getCacheKey(currentSearchParams, currentPage);
-      JobCache.saveSearchResults(cacheKey, {
-        jobs: fallbackJobs,
-        totalJobs: fallbackJobs.length,
-        totalPages: 1,
-        currentPage,
-      });
-    
-      return fallbackJobs;
-    } catch (err) {
-      console.error('Error fetching fallback jobs:', err);
-      // Still need jobs to display, use empty array as last resort
-      setJobs([]);
-      return [];
-    }
-  }, [currentPage, currentSearchParams, convertMilitarySkillsToKeywords, getCacheKey]);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
@@ -160,7 +103,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
         const skillMatches = params.keywords.match(/skill:([a-z]+)/g) || [];
         const skills = skillMatches.map(s => s.replace('skill:', ''));
         
-        // Convert to NOC codes for Job Bank API
+        // Convert to NOC codes
         const skillKeywords = convertMilitarySkillsToKeywords(skills);
         
         // Remove skill: prefixes from keywords
@@ -189,54 +132,41 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       // Clear any previous errors
       setError(null);
       
-      // Try Job Bank API for Canadian jobs
-      if (params.country === "canada" || !params.country) {
-        try {
-          console.log("Searching for jobs");
-          const jobBankParams = {
-            keywords: params.keywords,
-            location: params.location,
-            distance: params.radius,
-            page: currentPage,
-          };
+      try {
+        console.log("Searching for jobs");
+        const jobBankParams = {
+          keywords: params.keywords,
+          location: params.location,
+          distance: params.radius,
+          page: currentPage,
+        };
+        
+        const jobBankResults = await searchJobBankJobs(jobBankParams);
+        
+        // If we got results, use them
+        if (jobBankResults.jobs && jobBankResults.jobs.length > 0) {
+          console.log(`Found ${jobBankResults.jobs.length} jobs`);
+          setJobs(jobBankResults.jobs);
+          setTotalPages(jobBankResults.totalPages);
+          setTotalJobs(jobBankResults.totalJobs);
           
-          const jobBankResults = await searchJobBankJobs(jobBankParams);
+          // Cache the results
+          JobCache.saveSearchResults(cacheKey, jobBankResults);
           
-          // If we got results, use them
-          if (jobBankResults.jobs && jobBankResults.jobs.length > 0) {
-            console.log(`Found ${jobBankResults.jobs.length} jobs`);
-            setJobs(jobBankResults.jobs);
-            setTotalPages(jobBankResults.totalPages);
-            setTotalJobs(jobBankResults.totalJobs);
-            
-            // Cache the results
-            JobCache.saveSearchResults(cacheKey, jobBankResults);
-            
-            setIsLoading(false);
-            return;
-          } else {
-            console.log("No jobs found, using fallback data");
-            await fetchFallbackJobs();
-          }
-        } catch (jobBankError) {
-          console.error("Error fetching jobs:", jobBankError);
-          
-          // Try fallback data and don't show error to user
-          toast.error("Unable to connect to job search service. Showing available jobs.");
-          await fetchFallbackJobs();
+          setIsLoading(false);
+          return;
         }
-      } else {
-        // For non-Canadian jobs, use mock data
-        await fetchFallbackJobs();
+      } catch (searchError) {
+        console.error("Error fetching jobs:", searchError);
+        throw searchError;
       }
     } catch (err) {
       console.error('Error in job fetch flow:', err);
-      // Fall back to mock data silently
-      await fetchFallbackJobs();
+      setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, currentSearchParams, fetchFallbackJobs, convertMilitarySkillsToKeywords, getCacheKey]);
+  }, [currentPage, currentSearchParams, convertMilitarySkillsToKeywords, getCacheKey]);
 
   useEffect(() => {
     fetchJobs();
@@ -251,7 +181,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     const cacheKey = getCacheKey(currentSearchParams, currentPage);
     JobCache.clearSearchResult(cacheKey);
     
-    // Set forceRefresh to trigger a fresh fetch at the API level
+    // Set forceRefresh to trigger a fresh fetch
     const refreshedParams = {
       ...currentSearchParams,
       refresh: true
