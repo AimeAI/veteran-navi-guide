@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -9,6 +10,7 @@ import UserProfile from "./pages/UserProfile";
 import ApplicationsPage from "./pages/ApplicationsPage";
 import PostJobPage from "./pages/PostJobPage";
 import EmployerDashboardPage from "./pages/EmployerDashboardPage";
+import VeteranDashboardPage from "./pages/VeteranDashboardPage";
 import EmployerSearchVeteransPage from "./pages/EmployerSearchVeteransPage";
 import CommunityForums from "./pages/CommunityForums";
 import RecommendedJobs from "./pages/RecommendedJobs";
@@ -47,6 +49,7 @@ function App() {
             <Route path="/resources/forums" element={<CommunityForums />} />
             <Route path="/topic/:topicId" element={<TopicDetail />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/dashboard" element={<VeteranDashboardPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
