@@ -126,11 +126,7 @@ const filterMockJobs = (params: SearchParams): Job[] => {
     ...job,
     // Add the required properties from the Job interface that are missing in JobListing
     category: job.industry?.toLowerCase() || 'other',
-    salaryRange: job.salary ? 
-      (parseInt(job.salary) > 100000 ? 'range5' : 
-       parseInt(job.salary) > 75000 ? 'range4' : 
-       parseInt(job.salary) > 50000 ? 'range3' : 
-       parseInt(job.salary) > 30000 ? 'range2' : 'range1') : 'range2',
+    salaryRange: getSalaryRange(job),
     clearanceLevel: job.clearanceLevel || job.securityClearanceRequired || 'none',
     mosCode: job.requiredMosCodes?.[0] || '',
     // Make sure these required properties exist in each job
@@ -311,6 +307,34 @@ const filterMockJobs = (params: SearchParams): Job[] => {
 
   return filteredJobs;
 };
+
+// Helper function to determine salary range since JobListing might not have salary property
+function getSalaryRange(job: JobListing): string {
+  // If no salary info is available, return a default range
+  if (!job.salary && !job.salaryRange) {
+    return 'range2';
+  }
+  
+  // Use salaryRange if available
+  if (job.salaryRange) {
+    return job.salaryRange;
+  }
+  
+  // Parse salary if it's a string
+  const salaryValue = typeof job.salary === 'string' ? parseInt(job.salary, 10) : job.salary;
+  
+  // If salary is not a valid number, return default
+  if (!salaryValue || isNaN(salaryValue)) {
+    return 'range2';
+  }
+  
+  // Determine range based on salary value
+  if (salaryValue > 100000) return 'range5';
+  if (salaryValue > 75000) return 'range4';
+  if (salaryValue > 50000) return 'range3';
+  if (salaryValue > 30000) return 'range2';
+  return 'range1';
+}
 
 // Function to manually trigger a Jobicy RSS feed fetch
 export const refreshJobicyFeed = async (): Promise<void> => {

@@ -6,8 +6,7 @@ import { Tag, X } from 'lucide-react';
 
 interface MilitarySkillsFilterProps {
   selectedSkills: string[];
-  onSelectSkill: (skill: string) => void;
-  onRemoveSkill: (skill: string) => void;
+  onChange: (skills: string[]) => void;
 }
 
 // List of common military skills
@@ -28,9 +27,18 @@ const militarySkills = [
 
 const MilitarySkillsFilter: React.FC<MilitarySkillsFilterProps> = ({
   selectedSkills,
-  onSelectSkill,
-  onRemoveSkill,
+  onChange,
 }) => {
+  const onSelectSkill = (skill: string) => {
+    if (!selectedSkills.includes(skill)) {
+      onChange([...selectedSkills, skill]);
+    }
+  };
+
+  const onRemoveSkill = (skill: string) => {
+    onChange(selectedSkills.filter(s => s !== skill));
+  };
+
   return (
     <div className="space-y-3">
       <Label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">

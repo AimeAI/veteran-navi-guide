@@ -114,13 +114,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Function to save a job
   const saveJob = (job: Job) => {
     setSavedJobs((prev) => {
-      // Check if job is already saved
       if (prev.some(j => j.id === job.id)) {
         return prev;
       }
-      // Add job to saved jobs
       const newSavedJobs = [...prev, job];
-      // Store in localStorage
       localStorage.setItem('savedJobs', JSON.stringify(newSavedJobs));
       return newSavedJobs;
     });
@@ -138,13 +135,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Function to apply to a job
   const applyToJob = (job: Job) => {
     setAppliedJobs((prev) => {
-      // Check if job is already in applied jobs
       if (prev.some(j => j.id === job.id)) {
         return prev;
       }
-      // Add job to applied jobs
       const newAppliedJobs = [...prev, job];
-      // Store in localStorage
       localStorage.setItem('appliedJobs', JSON.stringify(newAppliedJobs));
       return newAppliedJobs;
     });
@@ -155,7 +149,6 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLoading(true);
     setError(null);
     try {
-      // Simulate job search
       setTimeout(() => {
         const mockJobs = [
           {
@@ -233,11 +226,14 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 };
 
-// Hook to use the job context
-export const useJobContext = (): JobContextProps => {
+// Hook to use the job context - export this as 'useJobs' for backward compatibility
+export const useJobs = (): JobContextProps => {
   const context = useContext(JobContext);
   if (!context) {
-    throw new Error('useJobContext must be used within a JobProvider');
+    throw new Error('useJobs must be used within a JobProvider');
   }
   return context;
 };
+
+// Keep the original hook name for backward compatibility
+export const useJobContext = useJobs;

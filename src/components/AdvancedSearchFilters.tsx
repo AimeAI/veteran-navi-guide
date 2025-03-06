@@ -8,14 +8,12 @@ import { Badge } from '@/components/ui/badge';
 
 interface AdvancedSearchFiltersProps {
   filters: JobFilterState;
-  onChange: (name: string, value: any) => void;
-  onArrayChange: (name: string, value: string, checked: boolean) => void;
+  onFilterChange: (name: string, value: any) => void;
 }
 
 const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
   filters,
-  onChange,
-  onArrayChange
+  onFilterChange
 }) => {
   // Job types
   const jobTypes = [
@@ -70,37 +68,46 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
   
   // Handle slider change
   const handleSliderChange = (value: number[]) => {
-    onChange('radius', value[0] || 0);
+    onFilterChange('radius', value[0] || 0);
   };
   
   // Handle job type change
   const handleJobTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange('jobType', e.target.value);
+    onFilterChange('jobType', e.target.value);
   };
   
   // Handle experience level change
   const handleExperienceLevelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange('experienceLevel', e.target.value);
+    onFilterChange('experienceLevel', e.target.value);
   };
   
   // Handle education level change
   const handleEducationLevelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange('educationLevel', e.target.value);
+    onFilterChange('educationLevel', e.target.value);
   };
   
   // Handle company size change
   const handleCompanySizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange('companySize', e.target.value);
+    onFilterChange('companySize', e.target.value);
   };
   
   // Handle checkbox change
   const handleCheckboxChange = (checked: boolean, id: string, filterType: string) => {
-    onArrayChange(filterType, id, checked);
+    let newValues;
+    const currentValues = filters[filterType as keyof JobFilterState] as string[] || [];
+    
+    if (checked) {
+      newValues = [...currentValues, id];
+    } else {
+      newValues = currentValues.filter(value => value !== id);
+    }
+    
+    onFilterChange(filterType, newValues);
   };
   
   // Handle data source change
   const handleDataSourceChange = (checked: boolean, id: string) => {
-    onChange(id, checked);
+    onFilterChange(id, checked);
   };
   
   return (
@@ -221,7 +228,7 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
             defaultValue={[filters.companyRating || 0]}
             max={5}
             step={1}
-            onValueChange={(value) => onChange('companyRating', value[0] || 0)}
+            onValueChange={(value) => onFilterChange('companyRating', value[0] || 0)}
             className="mb-2"
           />
           <div className="flex justify-between text-xs text-gray-500">

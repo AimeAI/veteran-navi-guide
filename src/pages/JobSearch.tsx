@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { useJobContext, JobFilterState } from '@/context/JobContext';
+import { useJobs, JobFilterState } from '@/context/JobContext';
 import JobList from '@/components/JobList';
-import { FilterBar } from '@/components/FilterBar';
-import { AdvancedSearchFilters } from '@/components/AdvancedSearchFilters';
-import { MilitarySkillsFilter } from '@/components/MilitarySkillsFilter';
+import FilterBar from '@/components/FilterBar';
+import AdvancedSearchFilters from '@/components/AdvancedSearchFilters';
+import MilitarySkillsFilter from '@/components/MilitarySkillsFilter';
 import { useLightcastJobs } from '@/hooks/useLightcastJobs';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

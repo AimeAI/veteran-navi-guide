@@ -1,11 +1,10 @@
-
 import React from 'react';
 import JobListing from '@/components/JobListing';
 import { Bookmark, X, AlertCircle } from 'lucide-react';
 import { useJobs } from '@/context/JobContext';
 
 const SavedJobs = () => {
-  const { savedJobs, removeSavedJob } = useJobs();
+  const { savedJobs, unsaveJob: removeSavedJob } = useJobs();
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
