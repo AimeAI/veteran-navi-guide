@@ -107,8 +107,7 @@ const EmployerDashboard: React.FC = () => {
     toast({
       title: `Status Updated`,
       description: `${application?.applicantName}'s application is now ${newStatus}`,
-      variant: newStatus === 'hired' ? 'success' : 
-               newStatus === 'rejected' ? 'destructive' : 'default',
+      variant: newStatus === 'rejected' ? 'destructive' : 'default',
     });
   };
 
