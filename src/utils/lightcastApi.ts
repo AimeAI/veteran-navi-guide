@@ -1,5 +1,5 @@
-
 import { Job } from "@/context/JobContext";
+import { searchJobBankJobs } from "./jobBankApi";
 
 // Interface for API search params
 export interface LightcastSearchParams {
@@ -236,7 +236,7 @@ const searchReedJobs = async (params: LightcastSearchParams): Promise<{
   }
 };
 
-// Use a proxy service that aggregates multiple job sources
+// Function to try a different API - Proxy API
 const searchProxyJobs = async (params: LightcastSearchParams): Promise<{
   jobs: Job[];
   totalJobs: number;
@@ -319,6 +319,39 @@ const searchProxyJobs = async (params: LightcastSearchParams): Promise<{
   }
 };
 
+// Add Job Bank API as a primary source for Canadian jobs
+const searchCanadianJobBankJobs = async (params: LightcastSearchParams): Promise<{
+  jobs: Job[];
+  totalJobs: number;
+  currentPage: number;
+  totalPages: number;
+}> => {
+  try {
+    console.log("Searching for jobs with Canadian Job Bank API");
+    
+    // Only proceed if country is Canada
+    if (params.country !== 'canada') {
+      throw new Error("Job Bank API is only for Canadian jobs");
+    }
+    
+    // Convert Lightcast params to Job Bank params
+    const jobBankParams = {
+      keywords: params.keywords,
+      location: params.location,
+      distance: params.radius,
+      page: params.page,
+      sort: params.sort
+    };
+    
+    // Call the Job Bank API search function
+    return await searchJobBankJobs(jobBankParams);
+    
+  } catch (error) {
+    console.error("Canadian Job Bank API search failed:", error);
+    throw error;
+  }
+};
+
 // Main job search function that tries multiple sources
 export const searchLightcastJobs = async (params: LightcastSearchParams): Promise<{
   jobs: Job[];
@@ -327,11 +360,25 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
   totalPages: number;
 }> => {
   // Try each API in sequence until one works
-  const apis = [
-    { name: "GitHub Jobs API", fn: searchGitHubJobs },
-    { name: "Reed Jobs API", fn: searchReedJobs },
-    { name: "Proxy Jobs API", fn: searchProxyJobs },
-  ];
+  let apis = [];
+  
+  // Determine which APIs to try based on country parameter
+  if (params.country === 'canada') {
+    // For Canadian jobs, prioritize the Job Bank API
+    apis = [
+      { name: "Canadian Job Bank API", fn: searchCanadianJobBankJobs },
+      { name: "GitHub Jobs API", fn: searchGitHubJobs },
+      { name: "Reed Jobs API", fn: searchReedJobs },
+      { name: "Proxy Jobs API", fn: searchProxyJobs },
+    ];
+  } else {
+    // For US jobs, use the original API ordering
+    apis = [
+      { name: "GitHub Jobs API", fn: searchGitHubJobs },
+      { name: "Reed Jobs API", fn: searchReedJobs },
+      { name: "Proxy Jobs API", fn: searchProxyJobs },
+    ];
+  }
   
   let lastError: Error | null = null;
   

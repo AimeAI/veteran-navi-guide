@@ -1,9 +1,9 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { searchLightcastJobs, LightcastSearchParams } from '@/utils/lightcastApi';
 import { toast } from 'sonner';
 import { searchJobs as searchMockJobs } from '@/data/jobs';
+import { militarySkillsToNOCMapping, getNOCCodesForSkill } from '@/utils/jobBankApi';
 
 export type { LightcastSearchParams } from '@/utils/lightcastApi';
 
@@ -29,7 +29,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
   const [usingFallbackData, setUsingFallbackData] = useState(false);
   const [currentSearchParams, setCurrentSearchParams] = useState<LightcastSearchParams>({
     ...searchParams,
-    country: searchParams.country || "canada" // Default to Canada
+    country: searchParams.country || "canada" // Default to Canada for Job Bank API
   });
 
   // Update searchParams when external params change
@@ -58,9 +58,41 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     searchParams.country
   ]);
 
+  // Enhanced function to handle military skills to NOC code conversion
+  const convertMilitarySkillsToKeywords = useCallback((militarySkills?: string[]): string => {
+    if (!militarySkills || militarySkills.length === 0) return '';
+    
+    // Get all NOC codes for the selected military skills
+    const nocCodes: string[] = [];
+    militarySkills.forEach(skill => {
+      const codes = getNOCCodesForSkill(skill);
+      nocCodes.push(...codes);
+    });
+    
+    // Return as a comma-separated string for the Job Bank API
+    return nocCodes.join(',');
+  }, []);
+
   const fetchFallbackJobs = useCallback(async () => {
     try {
       console.log("Using fallback mock data");
+      
+      // Enhanced to use military skills
+      let skillKeywords = '';
+      if (currentSearchParams.keywords && currentSearchParams.keywords.includes("skill:")) {
+        // Extract skill names from format "skill:leadership,skill:logistics"
+        const skillMatches = currentSearchParams.keywords.match(/skill:([a-z]+)/g) || [];
+        const skills = skillMatches.map(s => s.replace('skill:', ''));
+        
+        // Convert to NOC codes as keywords
+        skillKeywords = convertMilitarySkillsToKeywords(skills);
+        
+        // Remove skill: prefixes from keywords
+        const cleanKeywords = currentSearchParams.keywords.replace(/skill:[a-z]+,?/g, '').trim();
+        
+        // Use the cleaned keywords
+        currentSearchParams.keywords = cleanKeywords || skillKeywords;
+      }
       
       const fallbackJobs = await searchMockJobs({
         keywords: currentSearchParams.keywords ? [currentSearchParams.keywords] : [],
@@ -90,21 +122,38 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       setError(new Error('Failed to load jobs. Please try again later.'));
       return [];
     }
-  }, [currentSearchParams, usingFallbackData]);
+  }, [currentSearchParams, usingFallbackData, convertMilitarySkillsToKeywords]);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const params: LightcastSearchParams = {
+      let params: LightcastSearchParams = {
         ...currentSearchParams,
         page: currentPage,
       };
       
+      // Process military skills in keywords if present
+      if (params.keywords && params.keywords.includes("skill:")) {
+        // Extract skill names from format "skill:leadership,skill:logistics"
+        const skillMatches = params.keywords.match(/skill:([a-z]+)/g) || [];
+        const skills = skillMatches.map(s => s.replace('skill:', ''));
+        
+        // Convert to NOC codes for Job Bank API
+        const skillKeywords = convertMilitarySkillsToKeywords(skills);
+        
+        // Remove skill: prefixes from keywords
+        const cleanKeywords = params.keywords.replace(/skill:[a-z]+,?/g, '').trim();
+        
+        // Use both the cleaned keywords and NOC codes
+        params.keywords = cleanKeywords ? 
+          `${cleanKeywords} ${skillKeywords}` : skillKeywords;
+      }
+      
       console.log("Fetching jobs with params:", params);
       
-      // Try to use the public job APIs first
+      // Try to use the Job Bank API first (particularly for Canadian jobs)
       try {
         const result = await searchLightcastJobs(params);
         console.log("Received job results:", result);
@@ -151,7 +200,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, currentSearchParams, fetchFallbackJobs, usingFallbackData]);
+  }, [currentPage, currentSearchParams, fetchFallbackJobs, usingFallbackData, convertMilitarySkillsToKeywords]);
 
   useEffect(() => {
     fetchJobs();
