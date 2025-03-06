@@ -1,4 +1,3 @@
-
 import { mockJobs } from "./mockJobs";
 import { searchLightcastJobs } from "@/utils/lightcastApi";
 import { Job } from "@/context/JobContext";
@@ -21,6 +20,7 @@ interface SearchParams {
   companyRating?: number; // Added company rating parameter
   benefits?: string[]; // Added benefits parameter
   useLightcastApi?: boolean; // Flag to use Lightcast API instead of mock data
+  country?: "us" | "canada"; // Added country parameter for international searches
 }
 
 // Search function to filter jobs based on criteria
@@ -38,6 +38,7 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
         experience_level: params.experienceLevel,
         education_level: params.educationLevel,
         remote_type: params.remote ? 'Full' : undefined,
+        country: params.country || "us", // Default to US if not specified
       };
       
       const result = await searchLightcastJobs(lightcastParams);
@@ -61,7 +62,7 @@ const filterMockJobs = (params: SearchParams): Job[] => {
     // Add the required properties from the Job interface that are missing in JobListing
     category: job.industry?.toLowerCase() || 'other',
     salaryRange: 'range2', // Default salary range
-    clearanceLevel: job.securityClearanceRequired || 'none',
+    clearanceLevel: job.clearanceLevel || 'none',
     mosCode: job.requiredMosCodes?.[0] || '',
     // Make sure these exist in the Job type
     date: new Date().toISOString(),
@@ -98,6 +99,24 @@ const filterMockJobs = (params: SearchParams): Job[] => {
       return locationsLower.some(location => 
         job.location.toLowerCase().includes(location)
       ) || (isRemoteSearch && job.remote);
+    });
+  }
+
+  // If a country is specified, filter by country-specific locations
+  if (params.country) {
+    // This is a simple implementation - in a real app, we'd have proper country data
+    const canadianLocations = ['toronto', 'vancouver', 'montreal', 'calgary', 'ottawa', 'edmonton', 'winnipeg', 'canada'];
+    const usLocations = ['new york', 'los angeles', 'chicago', 'houston', 'phoenix', 'usa', 'united states'];
+    
+    filteredJobs = filteredJobs.filter(job => {
+      const jobLocationLower = job.location.toLowerCase();
+      if (params.country === 'canada') {
+        return canadianLocations.some(loc => jobLocationLower.includes(loc));
+      } else if (params.country === 'us') {
+        return usLocations.some(loc => jobLocationLower.includes(loc)) || 
+               !canadianLocations.some(loc => jobLocationLower.includes(loc)); // Default to US if not explicitly Canadian
+      }
+      return true;
     });
   }
 

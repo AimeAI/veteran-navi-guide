@@ -61,6 +61,7 @@ export interface LightcastSearchParams {
   education_level?: string;
   posting_date?: string;
   remote_type?: string;
+  country?: "us" | "canada"; // Add country parameter to switch between US and Canada endpoints
 }
 
 // Response interface
@@ -154,6 +155,15 @@ const mapLightcastJobToJob = (job: LightcastJob): Job => {
 };
 
 /**
+ * Get the appropriate Lightcast API endpoint based on country
+ */
+const getLightcastEndpoint = (country: "us" | "canada" = "us"): string => {
+  return country === "us" 
+    ? "https://emsiservices.com/job-postings/us/jobs" 
+    : "https://emsiservices.com/job-postings/ca/jobs";
+};
+
+/**
  * Search jobs from Lightcast API
  */
 export const searchLightcastJobs = async (params: LightcastSearchParams): Promise<{
@@ -185,10 +195,12 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     // Sorting
     if (params.sort) queryParams.append('sort', params.sort);
     
-    const url = `https://emsiservices.com/job-postings/us/jobs?${queryParams.toString()}`;
+    // Determine which endpoint to use based on country parameter
+    const endpoint = getLightcastEndpoint(params.country);
+    const url = `${endpoint}?${queryParams.toString()}`;
     console.log("Lightcast API URL:", url);
     
-    console.log("Making API request to Lightcast jobs endpoint");
+    console.log("Making API request to Lightcast jobs endpoint for", params.country || "us");
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -228,3 +240,4 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     throw error;
   }
 };
+

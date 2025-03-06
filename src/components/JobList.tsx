@@ -2,9 +2,10 @@
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase, AlertCircle } from 'lucide-react';
+import { Briefcase, AlertCircle, Globe } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 interface JobListProps {
   jobs: Job[];
@@ -14,6 +15,7 @@ interface JobListProps {
   totalPages: number;
   totalJobs: number;
   onPageChange: (page: number) => void;
+  country?: "us" | "canada"; // Add country parameter
 }
 
 const JobList: React.FC<JobListProps> = ({
@@ -24,6 +26,7 @@ const JobList: React.FC<JobListProps> = ({
   totalPages,
   totalJobs,
   onPageChange,
+  country = "us", // Default to US
 }) => {
   // Calculate page range to display
   const getPageRange = () => {
@@ -44,6 +47,8 @@ const JobList: React.FC<JobListProps> = ({
     
     return range;
   };
+
+  const countryName = country === "canada" ? "Canada" : "United States";
 
   if (error) {
     return (
@@ -66,7 +71,13 @@ const JobList: React.FC<JobListProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-medium text-gray-900">Job Listings</h2>
-        <span className="text-sm text-gray-500">{totalJobs} jobs found</span>
+        <div className="flex items-center gap-2">
+          <Badge variant={country === "canada" ? "outline" : "default"} className="flex items-center gap-1">
+            <Globe className="h-3 w-3" />
+            {countryName}
+          </Badge>
+          <span className="text-sm text-gray-500">{totalJobs} jobs found</span>
+        </div>
       </div>
       
       {isLoading ? (
@@ -129,9 +140,9 @@ const JobList: React.FC<JobListProps> = ({
       ) : (
         <div className="text-center py-12">
           <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-lg font-medium text-gray-900">No jobs found</h3>
+          <h3 className="mt-2 text-lg font-medium text-gray-900">No jobs found in {countryName}</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Try adjusting your search criteria or adding more filters.
+            Try adjusting your search criteria or searching in a different region.
           </p>
         </div>
       )}

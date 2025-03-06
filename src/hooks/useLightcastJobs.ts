@@ -39,6 +39,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       experience_level: searchParams.experience_level,
       education_level: searchParams.education_level,
       remote_type: searchParams.remote_type,
+      country: searchParams.country, // Add the country parameter
     }));
   }, [
     searchParams.keywords, 
@@ -48,7 +49,8 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     searchParams.industry,
     searchParams.experience_level,
     searchParams.education_level,
-    searchParams.remote_type
+    searchParams.remote_type,
+    searchParams.country // Track changes to country
   ]);
 
   const fetchJobs = useCallback(async () => {
