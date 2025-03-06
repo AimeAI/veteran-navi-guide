@@ -1,19 +1,46 @@
 
-import React from 'react';
-import AdminDashboard from '@/components/AdminDashboard';
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import UserManagement from '@/components/admin/UserManagement';
+import JobModeration from '@/components/admin/JobModeration';
+import ForumModeration from '@/components/admin/ForumModeration';
+import ReviewModeration from '@/components/admin/ReviewModeration'; // Add new import
 import { Shield } from 'lucide-react';
 
 const AdminDashboardPage = () => {
+  const [activeTab, setActiveTab] = useState('users');
+  
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <main className="container mx-auto px-4 py-12 sm:px-6 lg:px-8" id="main-content">
-        <div className="flex items-center mb-8">
-          <Shield className="h-6 w-6 text-primary mr-3" aria-hidden="true" />
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        </div>
+    <div className="container py-10 max-w-7xl">
+      <div className="flex items-center mb-8">
+        <Shield className="h-8 w-8 mr-3 text-primary" />
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-8">
+          <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="jobs">Job Listings</TabsTrigger>
+          <TabsTrigger value="forums">Forum Posts</TabsTrigger>
+          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+        </TabsList>
         
-        <AdminDashboard />
-      </main>
+        <TabsContent value="users">
+          <UserManagement />
+        </TabsContent>
+        
+        <TabsContent value="jobs">
+          <JobModeration />
+        </TabsContent>
+        
+        <TabsContent value="forums">
+          <ForumModeration />
+        </TabsContent>
+        
+        <TabsContent value="reviews">
+          <ReviewModeration />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import MilitarySkillsBadge from './MilitarySkillsBadge';
 import { useJobs } from '@/context/JobContext';
+import EmployerRating from './EmployerRating';
+import { getEmployerRatingSummary } from '@/data/employerReviews';
 
 interface JobListingProps {
   jobId: string;
@@ -28,6 +30,11 @@ const JobListing: React.FC<JobListingProps> = ({
   const { getJobById } = useJobs();
   const job = getJobById(jobId);
   const militarySkills = job?.requiredSkills || [];
+  
+  // Get employer rating if available - using mock data
+  const employerId = 'emp1'; // In a real app, this would come from the job data
+  const ratingSummary = getEmployerRatingSummary(employerId);
+  const hasRating = ratingSummary.totalReviews > 0;
 
   return (
     <article 
@@ -56,6 +63,12 @@ const JobListing: React.FC<JobListingProps> = ({
               <div className="flex items-center">
                 <Building className="h-4 w-4 mr-1.5 text-gray-400" aria-hidden="true" />
                 <span>{company}</span>
+                {hasRating && (
+                  <span className="flex items-center ml-2">
+                    <EmployerRating rating={ratingSummary.avgRating} size="sm" />
+                    <span className="ml-1 text-xs">({ratingSummary.totalReviews})</span>
+                  </span>
+                )}
               </div>
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-1.5 text-gray-400" aria-hidden="true" />

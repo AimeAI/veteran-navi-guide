@@ -1,8 +1,8 @@
-
 // Types for our data
 export interface UserProfile {
   id: string;
   name: string;
+  firstName?: string; // Added firstName property as optional
   email?: string; // Added email property as optional
   skills: string[];
   militaryBackground: {
@@ -45,6 +45,7 @@ export interface RecommendationResult {
 export const currentUserProfile: UserProfile = {
   id: "user1",
   name: "John Doe",
+  firstName: "John", // Added firstName
   email: "john.doe@example.com", // Added email
   skills: ["leadership", "communication", "project management", "security", "logistics"],
   militaryBackground: {
