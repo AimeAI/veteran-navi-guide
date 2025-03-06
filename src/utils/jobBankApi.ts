@@ -1,5 +1,5 @@
+
 import { Job } from "@/context/JobContext";
-import * as cheerio from 'cheerio';
 
 // Interface for Job Bank search parameters
 export interface JobBankSearchParams {
@@ -32,53 +32,7 @@ export const getNOCCodesForSkill = (skill: string): string[] => {
   return militarySkillsToNOCMapping[skill as keyof typeof militarySkillsToNOCMapping] || [];
 };
 
-// Function to transform Job Bank URL based on search parameters
-const buildJobBankUrl = (params: JobBankSearchParams): string => {
-  const baseUrl = "https://www.jobbank.gc.ca/jobsearch/";
-  
-  const queryParams = new URLSearchParams();
-  
-  // Add keywords
-  if (params.keywords) {
-    queryParams.append("searchstring", params.keywords);
-  }
-  
-  // Add location
-  if (params.location) {
-    queryParams.append("location", params.location);
-  }
-  
-  // Add distance (in km)
-  if (params.distance) {
-    queryParams.append("distance", params.distance.toString());
-  }
-  
-  // Add sort parameter
-  if (params.sort) {
-    queryParams.append("sort", params.sort);
-  }
-  
-  // Add page number (1-based)
-  if (params.page && params.page > 1) {
-    queryParams.append("page", params.page.toString());
-  }
-  
-  // Always add format=html
-  queryParams.append("sort", "D"); // D = Date posted (newest first)
-  
-  // Return the full URL
-  return `${baseUrl}?${queryParams.toString()}`;
-};
-
-// Update CORS proxy URL and add fallback proxies
-const CORS_PROXIES = [
-  'https://api.allorigins.win/raw?url=',
-  'https://corsproxy.io/?',
-  'https://proxy.cors.sh/',
-  'https://cors-anywhere.herokuapp.com/'
-];
-
-// Function to search Job Bank jobs with multiple proxy fallbacks
+// Function to search Job Bank jobs with our Supabase Edge Function
 export const searchJobBankJobs = async (params: {
   keywords?: string;
   location?: string;
@@ -125,57 +79,5 @@ export const searchJobBankJobs = async (params: {
   } catch (error) {
     console.error('Error searching Job Bank via proxy:', error);
     throw error;
-  }
-};
-
-// Function to get detailed job information from a job page
-export const getJobBankJobDetails = async (jobUrl: string): Promise<Partial<Job>> => {
-  try {
-    console.log(`Fetching job details from: ${jobUrl}`);
-    
-    // Use a proxy to avoid CORS
-    const corsProxyUrl = "https://corsproxy.io/?";
-    const url = `${corsProxyUrl}${encodeURIComponent(jobUrl)}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'text/html',
-        'User-Agent': 'Mozilla/5.0 (compatible; VeteranJobBoard/1.0; +https://veteranjobboard.example.com)'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch job details, status: ${response.status}`);
-    }
-    
-    const html = await response.text();
-    const $ = cheerio.load(html);
-    
-    // Extract detailed information
-    const description = $('.job-posting-detail').text().trim();
-    
-    // Extract skills from the job description
-    const skills: string[] = [];
-    $('.skill-list li').each((i, el) => {
-      skills.push($(el).text().trim());
-    });
-    
-    // Extract education requirements
-    const educationLevel = $('.education-requirements').text().trim();
-    
-    // Extract experience requirements
-    const experienceLevel = $('.experience-requirements').text().trim();
-    
-    // Return the extra details
-    return {
-      description,
-      requiredSkills: skills,
-      educationLevel,
-      experienceLevel,
-    };
-  } catch (error) {
-    console.error("Error fetching job details:", error);
-    return {};
   }
 };

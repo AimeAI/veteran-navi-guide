@@ -5,7 +5,7 @@ A platform to help military veterans find employment opportunities and transitio
 
 ## Job Search API Integration
 
-The job search functionality now uses a Supabase Edge Function to proxy requests to job search APIs. This helps avoid CORS issues and provides a more reliable experience.
+The job search functionality now uses a Supabase Edge Function to proxy requests to the Canadian Job Bank website. This helps avoid CORS issues and provides a more reliable experience.
 
 ### Deploying the Job Search Proxy Function
 

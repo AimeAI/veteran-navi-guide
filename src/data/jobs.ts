@@ -1,6 +1,4 @@
-
 import { mockJobs } from "./mockJobs";
-import { searchLightcastJobs } from "@/utils/lightcastApi";
 import { Job } from "@/context/JobContext";
 import { JobListing } from "@/utils/recommendationAlgorithm";
 import { getJobsFromSupabase } from "@/utils/supabaseClient";
@@ -69,31 +67,6 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
       }
     } catch (error) {
       console.error('Error fetching Job Bank jobs:', error);
-    }
-  }
-  
-  if (params.useLightcastApi) {
-    try {
-      const lightcastParams = {
-        keywords: params.keywords ? params.keywords.join(' ') : '',
-        location: params.locations ? params.locations[0] : '',
-        radius: params.radius,
-        job_type: params.jobType,
-        industry: params.industry,
-        experience_level: params.experienceLevel,
-        education_level: params.educationLevel,
-        remote_type: params.remote ? 'Full' : undefined,
-        country: params.country || "us",
-      };
-      
-      const result = await searchLightcastJobs(lightcastParams);
-      
-      if (result.jobs.length > 0) {
-        console.log(`Retrieved ${result.jobs.length} Lightcast jobs`);
-        allJobs = [...allJobs, ...result.jobs];
-      }
-    } catch (error) {
-      console.error('Error searching Lightcast jobs:', error);
     }
   }
   

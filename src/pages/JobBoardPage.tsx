@@ -4,17 +4,15 @@ import { Search, MapPin, Filter, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import JobList from '@/components/JobList';
-import { useLightcastJobs } from '@/hooks/useLightcastJobs';
+import { useJobSearch, JobSearchParams } from '@/hooks/useJobSearch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LightcastSearchParams } from '@/utils/lightcastApi';
 
 const JobBoardPage: React.FC = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [searchParams, setSearchParams] = useState<LightcastSearchParams>({
+  const [searchParams, setSearchParams] = useState<JobSearchParams>({
     keywords: '',
     location: '',
     radius: 25,
-    limit: 10,
     page: 1,
   });
 
@@ -32,7 +30,7 @@ const JobBoardPage: React.FC = () => {
     totalPages, 
     totalJobs, 
     setPage 
-  } = useLightcastJobs(searchParams);
+  } = useJobSearch(searchParams);
 
   const toggleFilter = () => {
     setIsFiltersOpen(!isFiltersOpen);
@@ -64,9 +62,9 @@ const JobBoardPage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-3xl font-bold">Job Board Integration</CardTitle>
+              <CardTitle className="text-3xl font-bold">Job Board</CardTitle>
               <CardDescription>
-                Browse job listings from Lightcast API
+                Browse job listings from Job Bank Canada
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -161,6 +159,7 @@ const JobBoardPage: React.FC = () => {
                 totalPages={totalPages}
                 totalJobs={totalJobs}
                 onPageChange={setPage}
+                country="canada"
               />
             </CardContent>
           </Card>

@@ -5,7 +5,7 @@ import JobList from '@/components/JobList';
 import FilterBar from '@/components/FilterBar';
 import AdvancedSearchFilters from '@/components/AdvancedSearchFilters';
 import MilitarySkillsFilter from '@/components/MilitarySkillsFilter';
-import { useLightcastJobs } from '@/hooks/useLightcastJobs';
+import { useJobSearch } from '@/hooks/useJobSearch';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
@@ -55,15 +55,15 @@ const JobSearch: React.FC = () => {
     setPage,
     refreshJobs,
     usingFallbackData
-  } = useLightcastJobs({
+  } = useJobSearch({
     keywords: filters.keywords,
     location: filters.location,
     radius: filters.radius,
-    job_type: filters.jobType,
+    jobType: filters.jobType,
     industry: filters.industry,
-    experience_level: filters.experienceLevel,
-    education_level: filters.educationLevel,
-    remote_type: filters.remote ? 'Full' : undefined,
+    experienceLevel: filters.experienceLevel,
+    educationLevel: filters.educationLevel,
+    remote: filters.remote,
     country: filters.country,
     page: 1,
   });
