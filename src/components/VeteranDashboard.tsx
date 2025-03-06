@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -8,6 +9,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StatsCardGroup from './StatsCardGroup';
+import { VeteranBadge } from '@/components/ui/veteran-badge';
+import VeteranBadges from './VeteranBadges';
+import PersonalizedRecommendations from './PersonalizedRecommendations';
 import { Eye, Calendar, Bookmark, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +33,26 @@ const VeteranDashboard = () => {
           recommendations: 7,
           forumPosts: 3
         },
+        earnedBadges: [
+          {
+            id: "badge1",
+            type: "profile-complete",
+            name: "Profile Master",
+            description: "Completed your profile with all required information",
+            earnedDate: new Date().toISOString(),
+            icon: "badge",
+            level: 1
+          },
+          {
+            id: "badge2",
+            type: "first-application",
+            name: "Job Seeker",
+            description: "Applied to your first job on the platform",
+            earnedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            icon: "briefcase",
+            level: 1
+          }
+        ],
         recentApplications: appliedJobs.slice(0, 3).map(id => {
           const job = jobs.find(j => j.id === id) || savedJobs.find(j => j.id === id);
           return {
@@ -95,6 +119,21 @@ const VeteranDashboard = () => {
         </div>
       ) : (
         <StatsCardGroup stats={data?.stats || { applications: 0, saved: 0, recommendations: 0, forumPosts: 0 }} />
+      )}
+
+      {/* Personalized Recommendations Section */}
+      <div className="mb-8">
+        <PersonalizedRecommendations />
+      </div>
+
+      {/* Earned Badges Section */}
+      {!isLoading && data?.earnedBadges && (
+        <div className="mb-8">
+          <VeteranBadges 
+            earnedBadges={data.earnedBadges} 
+            className="animate-fade-in"
+          />
+        </div>
       )}
 
       <div className="mb-8">

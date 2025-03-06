@@ -7,14 +7,18 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from 'sonner';
 
 const VeteranDashboardPage = () => {
+  const toast = useToast();
+  
   // This would fetch veteran-specific data in a real implementation
   const { refetch, isRefetching } = useQuery({
     queryKey: ['veteranProfile'],
     queryFn: async () => {
       // This would be replaced with actual Supabase fetch code
       console.log('Fetching veteran profile data...');
+      await new Promise(resolve => setTimeout(resolve, 800));
       return {};
     },
     enabled: false, // This query doesn't run automatically
@@ -22,6 +26,9 @@ const VeteranDashboardPage = () => {
 
   const handleRefresh = () => {
     refetch();
+    toast.success("Dashboard refreshed", {
+      description: "Your dashboard has been updated with the latest information"
+    });
   };
 
   return (
