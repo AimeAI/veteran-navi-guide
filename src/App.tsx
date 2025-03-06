@@ -38,6 +38,7 @@ import AbTestingPage from "./pages/AbTestingPage";
 import { LanguageProvider } from "./context/LanguageContext";
 import "./i18n";
 import NotificationPreferences from "./components/NotificationPreferences";
+import FeedbackSupportPage from "./pages/FeedbackSupportPage";
 
 function App() {
   return (
@@ -96,6 +97,14 @@ function App() {
                     element={
                       <RequireAuth>
                         <NotificationPreferences />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/feedback"
+                    element={
+                      <RequireAuth>
+                        <FeedbackSupportPage />
                       </RequireAuth>
                     }
                   />

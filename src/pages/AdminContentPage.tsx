@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, FolderOpen, Calendar, Layout, Shield } from 'lucide-react';
+import { FileText, FolderOpen, Calendar, Layout, Shield, MessageSquare } from 'lucide-react';
 import BlogPostsManagement from '@/components/admin/BlogPostsManagement';
 import ResourcesManagement from '@/components/admin/ResourcesManagement';
 import EventsManagement from '@/components/admin/EventsManagement';
 import WebsiteContentManagement from '@/components/admin/WebsiteContentManagement';
+import FeedbackManagement from '@/components/admin/FeedbackManagement';
 import { RequireAuth } from '@/components/RequireAuth';
 
 const AdminContentPage = () => {
@@ -37,6 +38,10 @@ const AdminContentPage = () => {
               <Layout className="h-4 w-4" />
               Website Content
             </TabsTrigger>
+            <TabsTrigger value="feedback" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              User Feedback
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="blog-posts">
@@ -53,6 +58,10 @@ const AdminContentPage = () => {
           
           <TabsContent value="website">
             <WebsiteContentManagement />
+          </TabsContent>
+          
+          <TabsContent value="feedback">
+            <FeedbackManagement />
           </TabsContent>
         </Tabs>
       </div>
