@@ -141,7 +141,7 @@ const JobList: React.FC<JobListProps> = ({
                 url={job.url}
                 date={job.date}
                 // Only pass matchScore if it exists in the job object
-                {...(job.matchScore !== undefined && { matchScore: job.matchScore })}
+                {...('matchScore' in job ? { matchScore: job.matchScore } : {})}
               />
             ))}
           </div>
