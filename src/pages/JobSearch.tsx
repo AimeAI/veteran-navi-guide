@@ -1,134 +1,26 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Briefcase, Filter, ChevronDown, Banknote, Medal, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import JobListing from '@/components/JobListing';
 import { toast } from 'sonner';
 import JobAlertButton from '@/components/JobAlertButton';
-
-interface FilterState {
-  keywords: string;
-  location: string;
-  category: string;
-  salaryRange: string;
-  mosCodes: string[];
-  clearanceLevel: string[];
-  remote: boolean;
-}
-
-interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  description: string;
-  category: string;
-  salaryRange: string;
-  remote: boolean;
-  clearanceLevel: string;
-  mosCode: string;
-}
+import MilitarySkillsFilter from '@/components/MilitarySkillsFilter';
+import { useJobs, JobFilterState } from '@/context/JobContext';
 
 const JobSearch = () => {
+  const { jobs, isLoading, searchJobs } = useJobs();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = useState<JobFilterState>({
     keywords: '',
     location: '',
     category: '',
     salaryRange: '',
     mosCodes: [],
     clearanceLevel: [],
-    remote: false
+    remote: false,
+    militarySkills: []
   });
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const mockJobs: Job[] = [
-    {
-      id: '1',
-      title: 'Security Operations Manager',
-      company: 'TechDefense Solutions',
-      location: 'Ottawa, ON',
-      description: 'Seeking a veteran with security background to lead our operations team. Must have experience in risk assessment and team leadership. Secret clearance preferred.',
-      category: 'security',
-      salaryRange: 'range3',
-      remote: false,
-      clearanceLevel: 'secret',
-      mosCode: '31B'
-    },
-    {
-      id: '2',
-      title: 'Logistics Coordinator',
-      company: 'Canadian Supply Chain Inc.',
-      location: 'Halifax, NS',
-      description: 'Perfect for veterans with logistics MOSID. Coordinate shipments, manage inventory, and optimize supply chain processes. Competitive salary with benefits package.',
-      category: 'logistics',
-      salaryRange: 'range2',
-      remote: false,
-      clearanceLevel: 'none',
-      mosCode: '88M'
-    },
-    {
-      id: '3',
-      title: 'Software Developer',
-      company: 'Tech Innovations',
-      location: 'Toronto, ON',
-      description: 'Looking for developers with experience in React, Node.js, and cloud technologies. Join our growing team building enterprise applications.',
-      category: 'tech',
-      salaryRange: 'range4',
-      remote: true,
-      clearanceLevel: 'none',
-      mosCode: '25B'
-    },
-    {
-      id: '4',
-      title: 'Healthcare Administrator',
-      company: 'Veterans Medical Centre',
-      location: 'Vancouver, BC',
-      description: 'Join our team dedicated to improving healthcare for veterans. Looking for organized professionals with healthcare experience from military settings.',
-      category: 'healthcare',
-      salaryRange: 'range2',
-      remote: false,
-      clearanceLevel: 'confidential',
-      mosCode: '68W'
-    },
-    {
-      id: '5',
-      title: 'Project Manager',
-      company: 'Veterans Construction Group',
-      location: 'Edmonton, AB',
-      description: 'Looking for veterans with leadership experience to manage construction projects from planning to completion. Strong organizational skills required.',
-      category: 'management',
-      salaryRange: 'range3',
-      remote: false,
-      clearanceLevel: 'none',
-      mosCode: '11B'
-    },
-    {
-      id: '6',
-      title: 'Cybersecurity Analyst',
-      company: 'DefenceNet Systems',
-      location: 'Ottawa, ON',
-      description: 'Protect critical infrastructure from cyber threats. Looking for veterans with cybersecurity background or willingness to learn.',
-      category: 'tech',
-      salaryRange: 'range3',
-      remote: true,
-      clearanceLevel: 'topsecret',
-      mosCode: '25B'
-    },
-    {
-      id: '7',
-      title: 'Administrative Assistant',
-      company: 'Government Services',
-      location: 'Montreal, QC',
-      description: 'Support executive team with administrative tasks, scheduling, and document management. Excellent organizational skills required.',
-      category: 'admin',
-      salaryRange: 'range1',
-      remote: false,
-      clearanceLevel: 'confidential',
-      mosCode: '42A'
-    }
-  ];
 
   const jobCategories = [
     { id: 'tech', name: 'Technology' },
@@ -168,56 +60,9 @@ const JobSearch = () => {
   ];
 
   useEffect(() => {
-    setJobs(mockJobs);
-    setFilteredJobs(mockJobs);
-    setIsLoading(false);
+    // Initial search with empty filters
+    searchJobs(filters);
   }, []);
-
-  useEffect(() => {
-    filterJobs();
-  }, [filters]);
-
-  const filterJobs = () => {
-    let results = [...jobs];
-
-    if (filters.keywords) {
-      const keywords = filters.keywords.toLowerCase();
-      results = results.filter(job => 
-        job.title.toLowerCase().includes(keywords) || 
-        job.company.toLowerCase().includes(keywords) || 
-        job.description.toLowerCase().includes(keywords)
-      );
-    }
-
-    if (filters.location) {
-      const location = filters.location.toLowerCase();
-      results = results.filter(job => 
-        job.location.toLowerCase().includes(location)
-      );
-    }
-
-    if (filters.category) {
-      results = results.filter(job => job.category === filters.category);
-    }
-
-    if (filters.salaryRange && filters.salaryRange !== 'any') {
-      results = results.filter(job => job.salaryRange === filters.salaryRange);
-    }
-
-    if (filters.mosCodes.length > 0) {
-      results = results.filter(job => filters.mosCodes.includes(job.mosCode));
-    }
-
-    if (filters.clearanceLevel.length > 0) {
-      results = results.filter(job => filters.clearanceLevel.includes(job.clearanceLevel));
-    }
-
-    if (filters.remote) {
-      results = results.filter(job => job.remote === true);
-    }
-
-    setFilteredJobs(results);
-  };
 
   const toggleFilter = () => {
     setIsFiltersOpen(!isFiltersOpen);
@@ -253,10 +98,26 @@ const JobSearch = () => {
     }));
   };
 
+  const handleAddMilitarySkill = (skill: string) => {
+    if (!filters.militarySkills?.includes(skill)) {
+      setFilters(prev => ({
+        ...prev,
+        militarySkills: [...(prev.militarySkills || []), skill]
+      }));
+    }
+  };
+
+  const handleRemoveMilitarySkill = (skill: string) => {
+    setFilters(prev => ({
+      ...prev,
+      militarySkills: prev.militarySkills?.filter(s => s !== skill) || []
+    }));
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search filters:', filters);
-    filterJobs();
+    searchJobs(filters);
     toast.success("Search results updated");
   };
 
@@ -408,6 +269,15 @@ const JobSearch = () => {
                     </div>
                   </div>
                   
+                  {/* Military Skills Filter */}
+                  <div className="mt-6">
+                    <MilitarySkillsFilter
+                      selectedSkills={filters.militarySkills || []}
+                      onSelectSkill={handleAddMilitarySkill}
+                      onRemoveSkill={handleRemoveMilitarySkill}
+                    />
+                  </div>
+                  
                   <div className="mt-4">
                     <div className="flex items-center">
                       <input
@@ -441,7 +311,7 @@ const JobSearch = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-medium text-gray-900">Search Results</h2>
-              <span className="text-sm text-gray-500">{filteredJobs.length} jobs found</span>
+              <span className="text-sm text-gray-500">{jobs.length} jobs found</span>
             </div>
             
             {isLoading ? (
@@ -450,9 +320,9 @@ const JobSearch = () => {
                   <div key={i} className="animate-pulse bg-gray-100 h-32 rounded-lg"></div>
                 ))}
               </div>
-            ) : filteredJobs.length > 0 ? (
+            ) : jobs.length > 0 ? (
               <div className="space-y-4">
-                {filteredJobs.map(job => (
+                {jobs.map(job => (
                   <JobListing
                     key={job.id}
                     jobId={job.id}

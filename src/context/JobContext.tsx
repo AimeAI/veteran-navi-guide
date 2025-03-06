@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
+import { searchJobs } from "@/data/jobs";
 
 // Define Job interface
 export interface Job {
@@ -13,7 +14,11 @@ export interface Job {
   remote: boolean;
   clearanceLevel: string;
   mosCode: string;
+  requiredSkills?: string[];
+  preferredSkills?: string[];
+  requiredMosCodes?: string[];
   date?: string;
+  jobType?: string;
 }
 
 // Job context type
@@ -38,6 +43,7 @@ export interface JobFilterState {
   mosCodes: string[];
   clearanceLevel: string[];
   remote: boolean;
+  militarySkills?: string[];
 }
 
 // Create the context
@@ -265,6 +271,20 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     if (filters.remote) {
       results = results.filter(job => job.remote === true);
+    }
+
+    // Filter by military skills if provided
+    if (filters.militarySkills && filters.militarySkills.length > 0) {
+      results = results.filter(job => {
+        // Check if any of the job's required skills match the selected military skills
+        if (!job.requiredSkills) return false;
+        
+        return filters.militarySkills.some(skill => 
+          job.requiredSkills?.some(jobSkill => 
+            jobSkill.toLowerCase().includes(skill.toLowerCase())
+          )
+        );
+      });
     }
 
     setFilteredJobs(results);

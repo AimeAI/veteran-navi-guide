@@ -1,4 +1,3 @@
-
 import { mockJobs } from "./mockJobs";
 
 // Define the search parameters interface
@@ -9,6 +8,7 @@ interface SearchParams {
   mosCodes?: string[];
   clearanceLevel?: string[];
   remote?: boolean;
+  militarySkills?: string[]; // Added military skills parameter
 }
 
 // Search function to filter jobs based on criteria
@@ -69,6 +69,21 @@ export const searchJobs = (params: SearchParams) => {
       job.securityClearanceRequired && 
       params.clearanceLevel?.includes(job.securityClearanceRequired)
     );
+  }
+
+  // Filter by military skills
+  if (params.militarySkills && params.militarySkills.length > 0) {
+    filteredJobs = filteredJobs.filter(job => {
+      // If job has no required skills, don't match it
+      if (!job.requiredSkills || job.requiredSkills.length === 0) return false;
+      
+      // Check if any of the job's skills match the selected military skills
+      return params.militarySkills!.some(skill => 
+        job.requiredSkills!.some(jobSkill => 
+          jobSkill.toLowerCase().includes(skill.toLowerCase())
+        )
+      );
+    });
   }
 
   // Filter by remote option

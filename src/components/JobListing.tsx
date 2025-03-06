@@ -3,6 +3,8 @@ import React from 'react';
 import { Briefcase, Building, MapPin, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import MilitarySkillsBadge from './MilitarySkillsBadge';
+import { useJobs } from '@/context/JobContext';
 
 interface JobListingProps {
   jobId: string;
@@ -21,6 +23,10 @@ const JobListing: React.FC<JobListingProps> = ({
   description,
   className
 }) => {
+  const { getJobById } = useJobs();
+  const job = getJobById(jobId);
+  const militarySkills = job?.requiredSkills || [];
+
   return (
     <article 
       className={cn(
@@ -49,6 +55,13 @@ const JobListing: React.FC<JobListingProps> = ({
             </div>
             
             <p className="mt-3 text-sm text-gray-600 line-clamp-2">{description}</p>
+            
+            {/* Display military skills if available */}
+            {militarySkills.length > 0 && (
+              <div className="mt-3">
+                <MilitarySkillsBadge skills={militarySkills} />
+              </div>
+            )}
           </div>
           
           <div className="ml-0 sm:ml-4 flex items-center justify-end sm:justify-center self-start flex-shrink-0">
