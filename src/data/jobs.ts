@@ -1,3 +1,4 @@
+
 import { mockJobs } from "./mockJobs";
 import { searchLightcastJobs } from "@/utils/lightcastApi";
 import { Job } from "@/context/JobContext";
@@ -53,7 +54,19 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
 
 // Helper function to filter mock jobs based on search params
 const filterMockJobs = (params: SearchParams): Job[] => {
-  let filteredJobs = [...mockJobs];
+  // First convert the mockJobs (JobListing[]) to Job[] by mapping and adding required properties
+  const jobsWithRequiredProps: Job[] = mockJobs.map(job => ({
+    ...job,
+    // Add the required properties from the Job interface that are missing in JobListing
+    category: job.industry?.toLowerCase() || 'other',
+    salaryRange: 'range2', // Default salary range
+    clearanceLevel: job.securityClearanceRequired || 'none',
+    mosCode: job.requiredMosCodes?.[0] || '',
+    // Make sure these exist in the Job type
+    date: new Date().toISOString(),
+  }));
+
+  let filteredJobs = [...jobsWithRequiredProps];
 
   // Filter by keywords
   if (params.keywords && params.keywords.length > 0) {
