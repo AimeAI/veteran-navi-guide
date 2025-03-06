@@ -1,7 +1,7 @@
-
 import React from 'react';
 import JobListing from '@/components/JobListing';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Sample job data with Canadian locations
 const featuredJobs = [
@@ -76,18 +76,18 @@ const Index = () => {
               Our platform bridges the gap between military service and civilian careers across Canada. Find opportunities that recognize your skills, discipline, and leadership.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a 
-                href="/jobs/search" 
+              <Link 
+                to="/job-search" 
                 className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200"
               >
                 Find Jobs
-              </a>
-              <a 
-                href="/resources/military-transition" 
+              </Link>
+              <Link 
+                to="/resources/military-transition" 
                 className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-primary bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 transition-colors duration-200"
               >
                 View Resources
-              </a>
+              </Link>
             </div>
           </div>
         </section>
@@ -113,13 +113,13 @@ const Index = () => {
           </div>
           
           <div className="mt-8 text-center">
-            <a 
-              href="/jobs/search" 
+            <Link 
+              to="/job-search" 
               className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-primary bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 transition-colors duration-200"
             >
               View More Jobs
               <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
+            </Link>
           </div>
         </section>
 
@@ -148,13 +148,13 @@ const Index = () => {
           </div>
           
           <div className="mt-10 text-center">
-            <a 
-              href="/recommendations" 
+            <Link 
+              to="/recommendations" 
               className="inline-flex items-center justify-center px-6 py-3 text-sm md:text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-colors duration-200"
             >
               View All Recommendations
               <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
+            </Link>
           </div>
         </section>
 
@@ -197,8 +197,8 @@ const Index = () => {
         </section>
       </main>
       
-      <footer className="bg-gray-50 border-t border-gray-200 mt-20">
-        <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+      <footer className="bg-white border-t border-gray-200 mt-20">
+        <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="text-center text-gray-500 text-sm">
             <p>© 2023 VeteranJobBoard. All rights reserved.</p>
           </div>

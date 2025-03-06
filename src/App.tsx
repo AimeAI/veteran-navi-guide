@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -12,10 +13,12 @@ import { LanguageProvider } from "./context/LanguageContext";
 import "./i18n";
 import SecurityMonitor from "./components/security/SecurityMonitor";
 import JobBoardPage from "./pages/JobBoardPage";
+import JobSearch from "./pages/JobSearch";
 
 // Performance optimization: Lazy load pages to reduce initial bundle size
 const Index = lazy(() => import("./pages/Index"));
-const JobSearch = lazy(() => import("./pages/JobSearch"));
+// Changed from lazy loading to direct import to avoid dynamic import issues
+// const JobSearch = lazy(() => import("./pages/JobSearch"));
 const SavedJobs = lazy(() => import("./pages/SavedJobs"));
 const JobDetailsPage = lazy(() => import("./pages/JobDetailsPage"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
@@ -67,7 +70,10 @@ function App() {
                 <Suspense fallback={<PageLoading />}>
                   <Routes>
                     <Route path="/" element={<Index />} />
+                    {/* Using direct import instead of lazy loading */}
                     <Route path="/job-search" element={<JobSearch />} />
+                    {/* Add redirect from old path */}
+                    <Route path="/jobs/search" element={<JobSearch />} />
                     <Route path="/saved" element={<SavedJobs />} />
                     <Route path="/job/:id" element={<JobDetailsPage />} />
                     <Route path="/profile" element={<UserProfile />} />
