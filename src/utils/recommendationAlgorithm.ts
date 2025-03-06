@@ -1,6 +1,5 @@
 
-// If this file doesn't exist yet, we'll create it with the JobListing interface
-
+// Define the JobListing interface
 export interface JobListing {
   id: string;
   title: string;
@@ -20,13 +19,162 @@ export interface JobListing {
   benefits?: string[];
   requiredMosCodes?: string[];
   clearanceLevel?: string;
-  // Add the missing properties
   salary?: string | number;
   salaryRange?: string;
   postedDate?: string;
 }
 
-// Add a simple job matching algorithm for skills-based matching
+// Export alias Job for compatibility
+export type Job = JobListing;
+
+// Define UserProfile interface
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  militaryBranch?: string;
+  rank?: string;
+  mosId?: string;
+  securityClearance?: string;
+  skills: string[];
+  jobPreferences?: {
+    locations?: string[];
+    remote?: boolean;
+    industry?: string[];
+    jobType?: string[];
+  };
+  photo?: string;
+  serviceYears?: number;
+}
+
+// Mock current user profile for testing
+export const currentUserProfile: UserProfile = {
+  id: 'usr-123',
+  email: 'veteran@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
+  militaryBranch: 'Army',
+  rank: 'E-5 Sergeant',
+  mosId: '11B',
+  securityClearance: 'Secret',
+  skills: [
+    'Leadership',
+    'Project Management',
+    'Logistics',
+    'Security Operations',
+    'Communication',
+    'Team Building',
+    'Problem Solving'
+  ],
+  jobPreferences: {
+    locations: ['Toronto, ON', 'Remote'],
+    remote: true,
+    industry: ['Technology', 'Defense', 'Security'],
+    jobType: ['Full-time', 'Contract']
+  }
+};
+
+// Result of a recommendation calculation
+export interface RecommendationResult {
+  job: JobListing;
+  matchScore: number;
+  matchDetails: {
+    skillMatches: string[];
+    mosCodeMatches: string[];
+    locationMatch: boolean;
+    clearanceMatch: boolean;
+  };
+}
+
+// Match score calculation algorithm
+export const calculateMatchScore = (job: JobListing, profile: UserProfile): { score: number; details: any } => {
+  let score = 0;
+  const skillMatches: string[] = [];
+  const mosCodeMatches: string[] = [];
+  let locationMatch = false;
+  let clearanceMatch = false;
+
+  // Match skills
+  const userSkills = profile.skills.map(s => s.toLowerCase());
+  if (job.requiredSkills) {
+    const jobSkills = job.requiredSkills.map(s => s.toLowerCase());
+    for (const skill of userSkills) {
+      for (const jobSkill of jobSkills) {
+        if (jobSkill.includes(skill) || skill.includes(jobSkill)) {
+          skillMatches.push(skill);
+          score += 10;
+          break;
+        }
+      }
+    }
+  }
+
+  // Match MOS codes
+  if (job.requiredMosCodes && profile.mosId) {
+    for (const mosCode of job.requiredMosCodes) {
+      if (mosCode === profile.mosId) {
+        mosCodeMatches.push(mosCode);
+        score += 20;
+      }
+    }
+  }
+
+  // Match location
+  if (profile.jobPreferences?.locations) {
+    for (const location of profile.jobPreferences.locations) {
+      if (job.location.toLowerCase().includes(location.toLowerCase()) || 
+          (location.toLowerCase() === 'remote' && job.remote)) {
+        locationMatch = true;
+        score += 15;
+        break;
+      }
+    }
+  }
+
+  // Match security clearance
+  if (job.clearanceLevel && profile.securityClearance) {
+    if (job.clearanceLevel.toLowerCase() === profile.securityClearance.toLowerCase()) {
+      clearanceMatch = true;
+      score += 15;
+    }
+  }
+
+  // Add small bonus for job type match
+  if (job.jobType && profile.jobPreferences?.jobType) {
+    for (const type of profile.jobPreferences.jobType) {
+      if (job.jobType.toLowerCase().includes(type.toLowerCase())) {
+        score += 5;
+        break;
+      }
+    }
+  }
+
+  // Add small bonus for industry match
+  if (job.industry && profile.jobPreferences?.industry) {
+    for (const industry of profile.jobPreferences.industry) {
+      if (job.industry.toLowerCase().includes(industry.toLowerCase())) {
+        score += 5;
+        break;
+      }
+    }
+  }
+
+  // Normalize to 100
+  score = Math.min(100, score);
+
+  return {
+    score,
+    details: {
+      skillMatches,
+      mosCodeMatches,
+      locationMatch,
+      clearanceMatch
+    }
+  };
+};
+
+// Add simple job matching algorithm for skills-based matching
 export const calculateJobMatch = (
   job: JobListing,
   userSkills: string[],
@@ -87,6 +235,29 @@ export const calculateJobMatch = (
 
 // Function to get job recommendations based on user profile
 export const getJobRecommendations = (
+  profile: UserProfile,
+  jobs: JobListing[]
+): RecommendationResult[] => {
+  const recommendations: RecommendationResult[] = [];
+  
+  for (const job of jobs) {
+    const { score, details } = calculateMatchScore(job, profile);
+    
+    if (score > 0) {
+      recommendations.push({
+        job,
+        matchScore: score,
+        matchDetails: details
+      });
+    }
+  }
+  
+  // Sort by score (highest first)
+  return recommendations.sort((a, b) => b.matchScore - a.matchScore);
+};
+
+// Function to get job recommendations based on user skills (backward compatibility)
+export const getJobRecommendationsForSkills = (
   jobs: JobListing[],
   userSkills: string[],
   userPreferences: {

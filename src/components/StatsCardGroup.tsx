@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { Users, Briefcase, FileCheck, MessageSquare } from 'lucide-react';
+import StatsCard from './StatsCard';
 
 export interface StatsCardGroupProps {
   stats?: {

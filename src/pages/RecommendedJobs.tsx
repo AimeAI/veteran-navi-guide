@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import JobListing from '@/components/JobListing';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import JobRecommendationsLoading from '@/components/JobRecommendationsLoading';
 import { mockJobs } from '@/data/mockJobs';
-import { currentUserProfile, getRecommendedJobs, RecommendationResult } from '@/utils/recommendationAlgorithm';
+import { currentUserProfile, getJobRecommendations, RecommendationResult } from '@/utils/recommendationAlgorithm';
 
 const RecommendedJobs = () => {
   const [recommendedJobs, setRecommendedJobs] = useState<RecommendationResult[]>([]);
@@ -15,7 +16,7 @@ const RecommendedJobs = () => {
   useEffect(() => {
     // Simulate API call with a small delay
     const timer = setTimeout(() => {
-      const recommendations = getRecommendedJobs(currentUserProfile, mockJobs);
+      const recommendations = getJobRecommendations(currentUserProfile, mockJobs);
       setRecommendedJobs(recommendations);
       setIsLoading(false);
     }, 500);

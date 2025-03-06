@@ -99,7 +99,7 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
   
   if (allJobs.length === 0) {
     console.log('Using mock job data as fallback');
-    allJobs = filterMockJobs(params);
+    allJobs = filterMockJobs(params) as Job[];
   }
   
   const uniqueJobs = Array.from(
@@ -110,8 +110,8 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
   return uniqueJobs;
 };
 
-const filterMockJobs = (params: SearchParams): Job[] => {
-  const jobsWithRequiredProps: Job[] = mockJobs.map((job: JobListing) => ({
+const filterMockJobs = (params: SearchParams): JobListing[] => {
+  const jobsWithRequiredProps: JobListing[] = mockJobs.map((job: JobListing) => ({
     ...job,
     category: job.industry?.toLowerCase() || 'other',
     salaryRange: getSalaryRange(job),
@@ -121,6 +121,7 @@ const filterMockJobs = (params: SearchParams): Job[] => {
     experienceLevel: job.experienceLevel || '',
     educationLevel: job.educationLevel || '',
     date: job.postedDate || new Date().toISOString(),
+    remote: job.remote !== undefined ? job.remote : false, // Ensure remote is always defined
   }));
 
   let filteredJobs = [...jobsWithRequiredProps];
