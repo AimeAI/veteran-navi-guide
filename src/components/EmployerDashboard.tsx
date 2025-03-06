@@ -1,37 +1,19 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Briefcase, 
   Calendar, 
   CheckCircle2, 
   Clock, 
-  Search, 
   UserRound, 
   XCircle, 
-  User,
-  Filter
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-
-// Define application status types
-type ApplicationStatus = 'pending' | 'reviewing' | 'interviewing' | 'hired' | 'rejected';
-
-// Define application data structure
-interface Application {
-  id: string;
-  applicantName: string;
-  applicantPhoto?: string;
-  jobTitle: string;
-  company: string;
-  appliedDate: Date;
-  status: ApplicationStatus;
-  resume?: string;
-  coverLetter?: boolean;
-  matchScore?: number;
-}
+import FilterBar from '@/components/FilterBar';
+import { Application, ApplicationStatus } from '@/types/application';
 
 // Sample placeholder data
 const sampleApplications: Application[] = [
@@ -91,17 +73,36 @@ const sampleApplications: Application[] = [
 ];
 
 const EmployerDashboard: React.FC = () => {
-  const [applications, setApplications] = useState<Application[]>(sampleApplications);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<ApplicationStatus | 'all'>('all');
+  const [applications] = useState<Application[]>(sampleApplications);
   
-  // Filter applications based on search query and status filter
-  const filteredApplications = applications.filter(app => {
-    const matchesSearch = app.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = selectedFilter === 'all' || app.status === selectedFilter;
-    return matchesSearch && matchesFilter;
-  });
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all');
+  const [jobTitleFilter, setJobTitleFilter] = useState('');
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setJobTitleFilter('');
+  };
+  
+  // Filter applications based on all filter criteria
+  const filteredApplications = useMemo(() => {
+    return applications.filter(app => {
+      // Filter by applicant name
+      const matchesName = app.applicantName.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Filter by job title
+      const matchesJobTitle = jobTitleFilter === '' || 
+        app.jobTitle.toLowerCase().includes(jobTitleFilter.toLowerCase());
+      
+      // Filter by status
+      const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+      
+      return matchesName && matchesJobTitle && matchesStatus;
+    });
+  }, [applications, searchQuery, statusFilter, jobTitleFilter]);
 
   // Update application status
   const handleStatusChange = (appId: string, newStatus: ApplicationStatus) => {
@@ -163,38 +164,16 @@ const EmployerDashboard: React.FC = () => {
         <p className="text-gray-600">Manage applicants for your posted jobs</p>
       </div>
 
-      {/* Filters and search */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-grow">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search applicants or jobs..."
-            className="pl-10 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Filter className="h-5 w-5 text-gray-400" />
-          <span className="text-sm font-medium text-gray-700">Filter:</span>
-          <select
-            className="rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm"
-            value={selectedFilter}
-            onChange={e => setSelectedFilter(e.target.value as ApplicationStatus | 'all')}
-          >
-            <option value="all">All Applications</option>
-            <option value="pending">Pending</option>
-            <option value="reviewing">Reviewing</option>
-            <option value="interviewing">Interviewing</option>
-            <option value="hired">Hired</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
-      </div>
+      {/* Filter Bar */}
+      <FilterBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        jobTitleFilter={jobTitleFilter}
+        setJobTitleFilter={setJobTitleFilter}
+        resetFilters={resetFilters}
+      />
 
       {/* Applications list */}
       <div className="space-y-4">
@@ -303,7 +282,7 @@ const EmployerDashboard: React.FC = () => {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No applications found</h3>
             <p className="text-gray-600">
-              {searchQuery || selectedFilter !== 'all' 
+              {searchQuery || statusFilter !== 'all' || jobTitleFilter
                 ? "Try adjusting your search or filters to see more results." 
                 : "When candidates apply to your job postings, they will appear here."}
             </p>
