@@ -1,3 +1,4 @@
+
 import { Job } from "@/context/JobContext";
 
 // Interface for Job Bank search parameters
@@ -32,50 +33,27 @@ export const getNOCCodesForSkill = (skill: string): string[] => {
   return militarySkillsToNOCMapping[skill as keyof typeof militarySkillsToNOCMapping] || [];
 };
 
-// Updated URLs to current job listings
+// Updated live job search URLs that work in 2024
 const CURRENT_JOB_URLS = {
   jobbank: [
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421879", // Software Developer 
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421665", // Project Manager
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421723", // Administrative Assistant
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421806", // Customer Service Representative
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421599", // Sales Representative
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421682", // Financial Analyst
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421888", // Warehouse Associate
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/39421642", // Marketing Specialist
+    "https://www.jobbank.gc.ca/jobsearch", // Main search page as fallback
+    "https://www.jobbank.gc.ca/findajob", // Alternative search page
   ],
   indeed: [
-    "https://ca.indeed.com/jobs?q=software+developer&l=Canada&vjk=a7f0018072d1b1f5",
-    "https://ca.indeed.com/jobs?q=project+manager&l=Canada&vjk=4bb9b3a2f6d6a789",
-    "https://ca.indeed.com/jobs?q=administrative+assistant&l=Canada&vjk=63c84b9e4d728aef",
-    "https://ca.indeed.com/jobs?q=customer+service&l=Canada&vjk=9a3c22efd0c88321",
-    "https://ca.indeed.com/jobs?q=sales+representative&l=Canada&vjk=53cc3ee9d05aa63b",
+    "https://ca.indeed.com/jobs",
+    "https://ca.indeed.com/viewjob",
   ],
   linkedin: [
-    "https://www.linkedin.com/jobs/view/3824586171", // Software Engineer
-    "https://www.linkedin.com/jobs/view/3824588547", // Project Manager
-    "https://www.linkedin.com/jobs/view/3824582083", // Marketing Specialist
-    "https://www.linkedin.com/jobs/view/3824587242", // Data Analyst
-    "https://www.linkedin.com/jobs/view/3824582242", // Business Analyst
+    "https://www.linkedin.com/jobs/view",
+    "https://www.linkedin.com/jobs/search",
   ]
 };
 
-// Map of job titles to current job URLs
-const JOB_TITLE_URL_MAP: Record<string, {url: string, source: string}> = {
-  "Software Developer": { url: CURRENT_JOB_URLS.jobbank[0], source: "jobbank" },
-  "Web Developer": { url: CURRENT_JOB_URLS.indeed[0], source: "indeed" },
-  "Full Stack Developer": { url: CURRENT_JOB_URLS.indeed[0], source: "indeed" },
-  "Software Engineer": { url: CURRENT_JOB_URLS.linkedin[0], source: "linkedin" },
-  "Data Analyst": { url: CURRENT_JOB_URLS.jobbank[1], source: "jobbank" },
-  "Project Manager": { url: CURRENT_JOB_URLS.jobbank[1], source: "jobbank" },
-  "Operations Manager": { url: CURRENT_JOB_URLS.indeed[1], source: "indeed" },
-  "Product Manager": { url: CURRENT_JOB_URLS.linkedin[1], source: "linkedin" },
-  "Administrative Assistant": { url: CURRENT_JOB_URLS.jobbank[2], source: "jobbank" },
-  "Customer Service Representative": { url: CURRENT_JOB_URLS.jobbank[3], source: "jobbank" },
-  "Sales Representative": { url: CURRENT_JOB_URLS.jobbank[4], source: "jobbank" },
-  "Marketing Specialist": { url: CURRENT_JOB_URLS.linkedin[2], source: "linkedin" },
-  "Financial Analyst": { url: CURRENT_JOB_URLS.indeed[4], source: "indeed" },
-  "Business Analyst": { url: CURRENT_JOB_URLS.linkedin[4], source: "linkedin" },
+// Main job search sites
+const JOB_SOURCE_URLS = {
+  "jobbank": "https://www.jobbank.gc.ca/jobsearch",
+  "indeed": "https://ca.indeed.com/jobs",
+  "linkedin": "https://www.linkedin.com/jobs",
 };
 
 // Generate realistic job data based on search parameters
@@ -287,6 +265,20 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   // Get current date
   const now = new Date();
   
+  // Generate query parameters for main source URLs
+  const generateSourceQueryString = (title: string, location: string, source: string): string => {
+    switch(source) {
+      case 'jobbank':
+        return `?searchstring=${encodeURIComponent(title)}&location=${encodeURIComponent(location)}`;
+      case 'indeed':
+        return `?q=${encodeURIComponent(title)}&l=${encodeURIComponent(location)}`;
+      case 'linkedin':
+        return `?keywords=${encodeURIComponent(title)}&location=${encodeURIComponent(location)}`;
+      default:
+        return '';
+    }
+  };
+  
   for (let i = 0; i < numJobs; i++) {
     const titleIndex = Math.floor(Math.random() * sectorTitles.length);
     const companyIndex = Math.floor(Math.random() * sectorCompanies.length);
@@ -298,38 +290,25 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
     const isRemote = Math.random() > 0.7; // 30% chance of being remote
     const finalLocation = isRemote ? `${location} (Remote)` : location;
     
-    // Generate a recent date (within the last 14 days)
+    // Generate a recent date (within the last 7 days)
     const postedDate = new Date();
-    postedDate.setDate(now.getDate() - Math.floor(Math.random() * 14));
+    postedDate.setDate(now.getDate() - Math.floor(Math.random() * 7));
     
-    // Try to use a URL that matches the job title, or get one from appropriate source
-    let jobUrl: string;
+    // Select a source based on a distribution
+    const randomValue = Math.random();
     let source: string;
-    
-    if (JOB_TITLE_URL_MAP[title]) {
-      // Use matched URL for the job title
-      jobUrl = JOB_TITLE_URL_MAP[title].url;
-      source = JOB_TITLE_URL_MAP[title].source;
+    if (randomValue < 0.6) {
+      source = 'jobbank'; // 60% Job Bank
+    } else if (randomValue < 0.8) {
+      source = 'indeed'; // 20% Indeed
     } else {
-      // Select a URL based on a distribution
-      const randomValue = Math.random();
-      if (randomValue < 0.6) {
-        // 60% Job Bank
-        const index = Math.floor(Math.random() * CURRENT_JOB_URLS.jobbank.length);
-        jobUrl = CURRENT_JOB_URLS.jobbank[index];
-        source = 'jobbank';
-      } else if (randomValue < 0.8) {
-        // 20% Indeed
-        const index = Math.floor(Math.random() * CURRENT_JOB_URLS.indeed.length);
-        jobUrl = CURRENT_JOB_URLS.indeed[index];
-        source = 'indeed';
-      } else {
-        // 20% LinkedIn
-        const index = Math.floor(Math.random() * CURRENT_JOB_URLS.linkedin.length);
-        jobUrl = CURRENT_JOB_URLS.linkedin[index];
-        source = 'linkedin';
-      }
+      source = 'linkedin'; // 20% LinkedIn
     }
+    
+    // Generate a valid search URL based on the source, title and location
+    const baseUrl = JOB_SOURCE_URLS[source as keyof typeof JOB_SOURCE_URLS] || JOB_SOURCE_URLS.jobbank;
+    const queryString = generateSourceQueryString(title, location, source);
+    const jobUrl = `${baseUrl}${queryString}`;
     
     jobs.push({
       id: `job-${Date.now()}-${i}`,
@@ -369,7 +348,7 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   };
 };
 
-// Function to search Job Bank jobs - using real job URLs
+// Function to search Job Bank jobs - using generated job URLs that work
 export const searchJobBankJobs = async (params: {
   keywords?: string;
   location?: string;
@@ -386,7 +365,7 @@ export const searchJobBankJobs = async (params: {
   try {
     console.log('Searching for jobs with params:', params);
     
-    // Generate realistic job data with real URLs based on the search parameters
+    // Generate realistic job data with valid URLs based on the search parameters
     const jobResults = generateRealisticJobs(params);
     
     return {

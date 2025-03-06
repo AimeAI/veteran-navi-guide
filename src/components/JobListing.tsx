@@ -72,23 +72,25 @@ const JobListing: React.FC<JobListingProps> = ({
   };
   
   const handleApplyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Log application click for analytics
-    console.log('User clicked Apply Now for job:', jobId, title, company);
-    
+    // Check if URL is valid
     if (!url || !isValidUrl) {
       e.preventDefault();
-      toast.error("This job listing doesn't have a valid application URL");
+      toast.error("This job doesn't have a valid application link");
       return;
     }
     
-    // Show a toast notification
-    toast.success(`Opening application for ${title} at ${company}`);
+    // Log application click for analytics
+    console.log('User clicked Apply Now for job:', jobId, title, company);
     
-    // Open in new tab
+    // Open application in new tab
     window.open(url, '_blank', 'noopener,noreferrer');
     
-    // Log click with source details for analytics
-    console.log(`User is applying via ${getSourceLabel(source) || 'external site'}. URL: ${url}`);
+    // Show a toast notification
+    const sourceName = getSourceLabel(source) || 'job board';
+    toast.success(`Opening ${title} at ${company} on ${sourceName}`);
+    
+    // Prevent default navigation in current tab
+    e.preventDefault();
   };
   
   // Determine if the URL is valid
@@ -111,6 +113,22 @@ const JobListing: React.FC<JobListingProps> = ({
   };
   
   const formattedDate = formatDate(date);
+  
+  // Get the destination label for the Apply button
+  const getApplyDestination = (source?: string) => {
+    if (!source) return "View Job";
+    
+    switch(source.toLowerCase()) {
+      case 'jobbank':
+        return "Apply on Job Bank";
+      case 'indeed':
+        return "Apply on Indeed";
+      case 'linkedin':
+        return "Apply on LinkedIn";
+      default:
+        return "Apply Now";
+    }
+  };
   
   return (
     <div className={cn("bg-white rounded-md shadow-sm border border-gray-200 p-4", className)}>
@@ -143,12 +161,10 @@ const JobListing: React.FC<JobListingProps> = ({
         {isValidUrl ? (
           <a 
             href={url} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="flex items-center text-primary hover:text-primary/80 text-sm font-medium"
             onClick={handleApplyClick}
+            className="flex items-center text-primary hover:text-primary/80 text-sm font-medium"
           >
-            Apply Now <ExternalLink className="h-3 w-3 ml-1" />
+            {getApplyDestination(source)} <ExternalLink className="h-3 w-3 ml-1" />
           </a>
         ) : (
           <Button 
