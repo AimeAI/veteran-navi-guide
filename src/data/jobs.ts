@@ -1,7 +1,10 @@
+
 import { mockJobs } from "./mockJobs";
 import { searchLightcastJobs } from "@/utils/lightcastApi";
 import { Job } from "@/context/JobContext";
 import { JobListing } from "@/utils/recommendationAlgorithm";
+import { getJobsFromSupabase } from "@/utils/supabaseClient";
+import { searchJobBankJobs } from "@/utils/jobBankApi";
 
 // Define the search parameters interface
 interface SearchParams {
@@ -21,10 +24,59 @@ interface SearchParams {
   benefits?: string[]; // Added benefits parameter
   useLightcastApi?: boolean; // Flag to use Lightcast API instead of mock data
   country?: "us" | "canada"; // Added country parameter for international searches
+  useJobicy?: boolean; // Flag to include Jobicy jobs
 }
 
 // Search function to filter jobs based on criteria
 export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
+  let allJobs: Job[] = [];
+  
+  // Try to get Jobicy jobs from Supabase if requested
+  if (params.useJobicy) {
+    try {
+      const supabaseParams = {
+        source: 'jobicy',
+        keywords: params.keywords?.join(' '),
+        location: params.locations?.[0],
+        remote: params.remote,
+        category: params.industry,
+        jobType: params.jobType,
+        limit: 50,
+      };
+      
+      const { jobs: jobicyJobs } = await getJobsFromSupabase(supabaseParams);
+      
+      if (jobicyJobs.length > 0) {
+        console.log(`Retrieved ${jobicyJobs.length} Jobicy jobs from Supabase`);
+        allJobs = [...allJobs, ...jobicyJobs];
+      }
+    } catch (error) {
+      console.error('Error fetching Jobicy jobs from Supabase:', error);
+    }
+  }
+  
+  // Fetch jobs based on country
+  if (params.country === 'canada') {
+    try {
+      // Try to get Job Bank jobs
+      const jobBankParams = {
+        keywords: params.keywords?.join(' ') || '',
+        location: params.locations?.[0] || '',
+        distance: params.radius,
+        page: 1,
+      };
+      
+      const jobBankResult = await searchJobBankJobs(jobBankParams);
+      
+      if (jobBankResult.jobs.length > 0) {
+        console.log(`Retrieved ${jobBankResult.jobs.length} Job Bank jobs`);
+        allJobs = [...allJobs, ...jobBankResult.jobs];
+      }
+    } catch (error) {
+      console.error('Error fetching Job Bank jobs:', error);
+    }
+  }
+  
   // Check if we should use Lightcast API
   if (params.useLightcastApi) {
     try {
@@ -42,16 +94,29 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
       };
       
       const result = await searchLightcastJobs(lightcastParams);
-      return result.jobs;
+      
+      if (result.jobs.length > 0) {
+        console.log(`Retrieved ${result.jobs.length} Lightcast jobs`);
+        allJobs = [...allJobs, ...result.jobs];
+      }
     } catch (error) {
       console.error('Error searching Lightcast jobs:', error);
-      // Fall back to mock data if API fails
-      return filterMockJobs(params);
     }
   }
   
-  // Use mock data if not using Lightcast API
-  return filterMockJobs(params);
+  // If we don't have any jobs yet, use mock data
+  if (allJobs.length === 0) {
+    console.log('Using mock job data as fallback');
+    allJobs = filterMockJobs(params);
+  }
+  
+  // Deduplicate jobs by ID
+  const uniqueJobs = Array.from(
+    new Map(allJobs.map(job => [job.id, job])).values()
+  );
+  
+  console.log(`Returning ${uniqueJobs.length} jobs after deduplication`);
+  return uniqueJobs;
 };
 
 // Helper function to filter mock jobs based on search params
@@ -238,4 +303,29 @@ const filterMockJobs = (params: SearchParams): Job[] => {
   }
 
   return filteredJobs;
+};
+
+// Function to manually trigger a Jobicy RSS feed fetch
+// This would typically be called by an Edge Function or a scheduled task
+export const refreshJobicyFeed = async (): Promise<void> => {
+  try {
+    const { fetchAndParseJobicyFeed } = await import('@/utils/jobicyRssParser');
+    const { storeJobsInSupabase } = await import('@/utils/supabaseClient');
+    
+    console.log('Fetching Jobicy RSS feed...');
+    const jobs = await fetchAndParseJobicyFeed();
+    
+    if (jobs.length === 0) {
+      console.warn('No jobs found in Jobicy RSS feed');
+      return;
+    }
+    
+    console.log(`Parsed ${jobs.length} jobs from Jobicy RSS feed`);
+    
+    // Store jobs in Supabase
+    const insertedCount = await storeJobsInSupabase(jobs);
+    console.log(`Stored ${insertedCount} new Jobicy jobs in Supabase`);
+  } catch (error) {
+    console.error('Error refreshing Jobicy feed:', error);
+  }
 };

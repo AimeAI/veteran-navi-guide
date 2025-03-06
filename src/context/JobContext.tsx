@@ -61,6 +61,7 @@ export interface JobFilterState {
   companySize?: string;
   companyRating?: number;
   benefits?: string[];
+  useJobicy?: boolean;
 }
 
 // Create the context
@@ -249,109 +250,133 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [appliedJobs]);
 
   // Function to search/filter jobs
-  const searchJobs = (filters: JobFilterState) => {
+  const searchJobs = async (filters: JobFilterState) => {
     setIsLoading(true);
     
-    let results = [...jobs];
-
-    if (filters.keywords) {
-      const keywords = filters.keywords.toLowerCase();
-      results = results.filter(job => 
-        job.title.toLowerCase().includes(keywords) || 
-        job.company.toLowerCase().includes(keywords) || 
-        job.description.toLowerCase().includes(keywords)
-      );
-    }
-
-    if (filters.location) {
-      const location = filters.location.toLowerCase();
-      results = results.filter(job => 
-        job.location.toLowerCase().includes(location)
-      );
+    try {
+      // Convert filters to the format expected by the searchJobs function
+      const searchParams = {
+        keywords: filters.keywords ? [filters.keywords] : undefined,
+        locations: filters.location ? [filters.location] : undefined,
+        radius: filters.radius,
+        jobType: filters.jobType,
+        mosCodes: filters.mosCodes,
+        clearanceLevel: filters.clearanceLevel,
+        remote: filters.remote,
+        militarySkills: filters.militarySkills,
+        industry: filters.industry,
+        experienceLevel: filters.experienceLevel,
+        educationLevel: filters.educationLevel,
+        companySize: filters.companySize,
+        companyRating: filters.companyRating,
+        benefits: filters.benefits,
+        useLightcastApi: true, // Always try to use Lightcast API
+        country: "canada", // Default to Canada for now
+        useJobicy: filters.useJobicy // Include Jobicy jobs if requested
+      };
       
-      // If radius is provided, we would use geocoding and distance calculation
-      // This is a placeholder for actual radius search implementation
-      if (filters.radius && filters.radius > 0) {
-        // In a real implementation, we would use geocoding API and distance calculation
-        console.log(`Searching within ${filters.radius} km of ${filters.location}`);
-        // For now, we'll just use the existing location filter
-      }
-    }
-
-    if (filters.category) {
-      results = results.filter(job => job.category === filters.category);
-    }
-
-    if (filters.industry) {
-      results = results.filter(job => 
-        job.industry?.toLowerCase().includes(filters.industry.toLowerCase())
-      );
-    }
-
-    if (filters.salaryRange && filters.salaryRange !== 'any') {
-      results = results.filter(job => job.salaryRange === filters.salaryRange);
-    }
-
-    if (filters.mosCodes.length > 0) {
-      results = results.filter(job => filters.mosCodes.includes(job.mosCode));
-    }
-
-    if (filters.clearanceLevel.length > 0) {
-      results = results.filter(job => filters.clearanceLevel.includes(job.clearanceLevel));
-    }
-
-    if (filters.remote) {
-      results = results.filter(job => job.remote === true);
-    }
-
-    // Filter by job type if provided
-    if (filters.jobType) {
-      results = results.filter(job => job.jobType === filters.jobType);
-    }
-
-    // Filter by experience level if provided
-    if (filters.experienceLevel) {
-      results = results.filter(job => job.experienceLevel === filters.experienceLevel);
-    }
-
-    // Filter by education level if provided
-    if (filters.educationLevel) {
-      results = results.filter(job => job.educationLevel === filters.educationLevel);
-    }
-
-    // Filter by company size if provided
-    if (filters.companySize) {
-      results = results.filter(job => job.companySize === filters.companySize);
-    }
-
-    // Filter by company rating if provided
-    if (filters.companyRating) {
-      results = results.filter(job => job.companyRating >= filters.companyRating);
-    }
-
-    // Filter by benefits if provided
-    if (filters.benefits && filters.benefits.length > 0) {
-      results = results.filter(job => 
-        job.benefits && filters.benefits.some(benefit => job.benefits.includes(benefit))
-      );
-    }
-
-    // Filter by military skills if provided
-    if (filters.militarySkills && filters.militarySkills.length > 0) {
-      results = results.filter(job => {
-        // Check if any of the job's required skills match the selected military skills
-        if (!job.requiredSkills) return false;
-        
-        return filters.militarySkills.some(skill => 
-          job.requiredSkills?.some(jobSkill => 
-            jobSkill.toLowerCase().includes(skill.toLowerCase())
-          )
+      // Import and call the searchJobs function from the data module
+      const { searchJobs: searchJobsFunc } = await import('@/data/jobs');
+      const results = await searchJobsFunc(searchParams);
+      
+      setFilteredJobs(results);
+    } catch (error) {
+      console.error('Error searching jobs:', error);
+      // Fallback to local filtering if API calls fail
+      let results = [...jobs];
+      
+      if (filters.keywords) {
+        const keywords = filters.keywords.toLowerCase();
+        results = results.filter(job => 
+          job.title.toLowerCase().includes(keywords) || 
+          job.company.toLowerCase().includes(keywords) || 
+          job.description.toLowerCase().includes(keywords)
         );
-      });
-    }
+      }
 
-    setFilteredJobs(results);
-    setIsLoading(false);
+      if (filters.location) {
+        const location = filters.location.toLowerCase();
+        results = results.filter(job => 
+          job.location.toLowerCase().includes(location)
+        );
+      }
+
+      if (filters.category) {
+        results = results.filter(job => job.category === filters.category);
+      }
+
+      if (filters.industry) {
+        results = results.filter(job => 
+          job.industry?.toLowerCase().includes(filters.industry.toLowerCase())
+        );
+      }
+
+      if (filters.salaryRange && filters.salaryRange !== 'any') {
+        results = results.filter(job => job.salaryRange === filters.salaryRange);
+      }
+
+      if (filters.mosCodes.length > 0) {
+        results = results.filter(job => filters.mosCodes.includes(job.mosCode));
+      }
+
+      if (filters.clearanceLevel.length > 0) {
+        results = results.filter(job => filters.clearanceLevel.includes(job.clearanceLevel));
+      }
+
+      if (filters.remote) {
+        results = results.filter(job => job.remote === true);
+      }
+
+      // Filter by job type if provided
+      if (filters.jobType) {
+        results = results.filter(job => job.jobType === filters.jobType);
+      }
+
+      // Filter by experience level if provided
+      if (filters.experienceLevel) {
+        results = results.filter(job => job.experienceLevel === filters.experienceLevel);
+      }
+
+      // Filter by education level if provided
+      if (filters.educationLevel) {
+        results = results.filter(job => job.educationLevel === filters.educationLevel);
+      }
+
+      // Filter by company size if provided
+      if (filters.companySize) {
+        results = results.filter(job => job.companySize === filters.companySize);
+      }
+
+      // Filter by company rating if provided
+      if (filters.companyRating) {
+        results = results.filter(job => job.companyRating >= filters.companyRating);
+      }
+
+      // Filter by benefits if provided
+      if (filters.benefits && filters.benefits.length > 0) {
+        results = results.filter(job => 
+          job.benefits && filters.benefits.some(benefit => job.benefits.includes(benefit))
+        );
+      }
+
+      // Filter by military skills if provided
+      if (filters.militarySkills && filters.militarySkills.length > 0) {
+        results = results.filter(job => {
+          // Check if any of the job's required skills match the selected military skills
+          if (!job.requiredSkills) return false;
+          
+          return filters.militarySkills.some(skill => 
+            job.requiredSkills?.some(jobSkill => 
+              jobSkill.toLowerCase().includes(skill.toLowerCase())
+            )
+          );
+        });
+      }
+
+      setFilteredJobs(results);
+    } finally {
+      setIsLoading(false);
+    }
     
     return results;
   };
