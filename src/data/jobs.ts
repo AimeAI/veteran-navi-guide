@@ -2,6 +2,7 @@
 import { mockJobs } from "./mockJobs";
 import { searchLightcastJobs } from "@/utils/lightcastApi";
 import { Job } from "@/context/JobContext";
+import { JobListing } from "@/utils/recommendationAlgorithm";
 
 // Define the search parameters interface
 interface SearchParams {
@@ -55,7 +56,7 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
 // Helper function to filter mock jobs based on search params
 const filterMockJobs = (params: SearchParams): Job[] => {
   // First convert the mockJobs (JobListing[]) to Job[] by mapping and adding required properties
-  const jobsWithRequiredProps: Job[] = mockJobs.map(job => ({
+  const jobsWithRequiredProps: Job[] = mockJobs.map((job: JobListing) => ({
     ...job,
     // Add the required properties from the Job interface that are missing in JobListing
     category: job.industry?.toLowerCase() || 'other',
@@ -174,8 +175,8 @@ const filterMockJobs = (params: SearchParams): Job[] => {
   // Filter by clearance level
   if (params.clearanceLevel && params.clearanceLevel.length > 0) {
     filteredJobs = filteredJobs.filter(job => 
-      job.securityClearanceRequired && 
-      params.clearanceLevel?.includes(job.securityClearanceRequired)
+      job.clearanceLevel && 
+      params.clearanceLevel?.includes(job.clearanceLevel)
     );
   }
 
