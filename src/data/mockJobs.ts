@@ -1,3 +1,4 @@
+
 import { JobListing } from '../utils/recommendationAlgorithm';
 
 // Mock job listings with skills and MOS codes

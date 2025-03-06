@@ -1,0 +1,49 @@
+
+{
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "french": "French",
+    "login": "Log in",
+    "signup": "Sign up",
+    "search": "Search",
+    "home": "Home"
+  },
+  "navigation": {
+    "jobSearch": "Job Search",
+    "savedJobs": "Saved Jobs",
+    "recommendedJobs": "Recommended Jobs",
+    "jobAlerts": "Job Alerts",
+    "profile": "Profile",
+    "resume": "Resume/CV",
+    "applicationHistory": "Application History",
+    "settings": "Settings",
+    "resources": "Resources",
+    "careerCounseling": "Career Counseling",
+    "resumeAssistance": "Resume Writing Assistance",
+    "interviewPrep": "Interview Preparation",
+    "militaryTransition": "Military Transition Resources",
+    "communityForums": "Community Forums",
+    "employers": "Employers",
+    "postJob": "Post a Job",
+    "manageApplications": "Manage Applications",
+    "searchVeterans": "Search Veteran Profiles"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "enterCredentials": "Enter your credentials to access your account",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "loginAsEmployer": "Login as an employer",
+    "createAccount": "Create an Account",
+    "signUpToJoin": "Sign up to join our platform",
+    "accountType": "Account Type",
+    "veteran": "Veteran",
+    "employer": "Employer",
+    "confirmPassword": "Confirm Password",
+    "militaryBranch": "Military Branch",
+    "companyName": "Company Name",
+    "passwordRequirements": "Password must be at least 8 characters with uppercase, lowercase, and numbers"
+  }
+}

@@ -1,0 +1,49 @@
+
+{
+  "common": {
+    "language": "Langue",
+    "english": "Anglais",
+    "french": "Français",
+    "login": "Se connecter",
+    "signup": "S'inscrire",
+    "search": "Rechercher",
+    "home": "Accueil"
+  },
+  "navigation": {
+    "jobSearch": "Recherche d'emploi",
+    "savedJobs": "Emplois sauvegardés",
+    "recommendedJobs": "Emplois recommandés",
+    "jobAlerts": "Alertes d'emploi",
+    "profile": "Profil",
+    "resume": "CV",
+    "applicationHistory": "Historique des candidatures",
+    "settings": "Paramètres",
+    "resources": "Ressources",
+    "careerCounseling": "Conseil de carrière",
+    "resumeAssistance": "Aide à la rédaction de CV",
+    "interviewPrep": "Préparation aux entretiens",
+    "militaryTransition": "Ressources de transition militaire",
+    "communityForums": "Forums communautaires",
+    "employers": "Employeurs",
+    "postJob": "Publier une offre d'emploi",
+    "manageApplications": "Gérer les candidatures",
+    "searchVeterans": "Rechercher des profils de vétérans"
+  },
+  "auth": {
+    "welcomeBack": "Bienvenue",
+    "enterCredentials": "Entrez vos identifiants pour accéder à votre compte",
+    "email": "Courriel",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "loginAsEmployer": "Se connecter en tant qu'employeur",
+    "createAccount": "Créer un compte",
+    "signUpToJoin": "Inscrivez-vous pour rejoindre notre plateforme",
+    "accountType": "Type de compte",
+    "veteran": "Vétéran",
+    "employer": "Employeur",
+    "confirmPassword": "Confirmer le mot de passe",
+    "militaryBranch": "Branche militaire",
+    "companyName": "Nom de l'entreprise",
+    "passwordRequirements": "Le mot de passe doit comporter au moins 8 caractères avec des majuscules, des minuscules et des chiffres"
+  }
+}

@@ -5,6 +5,8 @@ import { Briefcase, User, BookOpen, Building, ChevronDown } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { cn } from '@/lib/utils';
 import NavDropdown from './NavDropdown';
+import LanguageSelector from './LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,51 +14,53 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Navigation data
-const navSections = [
-  {
-    title: 'Job Search',
-    icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
-    items: [
-      { label: 'Search Jobs', href: '/job-search' },
-      { label: 'Saved Jobs', href: '/saved' },
-      { label: 'Recommended Jobs', href: '/recommended' },
-      { label: 'Job Alerts', href: '/job-alerts' },
-    ],
-  },
-  {
-    title: 'Profile',
-    icon: <User className="h-4 w-4" aria-hidden="true" />,
-    items: [
-      { label: 'My Profile', href: '/profile' },
-      { label: 'Resume/CV', href: '/profile/resume' },
-      { label: 'Application History', href: '/history' },
-      { label: 'Settings', href: '/profile/settings' },
-    ],
-  },
-  {
-    title: 'Resources',
-    icon: <BookOpen className="h-4 w-4" aria-hidden="true" />,
-    items: [
-      { label: 'Career Counseling', href: '/resources/career-counseling' },
-      { label: 'Resume Writing Assistance', href: '/resources/resume-assistance' },
-      { label: 'Interview Preparation', href: '/resources/interview-prep' },
-      { label: 'Military Transition Resources', href: '/resources/military-transition' },
-      { label: 'Community Forums', href: '/resources/forums' },
-    ],
-  },
-  {
-    title: 'Employers',
-    icon: <Building className="h-4 w-4" aria-hidden="true" />,
-    items: [
-      { label: 'Post a Job', href: '/employer/post-job' },
-      { label: 'Manage Applications', href: '/employer/manage-applications' },
-      { label: 'Search Veteran Profiles', href: '/employer/search-veterans' },
-    ],
-  },
-];
-
 const Navbar: React.FC = () => {
+  const { t } = useTranslation();
+  
+  // Navigation data
+  const navSections = [
+    {
+      title: t('navigation.jobSearch'),
+      icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.jobSearch'), href: '/job-search' },
+        { label: t('navigation.savedJobs'), href: '/saved' },
+        { label: t('navigation.recommendedJobs'), href: '/recommended' },
+        { label: t('navigation.jobAlerts'), href: '/job-alerts' },
+      ],
+    },
+    {
+      title: t('navigation.profile'),
+      icon: <User className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.profile'), href: '/profile' },
+        { label: t('navigation.resume'), href: '/profile/resume' },
+        { label: t('navigation.applicationHistory'), href: '/history' },
+        { label: t('navigation.settings'), href: '/profile/settings' },
+      ],
+    },
+    {
+      title: t('navigation.resources'),
+      icon: <BookOpen className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.careerCounseling'), href: '/resources/career-counseling' },
+        { label: t('navigation.resumeAssistance'), href: '/resources/resume-assistance' },
+        { label: t('navigation.interviewPrep'), href: '/resources/interview-prep' },
+        { label: t('navigation.militaryTransition'), href: '/resources/military-transition' },
+        { label: t('navigation.communityForums'), href: '/resources/forums' },
+      ],
+    },
+    {
+      title: t('navigation.employers'),
+      icon: <Building className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.postJob'), href: '/employer/post-job' },
+        { label: t('navigation.manageApplications'), href: '/employer/manage-applications' },
+        { label: t('navigation.searchVeterans'), href: '/employer/search-veterans' },
+      ],
+    },
+  ];
+
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur supports-backdrop-blur:bg-nav/80">
       <div className="border-b border-nav-border bg-nav/85 backdrop-blur-sm">
@@ -88,6 +92,9 @@ const Navbar: React.FC = () => {
                   </DropdownMenu>
                 </div>
               ))}
+              
+              {/* Language selector */}
+              <LanguageSelector />
             </nav>
 
             {/* Mobile Menu */}
@@ -100,14 +107,14 @@ const Navbar: React.FC = () => {
                 className="px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
                 aria-label="Log in to your account"
               >
-                Log in
+                {t('common.login')}
               </Link>
               <Link
                 to="/auth?tab=signup"
                 className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
                 aria-label="Create a new account"
               >
-                Sign up
+                {t('common.signup')}
               </Link>
             </div>
           </div>

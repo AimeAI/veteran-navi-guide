@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,12 +12,14 @@ import { AlertCircle, Building, Briefcase, User } from "lucide-react";
 import { isValidEmail, isStrongPassword } from "@/utils/validation";
 import FormErrorMessage from "@/components/ui/form-error-message";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTranslation } from "react-i18next";
 
 interface FormError {
   [key: string]: string;
 }
 
 const AuthPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, signup, isLoading, user } = useUser();
   
@@ -150,23 +151,23 @@ const AuthPage: React.FC = () => {
       <div className="w-full max-w-md">
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="login">{t('common.login')}</TabsTrigger>
+            <TabsTrigger value="signup">{t('common.signup')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="login">
             <Card>
               <CardHeader>
-                <CardTitle>Welcome Back</CardTitle>
+                <CardTitle>{t('auth.welcomeBack')}</CardTitle>
                 <CardDescription>
-                  Enter your credentials to access your account
+                  {t('auth.enterCredentials')}
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleLogin}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email" className={loginErrors.email ? "text-red-500" : ""}>
-                      Email
+                      {t('auth.email')}
                     </Label>
                     <Input 
                       id="email" 
@@ -187,13 +188,13 @@ const AuthPage: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password" className={loginErrors.password ? "text-red-500" : ""}>
-                        Password
+                        {t('auth.password')}
                       </Label>
                       <Link 
                         to="/forgot-password" 
                         className="text-sm text-primary hover:underline"
                       >
-                        Forgot password?
+                        {t('auth.forgotPassword')}
                       </Link>
                     </div>
                     <Input 
@@ -223,7 +224,7 @@ const AuthPage: React.FC = () => {
                       />
                       <Label htmlFor="login-as-employer" className="font-normal">
                         <Building className="h-4 w-4 inline mr-1" />
-                        Login as an employer
+                        {t('auth.loginAsEmployer')}
                       </Label>
                     </div>
                   </div>
@@ -235,7 +236,7 @@ const AuthPage: React.FC = () => {
                     isLoading={isLoading}
                     loadingText="Logging in..."
                   >
-                    Login
+                    {t('common.login')}
                   </LoadingButton>
                 </CardFooter>
               </form>
@@ -245,15 +246,15 @@ const AuthPage: React.FC = () => {
           <TabsContent value="signup">
             <Card>
               <CardHeader>
-                <CardTitle>Create an Account</CardTitle>
+                <CardTitle>{t('auth.createAccount')}</CardTitle>
                 <CardDescription>
-                  Sign up to join our platform
+                  {t('auth.signUpToJoin')}
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleSignup}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="account-type">Account Type</Label>
+                    <Label htmlFor="account-type">{t('auth.accountType')}</Label>
                     <RadioGroup 
                       value={userType} 
                       onValueChange={(value) => setUserType(value as "veteran" | "employer")}
@@ -263,14 +264,14 @@ const AuthPage: React.FC = () => {
                         <RadioGroupItem value="veteran" id="veteran" />
                         <Label htmlFor="veteran" className="flex items-center cursor-pointer">
                           <User className="h-4 w-4 mr-1" />
-                          Veteran
+                          {t('auth.veteran')}
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="employer" id="employer" />
                         <Label htmlFor="employer" className="flex items-center cursor-pointer">
                           <Building className="h-4 w-4 mr-1" />
-                          Employer
+                          {t('auth.employer')}
                         </Label>
                       </div>
                     </RadioGroup>
@@ -278,7 +279,7 @@ const AuthPage: React.FC = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className={signupErrors.email ? "text-red-500" : ""}>
-                      Email
+                      {t('auth.email')}
                     </Label>
                     <Input 
                       id="signup-email" 
@@ -300,7 +301,7 @@ const AuthPage: React.FC = () => {
                   {userType === "veteran" ? (
                     <div className="space-y-2">
                       <Label htmlFor="military-branch" className={signupErrors.militaryBranch ? "text-red-500" : ""}>
-                        Military Branch
+                        {t('auth.militaryBranch')}
                       </Label>
                       <Input 
                         id="military-branch" 
@@ -321,7 +322,7 @@ const AuthPage: React.FC = () => {
                   ) : (
                     <div className="space-y-2">
                       <Label htmlFor="company-name" className={signupErrors.companyName ? "text-red-500" : ""}>
-                        Company Name
+                        {t('auth.companyName')}
                       </Label>
                       <Input 
                         id="company-name" 
@@ -343,7 +344,7 @@ const AuthPage: React.FC = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className={signupErrors.password ? "text-red-500" : ""}>
-                      Password
+                      {t('auth.password')}
                     </Label>
                     <Input 
                       id="signup-password" 
@@ -361,12 +362,12 @@ const AuthPage: React.FC = () => {
                     />
                     <FormErrorMessage message={signupErrors.password} />
                     <p className="text-xs text-gray-500">
-                      Password must be at least 8 characters with uppercase, lowercase, and numbers
+                      {t('auth.passwordRequirements')}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm-password" className={signupErrors.confirmPassword ? "text-red-500" : ""}>
-                      Confirm Password
+                      {t('auth.confirmPassword')}
                     </Label>
                     <Input 
                       id="confirm-password" 
@@ -392,7 +393,7 @@ const AuthPage: React.FC = () => {
                     isLoading={isLoading}
                     loadingText="Creating account..."
                   >
-                    Create Account
+                    {t('common.signup')}
                   </LoadingButton>
                 </CardFooter>
               </form>
