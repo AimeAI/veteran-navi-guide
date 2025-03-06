@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Briefcase, Building, MapPin, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,6 +16,8 @@ interface JobListingProps {
   className?: string;
   matchScore?: number; // Optional match score for recommendations
   variantId?: string; // Optional variant ID for A/B testing
+  source?: string; // Add source property
+  url?: string; // Add URL property for external job links
 }
 
 const JobListing: React.FC<JobListingProps> = ({
@@ -27,7 +28,9 @@ const JobListing: React.FC<JobListingProps> = ({
   description,
   className,
   matchScore,
-  variantId
+  variantId,
+  source,
+  url
 }) => {
   const { getJobById } = useJobs();
   const job = getJobById(jobId);
@@ -79,6 +82,11 @@ const JobListing: React.FC<JobListingProps> = ({
               )}
               {variantId && (
                 <span className="hidden">Variant: {variantId}</span>
+              )}
+              {source && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {source}
+                </span>
               )}
             </div>
             

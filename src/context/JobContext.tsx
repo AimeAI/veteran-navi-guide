@@ -26,6 +26,8 @@ export interface Job {
   companyRating?: number; // Added company rating field
   benefits?: string[]; // Added benefits field
   coordinates?: {lat: number, lng: number}; // Added for radius search
+  source?: string; // Added source field to track which API provided the job
+  url?: string; // Added URL field for external job links
 }
 
 // Job context type
