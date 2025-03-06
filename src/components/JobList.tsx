@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -106,7 +105,7 @@ const JobList: React.FC<JobListProps> = ({
             </Badge>
           )}
           {linkedinCount > 0 && (
-            <Badge variant="indigo" className="flex items-center gap-1">
+            <Badge variant="purple" className="flex items-center gap-1">
               LinkedIn: {linkedinCount}
             </Badge>
           )}
