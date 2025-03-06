@@ -1,10 +1,6 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { searchJobs } from '@/data/jobs';
-import { fetchAndParseJobicyFeed } from '@/utils/jobicyRssParser';
-import { supabase } from '@/utils/supabaseClient';
-
-// Define the Job interface
+// Job interface with all required fields for type safety
 export interface Job {
   id: string;
   title: string;
@@ -18,315 +14,230 @@ export interface Job {
   mosCode: string;
   requiredSkills: string[];
   preferredSkills: string[];
-  date: string;
   jobType: string;
+  date: string;
+  url?: string;
   industry: string;
   experienceLevel: string;
   educationLevel: string;
+  source?: string;
   companySize?: string;
   companyRating?: number;
   benefits?: string[];
-  source?: string;
-  url?: string;
   requiredMosCodes?: string[];
 }
 
-// Define the JobFilterState interface
+// Define job filter state
 export interface JobFilterState {
   keywords: string;
   location: string;
-  radius: number;
-  jobType: string;
-  mosCodes: string[];
-  clearanceLevel: string[];
+  mosCodes: string[] | undefined;
+  clearanceLevel: string[] | undefined;
   remote: boolean;
-  militarySkills: string[];
+  militarySkills: string[] | undefined;
+  radius: number;
   industry: string;
   experienceLevel: string;
   educationLevel: string;
+  jobType: string;
   companySize: string;
-  companyRating: number;
-  benefits: string[];
-  skills: string[];
+  companyRating: number | undefined;
+  benefits: string[] | undefined;
+  country: "us" | "canada" | undefined;
   useJobicy: boolean;
-  // Add these to fix type errors in JobSearch component
+  skills: string[] | undefined;
   category: string;
   salaryRange: string;
 }
 
-// Update the SearchParams interface to include the correct country type
-export interface SearchParams {
-  keywords: string[];
-  locations: string[];
-  radius: number;
-  jobType: string;
-  mosCodes: string[];
-  clearanceLevel: string[];
-  remote: boolean;
-  militarySkills: string[];
-  industry: string;
-  experienceLevel: string;
-  educationLevel: string;
-  companySize: string;
-  companyRating: number;
-  benefits: string[];
-  skills: string[];
-  country: "us" | "canada"; // Make sure this is the correct type
-  useJobicy: boolean;
+// Interface for the Job Context
+export interface JobContextProps {
+  jobs: Job[];
+  savedJobs: Job[];
+  appliedJobs: Job[];
+  loading: boolean;
+  error: Error | null;
+  filters: JobFilterState;
+  setFilters: React.Dispatch<React.SetStateAction<JobFilterState>>;
+  saveJob: (job: Job) => void;
+  unsaveJob: (jobId: string) => void;
+  applyToJob: (job: Job) => void;
+  searchJobs: (filters: JobFilterState) => Promise<void>;
+  clearFilters: () => void;
 }
 
-// Define the JobContextProps interface
-interface JobContextProps {
-  jobs: Job[];
-  isLoading: boolean;
-  error: string | null;
-  filters: JobFilterState;
-  savedJobs: Job[];
-  appliedJobs: string[]; // Added to match what components expect
-  performSearch: (filters: JobFilterState) => Promise<void>;
-  updateFilter: (name: string, value: any) => void;
-  updateArrayFilter: (name: string, value: string, checked: boolean) => void;
-  resetFilters: () => void;
-  saveJob: (job: Job) => void;
-  removeSavedJob: (jobId: string) => void;
-}
+// Default filter state
+const defaultFilters: JobFilterState = {
+  keywords: '',
+  location: '',
+  mosCodes: undefined,
+  clearanceLevel: undefined,
+  remote: false,
+  militarySkills: undefined,
+  radius: 50,
+  industry: '',
+  experienceLevel: '',
+  educationLevel: '',
+  jobType: '',
+  companySize: '',
+  companyRating: undefined,
+  benefits: undefined,
+  country: 'canada',
+  useJobicy: false,
+  skills: undefined,
+  category: '',
+  salaryRange: '',
+};
 
 // Create the context
 const JobContext = createContext<JobContextProps | undefined>(undefined);
 
-// Default filter values
-const defaultFilters: JobFilterState = {
-  keywords: '',
-  location: '',
-  radius: 25,
-  jobType: '',
-  mosCodes: [],
-  clearanceLevel: [],
-  remote: false,
-  militarySkills: [],
-  industry: '',
-  experienceLevel: '',
-  educationLevel: '',
-  companySize: '',
-  companyRating: 0,
-  benefits: [],
-  skills: [],
-  useJobicy: false,
-  // Add the missing properties
-  category: '',
-  salaryRange: ''
-};
-
-// Create the provider component
-export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+// Context Provider component
+export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [savedJobs, setSavedJobs] = useState<Job[]>(() => {
+    const storedJobs = localStorage.getItem('savedJobs');
+    return storedJobs ? JSON.parse(storedJobs) : [];
+  });
+  const [appliedJobs, setAppliedJobs] = useState<Job[]>(() => {
+    const storedJobs = localStorage.getItem('appliedJobs');
+    return storedJobs ? JSON.parse(storedJobs) : [];
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const [filters, setFilters] = useState<JobFilterState>(defaultFilters);
-  const [savedJobs, setSavedJobs] = useState<Job[]>([]);
-  const [appliedJobs, setAppliedJobs] = useState<string[]>([]); // Track applied jobs
 
-  // Load saved jobs from local storage on initialization
   useEffect(() => {
-    const loadSavedJobs = async () => {
-      try {
-        // Try to load from Supabase first
-        const { data: supabaseSavedJobs, error } = await supabase
-          .from('saved_jobs')
-          .select('*');
+    localStorage.setItem('savedJobs', JSON.stringify(savedJobs));
+  }, [savedJobs]);
 
-        if (error) {
-          throw error;
-        }
-
-        if (supabaseSavedJobs && supabaseSavedJobs.length > 0) {
-          // Process saved jobs from Supabase
-          // This would need additional logic to get the full job details
-          console.log('Loaded saved jobs from Supabase:', supabaseSavedJobs);
-          // For now, fall back to local storage
-        }
-
-        // Fall back to localStorage if needed
-        const savedJobsJson = localStorage.getItem('savedJobs');
-        if (savedJobsJson) {
-          setSavedJobs(JSON.parse(savedJobsJson));
-        }
-
-        // Load applied jobs from localStorage
-        const appliedJobsJson = localStorage.getItem('appliedJobs');
-        if (appliedJobsJson) {
-          setAppliedJobs(JSON.parse(appliedJobsJson));
-        }
-      } catch (err) {
-        console.error('Error loading saved jobs:', err);
-        
-        // Fall back to localStorage
-        const savedJobsJson = localStorage.getItem('savedJobs');
-        if (savedJobsJson) {
-          setSavedJobs(JSON.parse(savedJobsJson));
-        }
+  // Function to save a job
+  const saveJob = (job: Job) => {
+    setSavedJobs((prev) => {
+      // Check if job is already saved
+      if (prev.some(j => j.id === job.id)) {
+        return prev;
       }
-    };
-
-    loadSavedJobs();
-  }, []);
-
-  // Fix the country type in the performSearch function
-  const performSearch = async (filters: JobFilterState) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Convert filters to search params
-      const searchParams: SearchParams = {
-        keywords: filters.keywords ? [filters.keywords] : [],
-        locations: filters.location ? [filters.location] : [],
-        radius: filters.radius || 25,
-        jobType: filters.jobType || '',
-        mosCodes: filters.mosCodes || [],
-        clearanceLevel: filters.clearanceLevel || [],
-        remote: filters.remote || false,
-        militarySkills: filters.militarySkills || [],
-        industry: filters.industry || '',
-        experienceLevel: filters.experienceLevel || '',
-        educationLevel: filters.educationLevel || '',
-        companySize: filters.companySize || '',
-        companyRating: filters.companyRating || 0,
-        benefits: filters.benefits || [],
-        skills: filters.skills || [],
-        country: "canada", // Set to "canada" as a valid value
-        useJobicy: filters.useJobicy || false
-      };
-      
-      // Replace 'results' with 'jobResults' in the code
-      const jobResults = await searchJobs(searchParams);
-      setJobs(jobResults);
-    } catch (err) {
-      setError('Failed to search jobs. Please try again.');
-      console.error('Search error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Update a single filter value
-  const updateFilter = (name: string, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Update an array filter value (add/remove)
-  const updateArrayFilter = (name: string, value: string, checked: boolean) => {
-    setFilters(prev => {
-      const currentArray = prev[name as keyof JobFilterState] as string[];
-      
-      if (checked) {
-        // Add the value if it doesn't exist
-        return {
-          ...prev,
-          [name]: [...currentArray, value]
-        };
-      } else {
-        // Remove the value
-        return {
-          ...prev,
-          [name]: currentArray.filter(item => item !== value)
-        };
-      }
+      // Add job to saved jobs
+      const newSavedJobs = [...prev, job];
+      // Store in localStorage
+      localStorage.setItem('savedJobs', JSON.stringify(newSavedJobs));
+      return newSavedJobs;
     });
   };
 
-  // Reset filters to default values
-  const resetFilters = () => {
+  // Function to unsave a job
+  const unsaveJob = (jobId: string) => {
+    setSavedJobs((prev) => {
+      const newSavedJobs = prev.filter(job => job.id !== jobId);
+      localStorage.setItem('savedJobs', JSON.stringify(newSavedJobs));
+      return newSavedJobs;
+    });
+  };
+
+  // Function to apply to a job
+  const applyToJob = (job: Job) => {
+    setAppliedJobs((prev) => {
+      // Check if job is already in applied jobs
+      if (prev.some(j => j.id === job.id)) {
+        return prev;
+      }
+      // Add job to applied jobs
+      const newAppliedJobs = [...prev, job];
+      // Store in localStorage
+      localStorage.setItem('appliedJobs', JSON.stringify(newAppliedJobs));
+      return newAppliedJobs;
+    });
+  };
+
+  // Function to search for jobs
+  const searchJobs = async (filters: JobFilterState) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Simulate job search
+      setTimeout(() => {
+        const mockJobs = [
+          {
+            id: '1',
+            title: 'Software Engineer',
+            company: 'TechCorp',
+            location: 'Toronto, Canada',
+            description: 'Looking for an experienced software engineer...',
+            category: 'technology',
+            salaryRange: 'range4',
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['JavaScript', 'React', 'Node.js'],
+            preferredSkills: ['TypeScript', 'AWS'],
+            remote: false,
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            industry: 'technology',
+            experienceLevel: 'mid',
+            educationLevel: 'bachelors',
+          },
+          {
+            id: '2',
+            title: 'Project Manager',
+            company: 'Management Solutions',
+            location: 'Vancouver, Canada',
+            description: 'Seeking a project manager with experience in...',
+            category: 'management',
+            salaryRange: 'range4',
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['Project Management', 'Agile', 'Scrum'],
+            preferredSkills: ['PMP Certification', 'Jira'],
+            remote: false,
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            industry: 'management',
+            experienceLevel: 'senior',
+            educationLevel: 'masters',
+          },
+        ];
+        setJobs(mockJobs);
+        setLoading(false);
+      }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
+      setLoading(false);
+    }
+  };
+
+  // Function to clear filters
+  const clearFilters = () => {
     setFilters(defaultFilters);
   };
 
-  // Save a job to favorites
-  const saveJob = async (job: Job) => {
-    // Check if job is already saved
-    if (savedJobs.some(savedJob => savedJob.id === job.id)) {
-      return;
-    }
-
-    try {
-      // Try to save to Supabase
-      const { data, error } = await supabase
-        .from('saved_jobs')
-        .insert([{ 
-          job_id: job.id,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        }]);
-
-      if (error) {
-        console.error('Error saving job to Supabase:', error);
-      } else {
-        console.log('Job saved to Supabase:', data);
-      }
-    } catch (err) {
-      console.error('Failed to save job to Supabase:', err);
-    }
-
-    // Always update local state and localStorage as a fallback
-    const updatedSavedJobs = [...savedJobs, job];
-    setSavedJobs(updatedSavedJobs);
-    localStorage.setItem('savedJobs', JSON.stringify(updatedSavedJobs));
-  };
-
-  // Remove a job from favorites
-  const removeSavedJob = async (jobId: string) => {
-    try {
-      // Try to remove from Supabase
-      const { error } = await supabase
-        .from('saved_jobs')
-        .delete()
-        .eq('job_id', jobId)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
-
-      if (error) {
-        console.error('Error removing job from Supabase:', error);
-      }
-    } catch (err) {
-      console.error('Failed to remove job from Supabase:', err);
-    }
-
-    // Always update local state and localStorage as a fallback
-    const updatedSavedJobs = savedJobs.filter(job => job.id !== jobId);
-    setSavedJobs(updatedSavedJobs);
-    localStorage.setItem('savedJobs', JSON.stringify(updatedSavedJobs));
-  };
-
-  // Provide the context value
-  const contextValue: JobContextProps = {
-    jobs,
-    isLoading,
-    error,
-    filters,
-    savedJobs,
-    appliedJobs,
-    performSearch,
-    updateFilter,
-    updateArrayFilter,
-    resetFilters,
-    saveJob,
-    removeSavedJob
-  };
-
   return (
-    <JobContext.Provider value={contextValue}>
+    <JobContext.Provider
+      value={{
+        jobs,
+        savedJobs,
+        appliedJobs,
+        loading,
+        error,
+        filters,
+        setFilters,
+        saveJob,
+        unsaveJob,
+        applyToJob,
+        searchJobs,
+        clearFilters,
+      }}
+    >
       {children}
     </JobContext.Provider>
   );
 };
 
-// Create a custom hook to use the job context
-export const useJobs = () => {
+// Hook to use the job context
+export const useJobContext = (): JobContextProps => {
   const context = useContext(JobContext);
-  
-  if (context === undefined) {
-    throw new Error('useJobs must be used within a JobProvider');
+  if (!context) {
+    throw new Error('useJobContext must be used within a JobProvider');
   }
-  
   return context;
 };

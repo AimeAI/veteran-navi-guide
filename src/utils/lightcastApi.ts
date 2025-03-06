@@ -1,3 +1,4 @@
+
 import { Job } from "@/context/JobContext";
 import { searchJobBankJobs } from "./jobBankApi";
 
@@ -105,7 +106,8 @@ const searchGitHubJobs = async (params: LightcastSearchParams): Promise<{
     });
     
     if (!response.ok) {
-      if (response.status === 403 || data.includes('/corsdemo')) {
+      const responseText = await response.text();
+      if (response.status === 403 || responseText.includes('/corsdemo')) {
         throw new Error('CORS proxy requires activation');
       }
       throw new Error(`GitHub Jobs API returned status: ${response.status}`);

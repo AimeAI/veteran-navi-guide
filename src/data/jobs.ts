@@ -121,12 +121,16 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
 
 // Helper function to filter mock jobs based on search params
 const filterMockJobs = (params: SearchParams): Job[] => {
-  // First convert the mockJobs (JobListing[]) to Job[] by mapping and adding required properties
+  // Convert the mockJobs (JobListing[]) to Job[] by mapping and adding required properties
   const jobsWithRequiredProps: Job[] = mockJobs.map((job: JobListing) => ({
     ...job,
     // Add the required properties from the Job interface that are missing in JobListing
     category: job.industry?.toLowerCase() || 'other',
-    salaryRange: job.salaryRange || 'range2', // Default salary range
+    salaryRange: job.salary ? 
+      (parseInt(job.salary) > 100000 ? 'range5' : 
+       parseInt(job.salary) > 75000 ? 'range4' : 
+       parseInt(job.salary) > 50000 ? 'range3' : 
+       parseInt(job.salary) > 30000 ? 'range2' : 'range1') : 'range2',
     clearanceLevel: job.clearanceLevel || job.securityClearanceRequired || 'none',
     mosCode: job.requiredMosCodes?.[0] || '',
     // Make sure these required properties exist in each job
@@ -134,7 +138,7 @@ const filterMockJobs = (params: SearchParams): Job[] => {
     experienceLevel: job.experienceLevel || '',
     educationLevel: job.educationLevel || '',
     // Ensure date is always defined
-    date: job.date || new Date().toISOString(),
+    date: job.postedDate || new Date().toISOString(),
   }));
 
   let filteredJobs = [...jobsWithRequiredProps];
