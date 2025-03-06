@@ -1,3 +1,4 @@
+
 export interface Job {
   id: string;
   title: string;
@@ -116,7 +117,7 @@ export interface JobListing {
   preferredSkills: string[];
   requiredMosCodes?: string[];
   securityClearanceRequired?: string;
-  clearanceLevel?: string;
+  clearanceLevel?: string; // Add this property to fix the TypeScript error
   remote: boolean;
   jobType: string;
   industry?: string;
