@@ -1,3 +1,4 @@
+
 // Follow the Supabase Edge Function deployment instructions:
 // https://supabase.com/docs/guides/functions
 
@@ -45,11 +46,18 @@ async function searchJobBankCanada(params: {
     });
     
     if (!response.ok) {
+      console.error(`Job Bank website returned status: ${response.status}`);
       throw new Error(`Job Bank website returned status: ${response.status}`);
     }
     
     const html = await response.text();
-    if (!html || html.includes('<!DOCTYPE html>') === false) {
+    if (!html) {
+      console.error('Empty response received from Job Bank');
+      throw new Error('Empty response received from Job Bank');
+    }
+    
+    if (html.includes('<!DOCTYPE html>') === false) {
+      console.error('Invalid HTML response received');
       throw new Error('Invalid HTML response received');
     }
     
@@ -63,6 +71,7 @@ async function searchJobBankCanada(params: {
     
     if (jobResults.length === 0) {
       // If no jobs found in expected format, we might be getting a different page
+      console.warn('No job results found in response HTML');
       throw new Error('No job results found in response HTML');
     }
     
@@ -236,6 +245,12 @@ serve(async (req) => {
   }
 
   try {
+    // Set default content type to application/json for all responses
+    const responseHeaders = { 
+      ...corsHeaders,
+      'Content-Type': 'application/json'
+    };
+
     const url = new URL(req.url);
     
     // Parse query parameters
@@ -253,7 +268,7 @@ serve(async (req) => {
     if (!forceRefresh && cachedResult && (Date.now() - cachedResult.timestamp < CACHE_EXPIRY)) {
       console.log('Returning cached results for:', cacheKey);
       return new Response(JSON.stringify(cachedResult.data), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: responseHeaders,
         status: 200,
       });
     }
@@ -271,7 +286,7 @@ serve(async (req) => {
       
       console.log(`Successfully retrieved ${results.jobs.length} jobs from Job Bank Canada`);
     } catch (scrapeError) {
-      console.error('Error scraping Job Bank Canada:', scrapeError);
+      console.error('Error scraping Job Bank Canada, falling back to sample data:', scrapeError);
       
       // If scraping failed, generate realistic sample data instead
       results = generateSampleJobs({
@@ -303,11 +318,11 @@ serve(async (req) => {
     });
     
     return new Response(JSON.stringify(results), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: responseHeaders,
       status: 200,
     });
   } catch (error) {
-    console.error('Error in job search proxy:', error);
+    console.error('Error in job search proxy, returning fallback data:', error);
     
     // Generate sample data as a last resort
     const sampleData = generateSampleJobs({});

@@ -72,36 +72,37 @@ export const searchJobBankJobs = async (params: {
     });
     
     if (!response.ok) {
+      console.error(`Job search returned status: ${response.status}`);
       throw new Error(`Job search returned status: ${response.status}`);
     }
     
-    const responseText = await response.text();
-    
-    // Check if the response is HTML (which would indicate an error)
-    if (responseText.trim().startsWith('<!DOCTYPE html>') || responseText.trim().startsWith('<html>')) {
-      console.error('Received HTML response instead of JSON');
-      throw new Error('Invalid response format from job search API');
-    }
-    
-    let data;
+    // First try to parse as JSON directly
     try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Error parsing job search response:', parseError);
-      throw new Error('Failed to parse job search results');
-    }
-    
-    // If we have jobs, return them
-    if (data.jobs && data.jobs.length > 0) {
-      console.log(`Received ${data.jobs.length} jobs from Job Bank Canada`);
-      return {
-        jobs: data.jobs,
-        totalJobs: data.totalJobs || data.jobs.length,
-        currentPage: data.currentPage || 1,
-        totalPages: data.totalPages || 1,
-      };
-    } else {
-      throw new Error('No jobs found in response');
+      const data = await response.json();
+      
+      // If we have jobs, return them
+      if (data && data.jobs && data.jobs.length > 0) {
+        console.log(`Received ${data.jobs.length} jobs from Job Bank Canada`);
+        return {
+          jobs: data.jobs,
+          totalJobs: data.totalJobs || data.jobs.length,
+          currentPage: data.currentPage || 1,
+          totalPages: data.totalPages || 1,
+        };
+      } else {
+        throw new Error('No jobs found in response');
+      }
+    } catch (jsonError) {
+      // If JSON parsing fails, check if it's HTML
+      const responseText = await response.text();
+      
+      if (responseText.trim().startsWith('<!DOCTYPE html>') || responseText.trim().startsWith('<html>')) {
+        console.error('Received HTML response instead of JSON');
+        throw new Error('Invalid response format from job search API');
+      } else {
+        console.error('Failed to parse response:', jsonError);
+        throw new Error('Failed to parse job search results');
+      }
     }
   } catch (error) {
     console.error('Error searching for jobs:', error);
