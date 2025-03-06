@@ -85,7 +85,6 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
     setErrorMessage("");
     
     try {
-      // Validate form
       if (!formData.title.trim()) {
         throw new Error("Please provide a title for your job alert");
       }
@@ -94,10 +93,8 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
         throw new Error("Please provide at least one search criteria");
       }
       
-      // In a real app, this would save to a database via API
       console.log("Creating job alert:", formData);
       
-      // Simulate fetch matching jobs
       const matchingJobs = searchJobs({
         keywords: formData.keywords,
         locations: formData.locations,
@@ -116,10 +113,8 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
       }
       
       setTimeout(() => {
-        // Simulate API call
         console.log("Job alert created successfully");
         
-        // Update context with the new alert
         addJobAlert({
           id: `alert-${Date.now()}`,
           title: formData.title,
@@ -137,7 +132,6 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
         if (onSuccess) {
           onSuccess();
         } else {
-          // Reset form
           setFormData({
             title: "",
             keywords: [],
@@ -241,7 +235,14 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
 
       <div>
         <Label htmlFor="frequency">Frequency</Label>
-        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, frequency: value }))}>
+        <Select 
+          onValueChange={(value: "daily" | "weekly" | "monthly") => 
+            setFormData(prev => ({
+              ...prev,
+              frequency: value
+            }))
+          }
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select frequency" defaultValue={formData.frequency} />
           </SelectTrigger>
