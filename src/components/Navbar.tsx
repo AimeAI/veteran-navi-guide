@@ -65,12 +65,13 @@ const Navbar: React.FC = () => {
             {/* Desktop Navigation */}
             <nav aria-label="Main Navigation" className="hidden lg:flex lg:items-center lg:space-x-4 xl:space-x-6">
               {navSections.map((section) => (
-                <NavDropdown
-                  key={section.title}
-                  label={section.title}
-                  items={section.items}
-                  icon={section.icon}
-                />
+                <div key={section.title}>
+                  {/* We'll implement this dropdown properly */}
+                  <Link to={section.items[0].href} className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200">
+                    {section.icon}
+                    <span className="ml-2">{section.title}</span>
+                  </Link>
+                </div>
               ))}
             </nav>
 
