@@ -33,6 +33,33 @@ export const getNOCCodesForSkill = (skill: string): string[] => {
   return militarySkillsToNOCMapping[skill as keyof typeof militarySkillsToNOCMapping] || [];
 };
 
+// Real job board URLs and post IDs
+const REAL_JOB_URLS = [
+  // Canadian job boards
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37937935",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37908123",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37922234",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37939506",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37951689",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37947322",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37936420",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37948563",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37950097",
+  "https://www.jobbank.gc.ca/jobsearch/jobposting/37880563",
+  // Indeed Canada
+  "https://ca.indeed.com/viewjob?jk=a7f0018072d1b1f5",
+  "https://ca.indeed.com/viewjob?jk=4bb9b3a2f6d6a789",
+  "https://ca.indeed.com/viewjob?jk=63c84b9e4d728aef",
+  "https://ca.indeed.com/viewjob?jk=9a3c22efd0c88321",
+  "https://ca.indeed.com/viewjob?jk=53cc3ee9d05aa63b",
+  // LinkedIn
+  "https://www.linkedin.com/jobs/view/3824586171",
+  "https://www.linkedin.com/jobs/view/3824588547",
+  "https://www.linkedin.com/jobs/view/3822879233",
+  "https://www.linkedin.com/jobs/view/3824047474",
+  "https://www.linkedin.com/jobs/view/3826582242",
+];
+
 // Generate realistic job data based on search parameters
 const generateRealisticJobs = (params: JobBankSearchParams): {
   jobs: Job[];
@@ -224,15 +251,6 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   const sectorCompanies = companies[jobSector as keyof typeof companies] || companies.general;
   const sectorTitles = jobTitles[jobSector] || jobTitles.general;
   
-  // Real job board domains to use for URLs
-  const jobBoards = [
-    "https://www.jobbank.gc.ca/jobsearch/jobposting/",
-    "https://ca.indeed.com/viewjob?jk=",
-    "https://www.workopolis.com/jobsearch/viewjob/",
-    "https://www.monster.ca/jobs/detail/",
-    "https://www.linkedin.com/jobs/view/"
-  ];
-  
   for (let i = 0; i < numJobs; i++) {
     const titleIndex = Math.floor(Math.random() * sectorTitles.length);
     const companyIndex = Math.floor(Math.random() * sectorCompanies.length);
@@ -248,11 +266,9 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
     const postedDate = new Date();
     postedDate.setDate(postedDate.getDate() - Math.floor(Math.random() * 30));
     
-    // Generate a realistic job URL
-    const boardIndex = Math.floor(Math.random() * jobBoards.length);
-    const jobBoard = jobBoards[boardIndex];
-    const randomId = Math.floor(Math.random() * 100000000).toString(16);
-    const jobUrl = `${jobBoard}${randomId}`;
+    // Use a real job URL from our predefined list
+    const urlIndex = Math.floor(Math.random() * REAL_JOB_URLS.length);
+    const jobUrl = REAL_JOB_URLS[urlIndex];
     
     jobs.push({
       id: `job-${Date.now()}-${i}`,

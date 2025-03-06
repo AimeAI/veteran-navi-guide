@@ -66,7 +66,7 @@ const JobBoardPage: React.FC = () => {
       JobCache.clearCache();
       toast.info("Cleared job search cache");
       await refreshJobs();
-      toast.success("Job results refreshed");
+      toast.success("Job results refreshed with latest listings");
     } catch (error) {
       console.error('Error refreshing jobs:', error);
       toast.error("Failed to refresh job results");
@@ -80,8 +80,10 @@ const JobBoardPage: React.FC = () => {
     // Only run once on initial mount
     const hasInitialData = sessionStorage.getItem('hasInitialJobData');
     if (!hasInitialData) {
+      toast.info("Loading initial job listings...");
       refreshJobs().then(() => {
         sessionStorage.setItem('hasInitialJobData', 'true');
+        toast.success("Job listings loaded successfully");
       });
     }
   }, []);
@@ -95,7 +97,7 @@ const JobBoardPage: React.FC = () => {
               <div>
                 <CardTitle className="text-3xl font-bold">Job Board</CardTitle>
                 <CardDescription>
-                  Browse job listings from Job Bank Canada
+                  Browse job listings from Job Bank Canada and other sources
                 </CardDescription>
               </div>
               <Button 
@@ -202,6 +204,7 @@ const JobBoardPage: React.FC = () => {
                 totalJobs={totalJobs}
                 onPageChange={setPage}
                 country="canada"
+                onRefresh={refreshJobs}
               />
             </CardContent>
           </Card>

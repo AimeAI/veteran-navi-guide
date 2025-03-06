@@ -2,11 +2,12 @@
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase, AlertCircle, Globe, Loader2 } from 'lucide-react';
+import { Briefcase, AlertCircle, Globe, Loader2, RefreshCw } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
+import { toast } from 'sonner';
 
 interface JobListProps {
   jobs: Job[];
@@ -17,6 +18,7 @@ interface JobListProps {
   totalJobs: number;
   onPageChange: (page: number) => void;
   country?: "us" | "canada";
+  onRefresh?: () => Promise<void>;
 }
 
 const JobList: React.FC<JobListProps> = ({
@@ -28,7 +30,10 @@ const JobList: React.FC<JobListProps> = ({
   totalJobs,
   onPageChange,
   country = "canada",
+  onRefresh,
 }) => {
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  
   // Calculate page range to display
   const getPageRange = () => {
     const range = [];
@@ -51,8 +56,21 @@ const JobList: React.FC<JobListProps> = ({
 
   const countryName = country === "canada" ? "Canada" : "United States";
 
-  const handleRetry = () => {
-    onPageChange(currentPage); // This will trigger a refresh
+  const handleRetry = async () => {
+    if (onRefresh) {
+      setIsRefreshing(true);
+      toast.info("Refreshing job listings...");
+      try {
+        await onRefresh();
+        toast.success("Job listings refreshed successfully");
+      } catch (error) {
+        toast.error("Failed to refresh job listings");
+      } finally {
+        setIsRefreshing(false);
+      }
+    } else {
+      onPageChange(currentPage); // This will trigger a refresh
+    }
   };
 
   // Group jobs by source
@@ -84,6 +102,19 @@ const JobList: React.FC<JobListProps> = ({
             </Badge>
           )}
           <span className="text-sm text-gray-500">{totalJobs} jobs found</span>
+          
+          {onRefresh && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRetry}
+              disabled={isRefreshing || isLoading}
+              className="ml-2"
+            >
+              <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </Button>
+          )}
         </div>
       </div>
       
@@ -108,6 +139,8 @@ const JobList: React.FC<JobListProps> = ({
                 description={job.description}
                 source={job.source}
                 url={job.url}
+                date={job.date}
+                matchScore={job.matchScore}
               />
             ))}
           </div>
