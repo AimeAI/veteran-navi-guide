@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -31,7 +32,7 @@ import EmailVerificationBanner from "./components/EmailVerificationBanner";
 import JobFairsEventsPage from "./pages/JobFairsEventsPage";
 import MessagesPage from "./pages/MessagesPage";
 import { MessageProvider } from "./context/MessageContext";
-import RequireAuth from "./components/RequireAuth";
+import { RequireAuth } from "./components/RequireAuth";
 
 function App() {
   return (

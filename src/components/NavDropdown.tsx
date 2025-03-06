@@ -1,3 +1,4 @@
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,19 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu as ShadDropdownMenu,
-  DropdownItem,
-  DropdownSeparator,
-} from '@nextui-org/react';
 import { Link } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { User, Building, Settings, LogOut } from "lucide-react";
 
-export function NavDropdown() {
+export default function NavDropdown() {
   const { user, logout } = useUser();
   const navigate = useNavigate();
 

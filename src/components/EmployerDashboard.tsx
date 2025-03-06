@@ -142,11 +142,12 @@ const applications = [
     candidateId: "veteran-001",
     candidateName: "James Wilson",
     jobTitle: "Security Operations Manager",
-    appliedDate: "2023-05-16",
-    status: "Under Review",
+    applicationDate: "2023-05-16",
+    status: "pending",
     resumeUrl: "/resumes/james-wilson.pdf",
     coverLetterUrl: "/cover-letters/james-wilson.pdf",
-    notes: "Strong candidate with relevant experience."
+    notes: "Strong candidate with relevant experience.",
+    skills: ["Leadership", "Security Operations", "Team Management"]
   },
   {
     id: "app-002",
@@ -154,11 +155,12 @@ const applications = [
     candidateId: "veteran-002",
     candidateName: "Sarah Johnson",
     jobTitle: "Security Operations Manager",
-    appliedDate: "2023-05-17",
-    status: "Screening",
+    applicationDate: "2023-05-17",
+    status: "reviewed",
     resumeUrl: "/resumes/sarah-johnson.pdf",
     coverLetterUrl: "/cover-letters/sarah-johnson.pdf",
-    notes: "Excellent technical skills, schedule interview."
+    notes: "Excellent technical skills, schedule interview.",
+    skills: ["Project Management", "Security Systems", "Communication"]
   },
   {
     id: "app-003",
@@ -166,11 +168,12 @@ const applications = [
     candidateId: "veteran-003",
     candidateName: "Michael Rodriguez",
     jobTitle: "Logistics Coordinator",
-    appliedDate: "2023-05-12",
-    status: "Interview Scheduled",
+    applicationDate: "2023-05-12",
+    status: "accepted",
     resumeUrl: "/resumes/michael-rodriguez.pdf",
     coverLetterUrl: "/cover-letters/michael-rodriguez.pdf",
-    notes: "Interview scheduled for May 25th at 2 PM."
+    notes: "Interview scheduled for May 25th at 2 PM.",
+    skills: ["Logistics", "Inventory Management", "Operations"]
   }
 ];
 
