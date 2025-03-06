@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import LoadingButton from '@/components/ui/LoadingButton';
 import VeteranProfileDialog from '@/components/VeteranProfileDialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface VeteranProfile {
   id: string;
@@ -255,245 +256,249 @@ const EmployerSearchVeteransPage: React.FC = () => {
 
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Veteran Talent</h1>
-          <p className="text-gray-600 mb-8">Search for qualified Canadian veterans based on skills, experience, and military background</p>
+          <div className="sticky top-0 bg-gradient-to-b from-white to-gray-50 z-10 pb-4">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Veteran Talent</h1>
+            <p className="text-gray-600 mb-8">Search for qualified Canadian veterans based on skills, experience, and military background</p>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
-            <div className="p-4 sm:p-6">
-              <div className="relative mb-4">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+              <div className="p-4 sm:p-6">
+                <div className="relative mb-4">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="Search by name, skills, or keywords..."
+                    className="pl-10 block w-full py-3 px-4"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    aria-label="Search veterans"
+                  />
                 </div>
-                <Input
-                  type="text"
-                  placeholder="Search by name, skills, or keywords..."
-                  className="pl-10 block w-full py-3 px-4"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  aria-label="Search veterans"
-                />
-              </div>
 
-              <Button 
-                variant="outline" 
-                onClick={() => setShowFilters(!showFilters)}
-                className="w-full sm:w-auto flex justify-between items-center mb-4"
-                aria-expanded={showFilters}
-                aria-controls="filter-panel"
-              >
-                <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
-                Advanced Filters
-                <ChevronDown 
-                  className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} 
-                  aria-hidden="true" 
-                />
-              </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="w-full sm:w-auto flex justify-between items-center mb-4"
+                  aria-expanded={showFilters}
+                  aria-controls="filter-panel"
+                >
+                  <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Advanced Filters
+                  <ChevronDown 
+                    className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} 
+                    aria-hidden="true" 
+                  />
+                </Button>
 
-              {showFilters && (
-                <div id="filter-panel" className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pb-2">
-                  <div>
-                    <Label htmlFor="mos" className="mb-1">
-                      Military Occupation Specialty (MOSID)
-                    </Label>
-                    <Select
-                      value={selectedMOS}
-                      onValueChange={setSelectedMOS}
-                    >
-                      <SelectTrigger id="mos" className="w-full" aria-label="Select MOSID">
-                        <SelectValue placeholder="All MOSID Codes" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">All MOSID Codes</SelectItem>
-                        {canadianMOSCodes.map(mos => (
-                          <SelectItem key={mos.code} value={mos.code}>
-                            {mos.code} - {mos.title}
-                          </SelectItem>
+                {showFilters && (
+                  <div id="filter-panel" className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pb-2">
+                    <div>
+                      <Label htmlFor="mos" className="mb-1">
+                        Military Occupation Specialty (MOSID)
+                      </Label>
+                      <Select
+                        value={selectedMOS}
+                        onValueChange={setSelectedMOS}
+                      >
+                        <SelectTrigger id="mos" className="w-full" aria-label="Select MOSID">
+                          <SelectValue placeholder="All MOSID Codes" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All MOSID Codes</SelectItem>
+                          {canadianMOSCodes.map(mos => (
+                            <SelectItem key={mos.code} value={mos.code}>
+                              {mos.code} - {mos.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="clearance" className="mb-1">
+                        Security Clearance Level
+                      </Label>
+                      <Select
+                        value={selectedClearance}
+                        onValueChange={setSelectedClearance}
+                      >
+                        <SelectTrigger id="clearance" className="w-full" aria-label="Select clearance level">
+                          <SelectValue placeholder="Any Clearance" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any Clearance</SelectItem>
+                          {clearanceLevels.map(level => (
+                            <SelectItem key={level} value={level}>
+                              {level}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="mb-1">Skills</Label>
+                      <div className="p-2 border border-gray-300 rounded-md bg-white max-h-32 overflow-y-auto">
+                        {allSkills.map(skill => (
+                          <div key={skill} className="flex items-center mb-1">
+                            <input
+                              type="checkbox"
+                              id={`skill-${skill}`}
+                              checked={selectedSkills.includes(skill)}
+                              onChange={() => toggleSkill(skill)}
+                              className="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
+                              aria-label={`Skill: ${skill}`}
+                            />
+                            <label
+                              htmlFor={`skill-${skill}`}
+                              className="ml-2 block text-sm text-gray-700"
+                            >
+                              {skill}
+                            </label>
+                          </div>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="clearance" className="mb-1">
-                      Security Clearance Level
-                    </Label>
-                    <Select
-                      value={selectedClearance}
-                      onValueChange={setSelectedClearance}
-                    >
-                      <SelectTrigger id="clearance" className="w-full" aria-label="Select clearance level">
-                        <SelectValue placeholder="Any Clearance" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">Any Clearance</SelectItem>
-                        {clearanceLevels.map(level => (
-                          <SelectItem key={level} value={level}>
-                            {level}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="mb-1">Skills</Label>
-                    <div className="p-2 border border-gray-300 rounded-md bg-white max-h-32 overflow-y-auto">
-                      {allSkills.map(skill => (
-                        <div key={skill} className="flex items-center mb-1">
-                          <input
-                            type="checkbox"
-                            id={`skill-${skill}`}
-                            checked={selectedSkills.includes(skill)}
-                            onChange={() => toggleSkill(skill)}
-                            className="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
-                            aria-label={`Skill: ${skill}`}
-                          />
-                          <label
-                            htmlFor={`skill-${skill}`}
-                            className="ml-2 block text-sm text-gray-700"
-                          >
-                            {skill}
-                          </label>
-                        </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-              
-              {showFilters && (
-                <div className="mt-4 flex flex-wrap gap-2 justify-end">
-                  <Button 
-                    variant="outline" 
-                    onClick={resetFilters}
-                    size="sm"
-                    className="mt-2"
-                  >
-                    Reset Filters
-                  </Button>
-                </div>
+                )}
+                
+                {showFilters && (
+                  <div className="mt-4 flex flex-wrap gap-2 justify-end">
+                    <Button 
+                      variant="outline" 
+                      onClick={resetFilters}
+                      size="sm"
+                      className="mt-2"
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4 flex justify-between items-center">
+              {isFiltering ? (
+                <LoadingButton 
+                  isLoading={true} 
+                  loadingText="Filtering veterans..." 
+                  className="bg-transparent hover:bg-transparent text-gray-700 hover:text-gray-700"
+                  disabled
+                />
+              ) : (
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {filteredVeterans.length} {filteredVeterans.length === 1 ? 'Veteran' : 'Veterans'} Found
+                </h2>
               )}
             </div>
           </div>
 
-          <div className="mb-4 flex justify-between items-center">
-            {isFiltering ? (
-              <LoadingButton 
-                isLoading={true} 
-                loadingText="Filtering veterans..." 
-                className="bg-transparent hover:bg-transparent text-gray-700 hover:text-gray-700"
-                disabled
-              />
-            ) : (
-              <h2 className="text-lg font-semibold text-gray-900">
-                {filteredVeterans.length} {filteredVeterans.length === 1 ? 'Veteran' : 'Veterans'} Found
-              </h2>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            {filteredVeterans.length > 0 ? (
-              filteredVeterans.map(veteran => (
-                <div
-                  key={veteran.id}
-                  className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
-                >
-                  <div className="p-6">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="md:w-3/4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-xl font-bold text-gray-900">{veteran.name}</h3>
-                          {veteran.available ? (
-                            <Badge className="bg-green-100 text-green-800 border-green-200">
-                              Available Now
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-gray-100 text-gray-800 border-gray-200">
-                              Not Available
-                            </Badge>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-4">
-                          <div className="flex items-center">
-                            <Shield className="h-4 w-4 mr-1 text-gray-400" aria-hidden="true" />
-                            <span>{veteran.rank}, {veteran.branch}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Briefcase className="h-4 w-4 mr-1 text-gray-400" aria-hidden="true" />
-                            <span>{veteran.mosTitle} ({veteran.mosCode})</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Medal className="h-4 w-4 mr-1 text-gray-400" aria-hidden="true" />
-                            <span>{veteran.serviceYears}</span>
-                          </div>
-                        </div>
-
-                        <p className="text-gray-700 mb-4">{veteran.summary}</p>
-
-                        <div className="mb-4">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Skills:</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {veteran.skills.map((skill, index) => (
-                              <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                {skill}
+          <ScrollArea className="h-full overflow-y-auto">
+            <div className="space-y-6">
+              {filteredVeterans.length > 0 ? (
+                filteredVeterans.map(veteran => (
+                  <div
+                    key={veteran.id}
+                    className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+                  >
+                    <div className="p-6">
+                      <div className="flex flex-col md:flex-row">
+                        <div className="md:w-3/4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-xl font-bold text-gray-900">{veteran.name}</h3>
+                            {veteran.available ? (
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                Available Now
                               </Badge>
-                            ))}
+                            ) : (
+                              <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+                                Not Available
+                              </Badge>
+                            )}
                           </div>
-                        </div>
 
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>{veteran.location}</span>
+                          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-4">
+                            <div className="flex items-center">
+                              <Shield className="h-4 w-4 mr-1 text-gray-400" aria-hidden="true" />
+                              <span>{veteran.rank}, {veteran.branch}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Briefcase className="h-4 w-4 mr-1 text-gray-400" aria-hidden="true" />
+                              <span>{veteran.mosTitle} ({veteran.mosCode})</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Medal className="h-4 w-4 mr-1 text-gray-400" aria-hidden="true" />
+                              <span>{veteran.serviceYears}</span>
+                            </div>
                           </div>
-                          {veteran.clearanceLevel && (
+
+                          <p className="text-gray-700 mb-4">{veteran.summary}</p>
+
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Skills:</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {veteran.skills.map((skill, index) => (
+                                <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
                             <div className="flex items-center">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
-                              <span>Clearance: {veteran.clearanceLevel}</span>
+                              <span>{veteran.location}</span>
                             </div>
-                          )}
+                            {veteran.clearanceLevel && (
+                              <div className="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <span>Clearance: {veteran.clearanceLevel}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="md:w-1/4 mt-4 md:mt-0 md:pl-6 md:border-l md:border-gray-200 flex flex-col justify-between">
-                        <div className="flex flex-col space-y-3">
-                          <Button 
-                            className="w-full"
-                            onClick={() => openVeteranProfile(veteran)}
-                          >
-                            <User className="mr-2 h-4 w-4" aria-hidden="true" />
-                            View Profile
-                          </Button>
-                          <Button variant="outline" className="w-full">
-                            Save Profile
-                          </Button>
-                          <Button variant="outline" className="w-full">
-                            Contact
-                          </Button>
+                        <div className="md:w-1/4 mt-4 md:mt-0 md:pl-6 md:border-l md:border-gray-200 flex flex-col justify-between">
+                          <div className="flex flex-col space-y-3">
+                            <Button 
+                              className="w-full"
+                              onClick={() => openVeteranProfile(veteran)}
+                            >
+                              <User className="mr-2 h-4 w-4" aria-hidden="true" />
+                              View Profile
+                            </Button>
+                            <Button variant="outline" className="w-full">
+                              Save Profile
+                            </Button>
+                            <Button variant="outline" className="w-full">
+                              Contact
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
+                  <div className="flex justify-center mb-4">
+                    <User className="h-12 w-12 text-gray-400" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No veterans match your search</h3>
+                  <p className="text-gray-600">
+                    Try adjusting your search criteria or filters to see more results.
+                  </p>
                 </div>
-              ))
-            ) : (
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <User className="h-12 w-12 text-gray-400" aria-hidden="true" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No veterans match your search</h3>
-                <p className="text-gray-600">
-                  Try adjusting your search criteria or filters to see more results.
-                </p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </main>
       
