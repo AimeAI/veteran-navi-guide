@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Briefcase, Building, MapPin, DollarSign, Calendar, Clock, Shield, FileText, Upload, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
-// Sample job data
 const jobData = {
   id: 'job-123',
   title: 'Cybersecurity Analyst',
@@ -79,6 +78,15 @@ const JobDetailsPage: React.FC = () => {
   const [coverLetter, setCoverLetter] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeFileName, setResumeFileName] = useState('');
+  
+  const searchParams = new URLSearchParams(window.location.search);
+  const variantId = searchParams.get('variant');
+
+  const trackApplicationConversion = () => {
+    if (variantId) {
+      console.log(`Conversion tracked for variant: ${variantId}`);
+    }
+  };
 
   const handleApply = () => {
     setShowApplicationForm(true);
@@ -102,21 +110,21 @@ const JobDetailsPage: React.FC = () => {
   const handleSubmitApplication = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Log application data to console
     console.log({
       jobId: jobData.id,
       jobTitle: jobData.title,
       coverLetter,
-      resumeFile
+      resumeFile,
+      variantId
     });
     
-    // Show success toast
+    trackApplicationConversion();
+    
     toast({
       title: "Application Submitted",
       description: "Your application has been successfully submitted for this position.",
     });
     
-    // Reset form
     setShowApplicationForm(false);
     setCoverLetter('');
     setResumeFile(null);

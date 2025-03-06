@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Briefcase, Building, MapPin, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -16,6 +16,7 @@ interface JobListingProps {
   description: string;
   className?: string;
   matchScore?: number; // Optional match score for recommendations
+  variantId?: string; // Optional variant ID for A/B testing
 }
 
 const JobListing: React.FC<JobListingProps> = ({
@@ -25,7 +26,8 @@ const JobListing: React.FC<JobListingProps> = ({
   location,
   description,
   className,
-  matchScore
+  matchScore,
+  variantId
 }) => {
   const { getJobById } = useJobs();
   const job = getJobById(jobId);
@@ -35,6 +37,22 @@ const JobListing: React.FC<JobListingProps> = ({
   const employerId = 'emp1'; // In a real app, this would come from the job data
   const ratingSummary = getEmployerRatingSummary(employerId);
   const hasRating = ratingSummary.totalReviews > 0;
+
+  // A/B testing view tracking
+  useEffect(() => {
+    if (variantId) {
+      // In a real implementation, this would report a view to the A/B testing system
+      console.log(`Variant view tracked: ${variantId} for job ${jobId}`);
+    }
+  }, [jobId, variantId]);
+
+  // Handle click for A/B testing
+  const handleLinkClick = () => {
+    if (variantId) {
+      // In a real implementation, this would report a click to the A/B testing system
+      console.log(`Variant click tracked: ${variantId} for job ${jobId}`);
+    }
+  };
 
   return (
     <article 
@@ -47,6 +65,8 @@ const JobListing: React.FC<JobListingProps> = ({
         to={`/job/${jobId}`}
         className="block p-6 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
         aria-labelledby={`job-title-${jobId}`}
+        onClick={handleLinkClick}
+        data-variant-id={variantId} // For tracking purposes
       >
         <div className="sm:flex sm:items-start sm:justify-between">
           <div className="mb-4 sm:mb-0">
@@ -56,6 +76,9 @@ const JobListing: React.FC<JobListingProps> = ({
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   {Math.round(matchScore)}% Match
                 </span>
+              )}
+              {variantId && (
+                <span className="hidden">Variant: {variantId}</span>
               )}
             </div>
             

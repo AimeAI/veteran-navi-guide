@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -9,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StatsCardGroup from './StatsCardGroup';
-import { VeteranBadge } from '@/components/ui/veteran-badge';
+import { VeteranBadge, BadgeType } from '@/types/badges';
 import VeteranBadges from './VeteranBadges';
 import PersonalizedRecommendations from './PersonalizedRecommendations';
 import { Eye, Calendar, Bookmark, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';

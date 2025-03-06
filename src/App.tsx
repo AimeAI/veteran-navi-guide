@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -33,6 +32,7 @@ import JobFairsEventsPage from "./pages/JobFairsEventsPage";
 import MessagesPage from "./pages/MessagesPage";
 import { MessageProvider } from "./context/MessageContext";
 import { RequireAuth } from "./components/RequireAuth";
+import AbTestingPage from "./pages/AbTestingPage";
 
 function App() {
   return (
@@ -74,6 +74,7 @@ function App() {
                   <EmployerProfilePage />
                 </RequireAuth>
               } />
+              <Route path="/ab-testing" element={<AbTestingPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
