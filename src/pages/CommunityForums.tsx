@@ -102,7 +102,8 @@ const CommunityForums = () => {
   const filteredTopics = topics.filter(topic => {
     const matchesCategory = activeCategory === "all" || topic.category === activeCategory;
     const matchesSearch = topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          topic.author.toLowerCase().includes(searchQuery.toLowerCase());
+                          topic.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (topic.content && topic.content.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
