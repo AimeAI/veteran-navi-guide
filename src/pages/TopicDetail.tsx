@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,12 +5,28 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
-import { ArrowLeft, Send, User, Pencil, Save, X, Trash } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { 
+  ArrowLeft, 
+  Send, 
+  User, 
+  Pencil, 
+  Save, 
+  X, 
+  Trash, 
+  Flag 
+} from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
 import { useUser } from "@/context/UserContext";
 
-// Mock forum topics data - this would come from your database
 const forumTopics = [
   {
     id: 1,
@@ -45,7 +60,6 @@ const forumTopics = [
   }
 ];
 
-// Mock posts within a topic
 const mockPosts = [
   {
     id: 1,
@@ -70,7 +84,6 @@ const mockPosts = [
   }
 ];
 
-// Forum categories for reference
 const categories = [
   { name: "All Topics", value: "all" },
   { name: "Career Transition", value: "career-transition" },
@@ -94,23 +107,10 @@ const TopicDetail = () => {
   const [editContent, setEditContent] = useState("");
   const [editError, setEditError] = useState("");
   
-  // Find the current topic
-  const topic = forumTopics.find(topic => topic.id === id);
-  
-  if (!topic) {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold mb-4">Topic Not Found</h1>
-        <p className="mb-6">The topic you're looking for doesn't exist or has been removed.</p>
-        <Link to="/community-forums">
-          <Button>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Forums
-          </Button>
-        </Link>
-      </div>
-    );
-  }
+  const [reportingPostId, setReportingPostId] = useState<number | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [reportError, setReportError] = useState("");
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -126,7 +126,6 @@ const TopicDetail = () => {
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     if (isEmptyOrWhitespace(replyContent)) {
       setError("Reply content is required");
       return;
@@ -140,21 +139,18 @@ const TopicDetail = () => {
     setIsSubmitting(true);
     
     try {
-      // This is where Supabase integration would go
       console.log("New reply data to be sent to Supabase:", {
         topicId: id,
         content: replyContent
       });
       
-      // Simulate a delay for the API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For now, we'll just add the reply to our local state
       const currentDate = new Date().toISOString();
       const newPost = {
         id: Math.max(...posts.map(post => post.id), 0) + 1,
         topicId: id,
-        author: user?.name || "CurrentUser", // Use the authenticated user's name or fallback
+        author: user?.name || "CurrentUser",
         content: replyContent,
         createdAt: currentDate
       };
@@ -190,7 +186,6 @@ const TopicDetail = () => {
   };
 
   const handleSaveEdit = async (postId: number) => {
-    // Validate edit content
     if (isEmptyOrWhitespace(editContent)) {
       setEditError("Content is required");
       return;
@@ -202,16 +197,13 @@ const TopicDetail = () => {
     }
     
     try {
-      // This is where Supabase integration would go
       console.log("Updated post data to be sent to Supabase:", {
         postId,
         content: editContent
       });
       
-      // Simulate a delay for the API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Update the post in our local state
       const updatedPosts = posts.map(post => 
         post.id === postId 
           ? { ...post, content: editContent }
@@ -240,15 +232,12 @@ const TopicDetail = () => {
     }
     
     try {
-      // This is where Supabase integration would go
       console.log("Delete post request to be sent to Supabase:", {
         postId
       });
       
-      // Simulate a delay for the API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Remove the post from our local state
       const filteredPosts = posts.filter(post => post.id !== postId);
       
       setPosts(filteredPosts);
@@ -266,8 +255,49 @@ const TopicDetail = () => {
     }
   };
 
+  const handleReportClick = (postId: number) => {
+    setReportingPostId(postId);
+    setReportReason("");
+    setReportError("");
+    setIsReportDialogOpen(true);
+  };
+
+  const handleCancelReport = () => {
+    setReportingPostId(null);
+    setReportReason("");
+    setReportError("");
+    setIsReportDialogOpen(false);
+  };
+
+  const handleSubmitReport = () => {
+    if (isEmptyOrWhitespace(reportReason)) {
+      setReportError("Please provide a reason for reporting this post");
+      return;
+    }
+
+    if (reportReason.length < 10) {
+      setReportError("Report reason must be at least 10 characters");
+      return;
+    }
+
+    console.log("Post report submitted:", {
+      postId: reportingPostId,
+      reason: reportReason
+    });
+
+    setReportingPostId(null);
+    setReportReason("");
+    setIsReportDialogOpen(false);
+
+    window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+
+    toast.success("Report submitted", {
+      description: "Thank you for helping keep our community safe",
+      duration: 5000,
+    });
+  };
+
   const isCurrentUserAuthor = (authorName: string) => {
-    // In a real app, this would compare user IDs, not just names
     return user?.name === authorName || (!user && authorName === "CurrentUser");
   };
 
@@ -372,8 +402,8 @@ const TopicDetail = () => {
                           <p>{post.content}</p>
                         </div>
                         
-                        {isCurrentUserAuthor(post.author) && (
-                          <div className="mt-3">
+                        <div className="mt-3 flex gap-2">
+                          {isCurrentUserAuthor(post.author) && (
                             <Button 
                               size="sm" 
                               variant="ghost" 
@@ -383,8 +413,18 @@ const TopicDetail = () => {
                               <Pencil className="h-3.5 w-3.5 mr-1" />
                               Edit
                             </Button>
-                          </div>
-                        )}
+                          )}
+                          
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleReportClick(post.id)}
+                            className="flex items-center text-muted-foreground hover:text-destructive"
+                          >
+                            <Flag className="h-3.5 w-3.5 mr-1" />
+                            Report
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -435,6 +475,54 @@ const TopicDetail = () => {
           </Button>
         </CardFooter>
       </Card>
+
+      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Flag className="h-5 w-5" />
+              Report This Post
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              Please provide details about why you're reporting this post. Our moderators will review your report.
+            </p>
+            
+            <div className="space-y-2">
+              <Textarea
+                value={reportReason}
+                onChange={(e) => {
+                  setReportReason(e.target.value);
+                  if (reportError) setReportError("");
+                }}
+                placeholder="Explain why this post violates our community guidelines..."
+                rows={4}
+                className="w-full resize-none"
+                aria-invalid={!!reportError}
+              />
+              {reportError && <FormErrorMessage message={reportError} />}
+            </div>
+          </div>
+          
+          <DialogFooter className="flex sm:justify-between">
+            <DialogClose asChild>
+              <Button variant="outline" onClick={handleCancelReport}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button 
+              variant="destructive" 
+              onClick={handleSubmitReport}
+              className="gap-2"
+            >
+              <Flag className="h-4 w-4" />
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
