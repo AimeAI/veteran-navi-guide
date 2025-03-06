@@ -2,10 +2,11 @@
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase, AlertCircle, Globe, Database, Loader2 } from 'lucide-react';
+import { Briefcase, AlertCircle, Globe, Database, Loader2, AlertTriangle } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from './ui/button';
 
 interface JobListProps {
   jobs: Job[];
@@ -52,14 +53,21 @@ const JobList: React.FC<JobListProps> = ({
 
   const countryName = country === "canada" ? "Canada" : "United States";
 
+  const handleRetry = () => {
+    onPageChange(currentPage); // This will trigger a refresh
+  };
+
   // Only show non-network errors
   if (error && !error.message.includes('NetworkError') && !error.message.includes('CORS')) {
     return (
       <Alert variant="destructive" className="mb-6">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error loading jobs</AlertTitle>
-        <AlertDescription>
+        <AlertDescription className="flex flex-col gap-4">
           {error.message}
+          <Button onClick={handleRetry} className="self-start">
+            Try Again
+          </Button>
         </AlertDescription>
       </Alert>
     );
@@ -88,8 +96,11 @@ const JobList: React.FC<JobListProps> = ({
         <Alert className="mb-4">
           <Database className="h-4 w-4 mr-2" />
           <AlertTitle>Using sample job data</AlertTitle>
-          <AlertDescription>
-            We're currently showing example job listings. Try adjusting your search terms for better results.
+          <AlertDescription className="flex flex-col gap-2">
+            <p>We're currently showing example job listings as we couldn't connect to the real job database.</p>
+            <Button variant="outline" onClick={handleRetry} className="self-start mt-2">
+              Try Live Data Again
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -160,6 +171,9 @@ const JobList: React.FC<JobListProps> = ({
           <p className="mt-1 text-sm text-gray-500">
             Try adjusting your search criteria or searching in a different region.
           </p>
+          <Button variant="outline" onClick={handleRetry} className="mt-4">
+            Try Again
+          </Button>
         </div>
       )}
     </div>

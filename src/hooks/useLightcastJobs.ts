@@ -81,7 +81,6 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       if (!usingFallbackData) {
         setUsingFallbackData(true);
-        // Don't show a toast here, it's handled in the fetchJobs function
       }
       
       return fallbackJobs;
@@ -105,29 +104,36 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
-      // Try the job search API with multiple fallbacks
-      const result = await searchLightcastJobs(params);
-      console.log("Received job results:", result);
-      
-      // Check if we got any jobs back
-      if (result.jobs.length === 0) {
-        console.log("No jobs found, using fallback data");
+      // Try to use the GitHub Jobs proxy API first (since it's public and CORS-friendly)
+      try {
+        const result = await searchLightcastJobs(params);
+        console.log("Received job results:", result);
+        
+        // Check if we got any jobs back
+        if (result.jobs.length === 0) {
+          console.log("No jobs found, using fallback data");
+          await fetchFallbackJobs();
+          toast.info("No jobs found in the selected region. Showing sample job data.");
+          return;
+        }
+        
+        setJobs(result.jobs);
+        setTotalPages(result.totalPages);
+        setTotalJobs(result.totalJobs);
+        
+        // If we were using fallback data before but API now works, update state
+        if (usingFallbackData) {
+          setUsingFallbackData(false);
+          toast.success("Connected to job search API successfully!");
+        }
+      } catch (apiError) {
+        console.error("Primary API failed:", apiError);
+        // If primary API fails, fall back to mock data
         await fetchFallbackJobs();
-        toast.info("No jobs found. Showing sample job data instead.");
-        return;
-      }
-      
-      setJobs(result.jobs);
-      setTotalPages(result.totalPages);
-      setTotalJobs(result.totalJobs);
-      
-      // If we were using fallback data before but API now works, update state
-      if (usingFallbackData) {
-        setUsingFallbackData(false);
-        toast.success("Connected to job search API successfully!");
+        toast.info("Using sample job data due to API connectivity issues.");
       }
     } catch (err) {
-      console.error('Error fetching jobs:', err);
+      console.error('Error in job fetch flow:', err);
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch jobs');
       
       // Fall back to mock data
@@ -140,7 +146,6 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
         setError(errorObj);
         toast.error("Error fetching jobs. Using sample data instead.");
       } else {
-        // Just show an info toast for network errors
         toast.info("Using sample job data due to API connectivity issues");
       }
     } finally {
