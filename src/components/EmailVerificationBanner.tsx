@@ -5,8 +5,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Mail, AlertTriangle } from "lucide-react";
 import LoadingButton from "./ui/LoadingButton";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 interface EmailVerificationBannerProps {
   className?: string;
@@ -14,26 +12,14 @@ interface EmailVerificationBannerProps {
 
 const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ className }) => {
   const { user, isLoading, resendVerificationEmail } = useUser();
-  const navigate = useNavigate();
 
-  // Don't show if user is not logged in or email is already verified or if user object is undefined
+  // Don't show if user is not logged in or email is already verified
   if (!user || !user.isAuthenticated || user.emailVerified) {
     return null;
   }
 
   const handleResendVerification = async () => {
-    try {
-      await resendVerificationEmail();
-    } catch (error) {
-      console.error("Failed to resend verification email:", error);
-      toast.error("Failed to send verification email", {
-        description: "Please try again later or contact support."
-      });
-    }
-  };
-
-  const handleVerifyPage = () => {
-    navigate('/verify-email');
+    await resendVerificationEmail();
   };
 
   return (
@@ -46,7 +32,7 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
             We've sent a verification email to <span className="font-medium">{user.email}</span>. 
             Please verify your email to access all features.
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3">
             <LoadingButton 
               onClick={handleResendVerification} 
               size="sm" 
@@ -57,14 +43,6 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
               <Mail className="h-4 w-4 mr-1" />
               Resend verification email
             </LoadingButton>
-            <Button
-              onClick={handleVerifyPage}
-              size="sm"
-              variant="outline"
-              className="border-yellow-700 text-yellow-800 hover:bg-yellow-50"
-            >
-              Verification Instructions
-            </Button>
           </div>
         </AlertDescription>
       </div>

@@ -4,8 +4,6 @@ import { cn } from '@/lib/utils';
 import JobListing from '@/components/JobListing';
 import { toast } from 'sonner';
 import JobAlertButton from '@/components/JobAlertButton';
-import { getSearchSuggestions, getGeneralSearchSuggestions } from '@/data/jobs';
-import { Input } from '@/components/ui/input';
 
 interface FilterState {
   keywords: string;
@@ -44,11 +42,6 @@ const JobSearch = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
-  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
-  const [showKeywordSuggestions, setShowKeywordSuggestions] = useState(false);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
 
   const mockJobs: Job[] = [
     {
@@ -184,46 +177,6 @@ const JobSearch = () => {
     filterJobs();
   }, [filters]);
 
-  const handleKeywordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFilters(prev => ({ ...prev, keywords: value }));
-    
-    const suggestions = getGeneralSearchSuggestions(value);
-    setKeywordSuggestions(suggestions);
-    setShowKeywordSuggestions(true);
-  };
-  
-  const handleLocationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFilters(prev => ({ ...prev, location: value }));
-    
-    const suggestions = getSearchSuggestions(value, 'locations');
-    setLocationSuggestions(suggestions);
-    setShowLocationSuggestions(true);
-  };
-  
-  const handleSelectKeywordSuggestion = (value: string) => {
-    setFilters(prev => ({ ...prev, keywords: value }));
-    setShowKeywordSuggestions(false);
-  };
-  
-  const handleSelectLocationSuggestion = (value: string) => {
-    setFilters(prev => ({ ...prev, location: value }));
-    setShowLocationSuggestions(false);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowKeywordSuggestions(false);
-      setShowLocationSuggestions(false);
-    };
-    
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
-
   const filterJobs = () => {
     let results = [...jobs];
 
@@ -305,9 +258,6 @@ const JobSearch = () => {
     console.log('Search filters:', filters);
     filterJobs();
     toast.success("Search results updated");
-    
-    setShowKeywordSuggestions(false);
-    setShowLocationSuggestions(false);
   };
 
   return (
@@ -322,37 +272,31 @@ const JobSearch = () => {
             
             <form onSubmit={handleSearch} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-5 w-5 text-gray-400" />
                   </div>
-                  <Input
+                  <input
                     type="text"
                     name="keywords"
                     value={filters.keywords}
-                    onChange={handleKeywordInputChange}
+                    onChange={handleInputChange}
                     placeholder="Job title, keywords, or company"
-                    className="pl-10 block w-full"
-                    autocompleteResults={keywordSuggestions}
-                    onSelectAutocomplete={handleSelectKeywordSuggestion}
-                    showAutocomplete={showKeywordSuggestions}
+                    className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                   />
                 </div>
                 
-                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <MapPin className="h-5 w-5 text-gray-400" />
                   </div>
-                  <Input
+                  <input
                     type="text"
                     name="location"
                     value={filters.location}
-                    onChange={handleLocationInputChange}
-                    placeholder="City, province, or postal code"
-                    className="pl-10 block w-full"
-                    autocompleteResults={locationSuggestions}
-                    onSelectAutocomplete={handleSelectLocationSuggestion}
-                    showAutocomplete={showLocationSuggestions}
+                    onChange={handleInputChange}
+                    placeholder="City, state, or zip code"
+                    className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                   />
                 </div>
                 

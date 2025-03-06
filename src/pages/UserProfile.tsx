@@ -14,7 +14,6 @@ import { useUser } from "@/context/UserContext";
 import { useJobs } from "@/context/JobContext";
 import FormErrorMessage from "@/components/ui/form-error-message";
 import { AlertCircle, Bell, BellOff, Mail, Lock, Save } from "lucide-react";
-import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 
 const UserProfile = () => {
   const { user, updateProfile } = useUser();
@@ -384,13 +383,7 @@ const UserProfile = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row gap-8">
-                <ProfilePictureUpload size="lg" className="mx-auto md:mx-0" />
-                
-                <div className="flex-1">
-                  {isEditing ? renderProfileEditMode() : renderProfileViewMode()}
-                </div>
-              </div>
+              {isEditing ? renderProfileEditMode() : renderProfileViewMode()}
             </CardContent>
             {isEditing && (
               <CardFooter>
