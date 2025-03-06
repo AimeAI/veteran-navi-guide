@@ -19,15 +19,15 @@ export interface Job {
   requiredMosCodes?: string[];
   date?: string;
   jobType?: string;
-  industry?: string; // Added industry field
-  experienceLevel?: string; // Added experience level field
-  educationLevel?: string; // Added education level field
-  companySize?: string; // Added company size field
-  companyRating?: number; // Added company rating field
-  benefits?: string[]; // Added benefits field
-  coordinates?: {lat: number, lng: number}; // Added for radius search
-  source?: string; // Added source field to track which API provided the job
-  url?: string; // Added URL field for external job links
+  industry?: string;
+  experienceLevel?: string;
+  educationLevel?: string;
+  companySize?: string;
+  companyRating?: number;
+  benefits?: string[];
+  coordinates?: {lat: number, lng: number};
+  source?: string;
+  url?: string;
 }
 
 // Job context type
@@ -47,20 +47,20 @@ interface JobContextType {
 export interface JobFilterState {
   keywords: string;
   location: string;
-  radius?: number; // Added radius for location search
+  radius?: number;
   category: string;
   salaryRange: string;
   mosCodes: string[];
   clearanceLevel: string[];
   remote: boolean;
   militarySkills?: string[];
-  industry?: string; // Added industry filter
-  jobType?: string; // Added specific job type filter
-  experienceLevel?: string; // Added experience level filter
-  educationLevel?: string; // Added education level filter
-  companySize?: string; // Added company size filter
-  companyRating?: number; // Added company rating filter
-  benefits?: string[]; // Added benefits filter
+  industry?: string;
+  jobType?: string;
+  experienceLevel?: string;
+  educationLevel?: string;
+  companySize?: string;
+  companyRating?: number;
+  benefits?: string[];
 }
 
 // Create the context

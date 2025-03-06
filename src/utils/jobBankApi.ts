@@ -86,7 +86,6 @@ export const searchJobBankJobs = async (params: JobBankSearchParams): Promise<{
     console.log("Job Bank URL:", jobBankUrl);
     
     // Use a proxy service to avoid CORS issues
-    // Note: For production, you would need a server-side implementation to avoid CORS
     const corsProxyUrl = "https://corsproxy.io/?";
     const url = `${corsProxyUrl}${encodeURIComponent(jobBankUrl)}`;
     
