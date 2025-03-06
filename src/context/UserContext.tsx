@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -30,14 +29,14 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Initial user profile data
 const initialUserProfile: UserProfile = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  phone: "555-123-4567",
-  location: "San Diego, CA",
-  militaryBranch: "U.S. Marine Corps",
-  yearsOfService: "2010-2018",
-  rank: "Staff Sergeant",
-  bio: "Software Engineer with 5 years of experience. Marine Corps veteran with expertise in cybersecurity and leadership.",
+  name: "James Wilson",
+  email: "james.wilson@example.com",
+  phone: "613-555-7890",
+  location: "Ottawa, ON",
+  militaryBranch: "Canadian Armed Forces",
+  yearsOfService: "2008-2019",
+  rank: "Master Corporal",
+  bio: "Software Engineer with 4 years of experience. Former CAF member with background in communications and logistics. Skilled in team leadership and project management.",
   isAuthenticated: false,
 };
 
