@@ -99,6 +99,8 @@ const TopicDetail = () => {
   const id = parseInt(topicId || "0");
   const { user } = useUser();
   
+  const currentTopic = forumTopics.find(topic => topic.id === id);
+  
   const [replyContent, setReplyContent] = useState("");
   const [posts, setPosts] = useState(mockPosts.filter(post => post.topicId === id));
   const [error, setError] = useState("");
@@ -301,7 +303,27 @@ const TopicDetail = () => {
     return user?.name === authorName || (!user && authorName === "CurrentUser");
   };
 
-  const categoryName = categories.find(cat => cat.value === topic.category)?.name || topic.category;
+  const categoryName = currentTopic 
+    ? (categories.find(cat => cat.value === currentTopic.category)?.name || currentTopic.category)
+    : "";
+
+  if (!currentTopic) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Link to="/community-forums" className="inline-flex items-center text-primary hover:underline mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Forums
+        </Link>
+        <Card className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-primary mb-4">Topic Not Found</h1>
+          <p className="text-muted-foreground mb-6">The topic you're looking for doesn't exist or has been removed.</p>
+          <Button asChild>
+            <Link to="/community-forums">Return to Forums</Link>
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -314,10 +336,10 @@ const TopicDetail = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-primary">{topic.title}</h1>
+              <h1 className="text-2xl font-bold text-primary">{currentTopic.title}</h1>
               <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-4 gap-y-2 mt-2">
-                <span>Posted by <span className="font-medium">{topic.author}</span></span>
-                <span>Last activity: <time dateTime={topic.lastPostDate}>{formatDate(topic.lastPostDate)}</time></span>
+                <span>Posted by <span className="font-medium">{currentTopic.author}</span></span>
+                <span>Last activity: <time dateTime={currentTopic.lastPostDate}>{formatDate(currentTopic.lastPostDate)}</time></span>
                 <Badge variant="outline" className="ml-0">{categoryName}</Badge>
               </div>
             </div>
@@ -325,7 +347,7 @@ const TopicDetail = () => {
         </CardHeader>
         <CardContent>
           <div className="prose max-w-none dark:prose-invert">
-            <p>{topic.content}</p>
+            <p>{currentTopic.content}</p>
           </div>
         </CardContent>
       </Card>
