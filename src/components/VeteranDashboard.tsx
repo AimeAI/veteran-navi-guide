@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -9,11 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StatsCardGroup from './StatsCardGroup';
-import { VeteranBadge, BadgeType } from '@/types/badges';
+import { BadgeType } from '@/types/badges';
 import VeteranBadges from './VeteranBadges';
 import PersonalizedRecommendations from './PersonalizedRecommendations';
 import { Eye, Calendar, Bookmark, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VeteranBadge as UIVeteranBadge } from '@/components/ui/veteran-badge';
 
 const VeteranDashboard = () => {
   const { user } = useUser();
@@ -52,7 +52,7 @@ const VeteranDashboard = () => {
             icon: "briefcase",
             level: 1
           }
-        ],
+        ] as UIVeteranBadge[],
         recentApplications: appliedJobs.slice(0, 3).map(id => {
           const job = jobs.find(j => j.id === id) || savedJobs.find(j => j.id === id);
           return {

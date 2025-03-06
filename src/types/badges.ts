@@ -1,5 +1,13 @@
 
 export type BadgeType = 
+  | 'profile-complete'
+  | 'first-application'
+  | 'community-contributor'
+  | 'interview-ace'
+  | 'resume-master'
+  | 'job-seeker'
+  | 'network-builder'
+  | 'skill-certified'
   | 'achievement'
   | 'profile'
   | 'application'

@@ -12,6 +12,7 @@ import {
   Medal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BadgeType as GlobalBadgeType } from "@/types/badges";
 
 export type BadgeType = 
   | "profile-complete" 
@@ -21,7 +22,16 @@ export type BadgeType =
   | "resume-master" 
   | "job-seeker" 
   | "network-builder"
-  | "skill-certified";
+  | "skill-certified"
+  | "application"  // Added to match global type
+  | "profile"      // Added to match global type
+  | "achievement"  // Added to match global type
+  | "community"    // Added to match global type
+  | "event"        // Added to match global type
+  | "skill"        // Added to match global type
+  | "education"    // Added to match global type
+  | "certification" // Added to match global type
+  | "special";      // Added to match global type
 
 export interface VeteranBadge {
   id: string;
@@ -44,6 +54,7 @@ const badgeIcons = {
   medal: Medal
 };
 
+// Add the additional badge colors
 const badgeColors: Record<BadgeType, { bg: string, text: string, border: string }> = {
   "profile-complete": { 
     bg: "bg-blue-50", 
@@ -84,6 +95,52 @@ const badgeColors: Record<BadgeType, { bg: string, text: string, border: string 
     bg: "bg-teal-50", 
     text: "text-teal-700", 
     border: "border-teal-200" 
+  },
+  // Add colors for the additional badge types
+  "application": { 
+    bg: "bg-green-50", 
+    text: "text-green-700", 
+    border: "border-green-200" 
+  },
+  "profile": { 
+    bg: "bg-blue-50", 
+    text: "text-blue-700", 
+    border: "border-blue-200" 
+  },
+  "achievement": { 
+    bg: "bg-yellow-50", 
+    text: "text-yellow-700", 
+    border: "border-yellow-200" 
+  },
+  "community": { 
+    bg: "bg-purple-50", 
+    text: "text-purple-700", 
+    border: "border-purple-200" 
+  },
+  "event": { 
+    bg: "bg-orange-50", 
+    text: "text-orange-700", 
+    border: "border-orange-200" 
+  },
+  "skill": { 
+    bg: "bg-teal-50", 
+    text: "text-teal-700", 
+    border: "border-teal-200" 
+  },
+  "education": { 
+    bg: "bg-indigo-50", 
+    text: "text-indigo-700", 
+    border: "border-indigo-200" 
+  },
+  "certification": { 
+    bg: "bg-blue-50", 
+    text: "text-blue-700", 
+    border: "border-blue-200" 
+  },
+  "special": { 
+    bg: "bg-pink-50", 
+    text: "text-pink-700", 
+    border: "border-pink-200" 
   }
 };
 
