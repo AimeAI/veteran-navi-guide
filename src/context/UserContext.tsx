@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import { UserRole, EmployerProfile } from "@/types/application";
@@ -18,6 +17,7 @@ export interface UserProfile {
   profilePicture?: string;
   role: UserRole;
   employerProfile?: EmployerProfile;
+  authProvider?: string; // Add auth provider to track how user is authenticated
 }
 
 // Interface for the context
@@ -49,7 +49,8 @@ const initialUserProfile: UserProfile = {
   isAuthenticated: false,
   emailVerified: false,
   profilePicture: undefined,
-  role: "veteran"
+  role: "veteran",
+  authProvider: "local"
 };
 
 // Initial employer profile data

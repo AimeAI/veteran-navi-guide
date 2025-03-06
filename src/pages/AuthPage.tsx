@@ -13,6 +13,7 @@ import { isValidEmail, isStrongPassword } from "@/utils/validation";
 import FormErrorMessage from "@/components/ui/form-error-message";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTranslation } from "react-i18next";
+import SocialLoginButtons from "@/components/ui/SocialLoginButtons";
 
 interface FormError {
   [key: string]: string;
@@ -21,7 +22,7 @@ interface FormError {
 const AuthPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login, signup, isLoading, user } = useUser();
+  const { login, signup, socialLogin, isLoading, user } = useUser();
   
   useEffect(() => {
     if (user?.isAuthenticated) {
@@ -146,6 +147,21 @@ const AuthPage: React.FC = () => {
     }
   };
 
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      await socialLogin(provider, userType === "employer");
+      
+      if (userType === "employer") {
+        navigate("/employer/manage-applications");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      // Error is handled by the UserContext with toast
+    }
+  };
+
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-10 px-4">
       <div className="w-full max-w-md">
@@ -228,6 +244,10 @@ const AuthPage: React.FC = () => {
                       </Label>
                     </div>
                   </div>
+                  <SocialLoginButtons 
+                    onSocialLogin={handleSocialLogin}
+                    isLoading={isLoading}
+                  />
                 </CardContent>
                 <CardFooter>
                   <LoadingButton 
@@ -385,6 +405,10 @@ const AuthPage: React.FC = () => {
                     />
                     <FormErrorMessage message={signupErrors.confirmPassword} />
                   </div>
+                  <SocialLoginButtons 
+                    onSocialLogin={handleSocialLogin}
+                    isLoading={isLoading}
+                  />
                 </CardContent>
                 <CardFooter>
                   <LoadingButton 
