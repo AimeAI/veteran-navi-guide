@@ -29,6 +29,7 @@ import { AppProvider } from "./context/AppContext";
 import "./App.css";
 import TopicDetail from "./pages/TopicDetail";
 import EmailVerificationBanner from "./components/EmailVerificationBanner";
+import JobFairsEventsPage from "./pages/JobFairsEventsPage";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
             <Route path="/resources/resume-assistance" element={<ResumeAssistance />} />
             <Route path="/resources/interview-prep" element={<InterviewPreparation />} />
             <Route path="/resources/military-transition" element={<MilitaryTransitionResources />} />
+            <Route path="/events" element={<JobFairsEventsPage />} />
             <Route path="/employer/post-job" element={<PostJobPage />} />
             <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
             <Route path="/employer/profile" element={<EmployerProfilePage />} />

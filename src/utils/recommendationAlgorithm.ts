@@ -14,6 +14,7 @@ export interface UserProfile {
     mosCodes: string[];
   };
   militaryBranch?: string; // Added militaryBranch property as optional
+  serviceYears?: number; // Added serviceYears property as optional
   securityClearance?: string;
   preferredLocations?: string[];
   photo?: string;
@@ -52,6 +53,7 @@ export const currentUserProfile: UserProfile = {
   lastName: "Doe", // Added lastName
   email: "john.doe@example.com", // Added email
   militaryBranch: "Canadian Army", // Added militaryBranch
+  serviceYears: 8, // Added serviceYears
   skills: ["leadership", "communication", "project management", "security", "logistics"],
   militaryBackground: {
     branch: "Canadian Army",
