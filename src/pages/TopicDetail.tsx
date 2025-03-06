@@ -6,9 +6,10 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
-import { ArrowLeft, Send, User } from "lucide-react";
+import { ArrowLeft, Send, User, Pencil, Save, X, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
+import { useUser } from "@/context/UserContext";
 
 // Mock forum topics data - this would come from your database
 const forumTopics = [
@@ -83,11 +84,15 @@ const categories = [
 const TopicDetail = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const id = parseInt(topicId || "0");
+  const { user } = useUser();
   
   const [replyContent, setReplyContent] = useState("");
   const [posts, setPosts] = useState(mockPosts.filter(post => post.topicId === id));
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [editError, setEditError] = useState("");
   
   // Find the current topic
   const topic = forumTopics.find(topic => topic.id === id);
@@ -149,7 +154,7 @@ const TopicDetail = () => {
       const newPost = {
         id: Math.max(...posts.map(post => post.id), 0) + 1,
         topicId: id,
-        author: "CurrentUser", // This would be the authenticated user
+        author: user?.name || "CurrentUser", // Use the authenticated user's name or fallback
         content: replyContent,
         createdAt: currentDate
       };
@@ -170,6 +175,100 @@ const TopicDetail = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleStartEdit = (post: typeof posts[0]) => {
+    setEditingPostId(post.id);
+    setEditContent(post.content);
+    setEditError("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null);
+    setEditContent("");
+    setEditError("");
+  };
+
+  const handleSaveEdit = async (postId: number) => {
+    // Validate edit content
+    if (isEmptyOrWhitespace(editContent)) {
+      setEditError("Content is required");
+      return;
+    }
+    
+    if (editContent.length < 5) {
+      setEditError("Content must be at least 5 characters");
+      return;
+    }
+    
+    try {
+      // This is where Supabase integration would go
+      console.log("Updated post data to be sent to Supabase:", {
+        postId,
+        content: editContent
+      });
+      
+      // Simulate a delay for the API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update the post in our local state
+      const updatedPosts = posts.map(post => 
+        post.id === postId 
+          ? { ...post, content: editContent }
+          : post
+      );
+      
+      setPosts(updatedPosts);
+      setEditingPostId(null);
+      setEditContent("");
+      
+      toast.success("Post updated successfully", {
+        description: "Your changes have been saved",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error updating post:", error);
+      toast.error("Failed to update post", {
+        description: "Please try again later",
+      });
+    }
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      // This is where Supabase integration would go
+      console.log("Delete post request to be sent to Supabase:", {
+        postId
+      });
+      
+      // Simulate a delay for the API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Remove the post from our local state
+      const filteredPosts = posts.filter(post => post.id !== postId);
+      
+      setPosts(filteredPosts);
+      setEditingPostId(null);
+      
+      toast.success("Post deleted successfully", {
+        description: "Your post has been removed from the discussion",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to delete post", {
+        description: "Please try again later",
+      });
+    }
+  };
+
+  const isCurrentUserAuthor = (authorName: string) => {
+    // In a real app, this would compare user IDs, not just names
+    return user?.name === authorName || (!user && authorName === "CurrentUser");
   };
 
   const categoryName = categories.find(cat => cat.value === topic.category)?.name || topic.category;
@@ -219,9 +318,75 @@ const TopicDetail = () => {
                         <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
                       </span>
                     </div>
-                    <div className="prose dark:prose-invert max-w-none">
-                      <p>{post.content}</p>
-                    </div>
+                    
+                    {editingPostId === post.id ? (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editContent}
+                            onChange={(e) => {
+                              setEditContent(e.target.value);
+                              if (editError) setEditError("");
+                            }}
+                            rows={4}
+                            placeholder="Edit your post..."
+                            aria-label="Edit post content"
+                            className="w-full"
+                            aria-invalid={!!editError}
+                          />
+                          {editError && <FormErrorMessage message={editError} />}
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleSaveEdit(post.id)}
+                            className="flex items-center"
+                          >
+                            <Save className="h-4 w-4 mr-1" />
+                            Save Changes
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={handleCancelEdit}
+                            className="flex items-center"
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Cancel
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive" 
+                            onClick={() => handleDeletePost(post.id)}
+                            className="flex items-center ml-auto"
+                          >
+                            <Trash className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="prose dark:prose-invert max-w-none">
+                          <p>{post.content}</p>
+                        </div>
+                        
+                        {isCurrentUserAuthor(post.author) && (
+                          <div className="mt-3">
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => handleStartEdit(post)}
+                              className="flex items-center text-muted-foreground hover:text-foreground"
+                            >
+                              <Pencil className="h-3.5 w-3.5 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
