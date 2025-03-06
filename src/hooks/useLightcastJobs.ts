@@ -104,7 +104,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
-      // Try to use the GitHub Jobs proxy API first (since it's public and CORS-friendly)
+      // Try to use the public job APIs first
       try {
         const result = await searchLightcastJobs(params);
         console.log("Received job results:", result);
@@ -127,10 +127,10 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
           toast.success("Connected to job search API successfully!");
         }
       } catch (apiError) {
-        console.error("Primary API failed:", apiError);
-        // If primary API fails, fall back to mock data
+        console.error("All job APIs failed:", apiError);
+        // If all APIs fail, fall back to mock data
         await fetchFallbackJobs();
-        toast.info("Using sample job data due to API connectivity issues.");
+        toast.info("Unable to connect to job search APIs. Showing sample job data instead.");
       }
     } catch (err) {
       console.error('Error in job fetch flow:', err);

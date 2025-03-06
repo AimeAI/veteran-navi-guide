@@ -148,8 +148,8 @@ const searchReedJobs = async (params: LightcastSearchParams): Promise<{
     if (params.location) queryParams.append('locationName', params.location);
     
     // Handle country parameter - Reed is UK-based, so it's limited
-    // We'll just search for remote jobs if not UK
-    if (params.country && params.country !== 'uk') {
+    // We'll just search for remote jobs if country is specified
+    if (params.country) {
       queryParams.append('distanceFromLocation', '100');
     }
     
