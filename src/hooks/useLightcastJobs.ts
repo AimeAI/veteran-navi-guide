@@ -81,11 +81,15 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       if (!usingFallbackData) {
         setUsingFallbackData(true);
+        // Don't show a toast here, it's handled in the fetchJobs function
       }
+      
+      return fallbackJobs;
     } catch (err) {
       console.error('Error fetching fallback jobs:', err);
       setJobs([]);
       setError(new Error('Failed to load jobs. Please try again later.'));
+      return [];
     }
   }, [currentSearchParams, usingFallbackData]);
 
@@ -101,9 +105,17 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
-      // First try the job search API
+      // Try the job search API with multiple fallbacks
       const result = await searchLightcastJobs(params);
       console.log("Received job results:", result);
+      
+      // Check if we got any jobs back
+      if (result.jobs.length === 0) {
+        console.log("No jobs found, using fallback data");
+        await fetchFallbackJobs();
+        toast.info("No jobs found. Showing sample job data instead.");
+        return;
+      }
       
       setJobs(result.jobs);
       setTotalPages(result.totalPages);
@@ -112,17 +124,24 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       // If we were using fallback data before but API now works, update state
       if (usingFallbackData) {
         setUsingFallbackData(false);
+        toast.success("Connected to job search API successfully!");
       }
     } catch (err) {
       console.error('Error fetching jobs:', err);
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch jobs');
       
-      // Always fall back to mock data for now to ensure users see something
+      // Fall back to mock data
       await fetchFallbackJobs();
       
-      // Only set user-visible errors for non-network issues
-      if (!errorObj.message.includes('NetworkError') && !errorObj.message.includes('CORS')) {
+      // Only display non-network errors in the UI
+      if (!errorObj.message.includes('NetworkError') && 
+          !errorObj.message.includes('CORS') && 
+          !errorObj.message.includes('connectivity')) {
         setError(errorObj);
+        toast.error("Error fetching jobs. Using sample data instead.");
+      } else {
+        // Just show an info toast for network errors
+        toast.info("Using sample job data due to API connectivity issues");
       }
     } finally {
       setIsLoading(false);

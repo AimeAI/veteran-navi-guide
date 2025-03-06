@@ -2,7 +2,7 @@
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase, AlertCircle, Globe, Database } from 'lucide-react';
+import { Briefcase, AlertCircle, Globe, Database, Loader2 } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -89,7 +89,7 @@ const JobList: React.FC<JobListProps> = ({
           <Database className="h-4 w-4 mr-2" />
           <AlertTitle>Using sample job data</AlertTitle>
           <AlertDescription>
-            We're currently showing example job listings due to API connectivity issues.
+            We're currently showing example job listings. Try adjusting your search terms for better results.
           </AlertDescription>
         </Alert>
       )}
@@ -97,7 +97,9 @@ const JobList: React.FC<JobListProps> = ({
       {isLoading ? (
         <div className="py-12 space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse bg-gray-100 h-32 rounded-lg"></div>
+            <div key={i} className="animate-pulse bg-gray-100 h-32 rounded-lg flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+            </div>
           ))}
         </div>
       ) : jobs.length > 0 ? (

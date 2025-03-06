@@ -6,6 +6,10 @@ const LIGHTCAST_CLIENT_ID = "41sty9h1mnp7l8q5";
 const LIGHTCAST_SECRET = "7ie5tMCn";
 const LIGHTCAST_SCOPE = "emsi_open";
 
+// JSearch API key from RapidAPI
+const JSEARCH_API_KEY = "ea344cfe6cmsh7d7a042dec7c1f6p1ec333jsn37ba9c0ab03d";
+const JSEARCH_API_HOST = "jsearch.p.rapidapi.com";
+
 // Interface for Lightcast API auth token response
 interface LightcastAuthToken {
   access_token: string;
@@ -45,6 +49,74 @@ interface LightcastJob {
   industry?: {
     name: string;
   };
+}
+
+// Interface for JSearch job result
+interface JSearchJob {
+  employer_name: string;
+  employer_logo?: string;
+  employer_website?: string;
+  employer_company_type?: string;
+  job_publisher?: string;
+  job_id: string;
+  job_employment_type: string;
+  job_title: string;
+  job_apply_link: string;
+  job_apply_is_direct?: boolean;
+  job_apply_quality_score?: number;
+  job_description: string;
+  job_is_remote?: boolean;
+  job_posted_at_timestamp?: number;
+  job_posted_at_datetime_utc?: string;
+  job_city?: string;
+  job_state?: string;
+  job_country?: string;
+  job_latitude?: number;
+  job_longitude?: number;
+  job_benefits?: string[];
+  job_google_link?: string;
+  job_offer_expiration_datetime_utc?: string;
+  job_required_experience?: {
+    no_experience_required?: boolean;
+    required_experience_in_months?: number;
+    experience_mentioned?: boolean;
+    experience_preferred?: boolean;
+  };
+  job_required_skills?: string[];
+  job_required_education?: {
+    postgraduate_degree?: boolean;
+    professional_certification?: boolean;
+    high_school?: boolean;
+    associates_degree?: boolean;
+    bachelors_degree?: boolean;
+    degree_mentioned?: boolean;
+    degree_preferred?: boolean;
+    professional_certification_mentioned?: boolean;
+  };
+  job_experience_in_place_of_education?: boolean;
+  job_min_salary?: number;
+  job_max_salary?: number;
+  job_salary_currency?: string;
+  job_salary_period?: string;
+  job_highlights?: {
+    Qualifications?: string[];
+    Responsibilities?: string[];
+    Benefits?: string[];
+  };
+  job_job_title?: string;
+  job_posting_language?: string;
+  job_onet_soc?: string;
+  job_onet_job_zone?: string;
+  job_naics_code?: string;
+  job_naics_name?: string;
+}
+
+// Interface for JSearch API response
+interface JSearchResponse {
+  status: string;
+  request_id: string;
+  parameters: any;
+  data: JSearchJob[];
 }
 
 // Interface for API search params
@@ -257,12 +329,197 @@ const mapGoogleJobToJob = (job: GoogleJob): Job => {
 };
 
 /**
+ * Convert JSearch job to our internal Job format
+ */
+const mapJSearchJobToJob = (job: JSearchJob): Job => {
+  // Extract salary range
+  let salaryRange = 'range1'; // Default
+  
+  if (job.job_max_salary) {
+    const maxSalary = job.job_max_salary;
+    if (maxSalary > 100000) {
+      salaryRange = 'range5';
+    } else if (maxSalary > 75000) {
+      salaryRange = 'range3';
+    } else if (maxSalary > 50000) {
+      salaryRange = 'range2';
+    }
+  }
+  
+  // Extract job type
+  let jobType = 'fulltime'; // Default
+  if (job.job_employment_type) {
+    const empType = job.job_employment_type.toLowerCase();
+    if (empType.includes('part_time') || empType.includes('part-time')) {
+      jobType = 'parttime';
+    } else if (empType.includes('contractor') || empType.includes('contract')) {
+      jobType = 'contract';
+    } else if (empType.includes('temporary') || empType.includes('intern')) {
+      jobType = 'temporary';
+    }
+  }
+  
+  // Extract location
+  const location = [
+    job.job_city,
+    job.job_state,
+    job.job_country
+  ].filter(Boolean).join(', ');
+  
+  // Extract skills from qualifications
+  const requiredSkills = job.job_required_skills || 
+                         job.job_highlights?.Qualifications || [];
+  
+  // Extract industry
+  const industry = job.job_naics_name || '';
+  
+  // Extract experience level
+  let experienceLevel = '';
+  if (job.job_required_experience) {
+    if (job.job_required_experience.no_experience_required) {
+      experienceLevel = 'Entry Level';
+    } else if (job.job_required_experience.required_experience_in_months) {
+      const years = Math.floor(job.job_required_experience.required_experience_in_months / 12);
+      if (years < 2) {
+        experienceLevel = 'Entry Level';
+      } else if (years < 5) {
+        experienceLevel = 'Mid Level';
+      } else {
+        experienceLevel = 'Senior Level';
+      }
+    }
+  }
+  
+  // Extract education level
+  let educationLevel = '';
+  if (job.job_required_education) {
+    if (job.job_required_education.postgraduate_degree) {
+      educationLevel = "Master's or Doctoral";
+    } else if (job.job_required_education.bachelors_degree) {
+      educationLevel = "Bachelor's";
+    } else if (job.job_required_education.associates_degree) {
+      educationLevel = "Associate's";
+    } else if (job.job_required_education.high_school) {
+      educationLevel = "High School";
+    } else if (job.job_required_education.professional_certification) {
+      educationLevel = "Certification";
+    }
+  }
+  
+  return {
+    id: job.job_id,
+    title: job.job_title || job.job_title,
+    company: job.employer_name,
+    location: location || 'Remote',
+    description: job.job_description,
+    category: job.job_naics_name?.toLowerCase() || 'other',
+    salaryRange,
+    remote: job.job_is_remote || false,
+    clearanceLevel: 'none', // Default as this is not provided by JSearch API
+    mosCode: '', // Default as this is not provided by JSearch API
+    requiredSkills,
+    preferredSkills: job.job_highlights?.Responsibilities || [],
+    date: job.job_posted_at_datetime_utc || new Date().toISOString(),
+    jobType,
+    industry,
+    experienceLevel,
+    educationLevel,
+    benefits: job.job_benefits || job.job_highlights?.Benefits,
+  };
+};
+
+/**
  * Get the appropriate Lightcast API endpoint based on country
  */
 const getLightcastEndpoint = (country: "us" | "canada" = "us"): string => {
   return country === "us" 
     ? "https://emsiservices.com/job-postings/us/jobs" 
     : "https://emsiservices.com/job-postings/ca/jobs";
+};
+
+/**
+ * Search jobs using JSearch API from RapidAPI (CORS-friendly)
+ */
+const searchJSearchJobs = async (params: LightcastSearchParams): Promise<{
+  jobs: Job[];
+  totalJobs: number;
+  currentPage: number;
+  totalPages: number;
+}> => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    // Build the query string based on search parameters
+    let query = '';
+    if (params.keywords) query += params.keywords + ' ';
+    if (params.location) query += 'in ' + params.location + ' ';
+    
+    // Handle country parameter
+    if (params.country) {
+      query += params.country === 'canada' ? 'Canada' : 'United States';
+    } else {
+      query += 'Canada'; // Default to Canada
+    }
+    
+    queryParams.append('query', query.trim());
+    
+    // Handle job type
+    if (params.job_type) {
+      queryParams.append('employment_types', params.job_type);
+    }
+    
+    // Handle remote
+    if (params.remote_type === 'Full') {
+      queryParams.append('remote_jobs_only', 'true');
+    }
+    
+    // Handle pagination
+    const page = params.page || 1;
+    queryParams.append('page', String(page));
+    queryParams.append('num_pages', '1');
+    
+    console.log(`Making API request to JSearch API for query: ${query}`);
+    const url = `https://jsearch.p.rapidapi.com/search?${queryParams.toString()}`;
+    console.log("JSearch API URL:", url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': JSEARCH_API_KEY,
+        'X-RapidAPI-Host': JSEARCH_API_HOST
+      }
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("JSearch API error response:", errorText);
+      console.error("Response status:", response.status, response.statusText);
+      throw new Error(`Job search failed: ${response.status} ${response.statusText}`);
+    }
+    
+    const data: JSearchResponse = await response.json();
+    console.log("JSearch API raw response:", data);
+    
+    if (data.status !== 'success' || !data.data) {
+      throw new Error('JSearch API returned an invalid response');
+    }
+    
+    const jobs = data.data.map(mapJSearchJobToJob);
+    
+    // For now, we'll estimate total jobs as 10x the current results
+    // as the API doesn't provide total count information
+    const totalJobs = data.data.length * 10;
+    
+    return {
+      jobs,
+      totalJobs,
+      currentPage: page,
+      totalPages: 10, // Assume 10 pages as the API doesn't provide total pages info
+    };
+  } catch (error) {
+    console.error('Failed to search JSearch jobs:', error);
+    throw error;
+  }
 };
 
 /**
@@ -360,7 +617,15 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
   totalPages: number;
 }> => {
   try {
-    // First try the Google Jobs API
+    // First try the JSearch API
+    try {
+      return await searchJSearchJobs(params);
+    } catch (jSearchError) {
+      console.error('JSearch API failed, falling back to Google Jobs API:', jSearchError);
+      // Fall back to Google Jobs API if JSearch fails
+    }
+    
+    // Try Google Jobs API next
     try {
       return await searchGoogleJobs(params);
     } catch (googleError) {
