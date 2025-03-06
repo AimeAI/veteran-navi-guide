@@ -62,7 +62,7 @@ const filterMockJobs = (params: SearchParams): Job[] => {
     // Add the required properties from the Job interface that are missing in JobListing
     category: job.industry?.toLowerCase() || 'other',
     salaryRange: 'range2', // Default salary range
-    clearanceLevel: job.clearanceLevel || 'none',
+    clearanceLevel: job.clearanceLevel || job.securityClearanceRequired || 'none',
     mosCode: job.requiredMosCodes?.[0] || '',
     // Make sure these exist in the Job type
     date: new Date().toISOString(),

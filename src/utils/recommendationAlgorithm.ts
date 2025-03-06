@@ -116,6 +116,7 @@ export interface JobListing {
   preferredSkills: string[];
   requiredMosCodes?: string[];
   securityClearanceRequired?: string;
+  clearanceLevel?: string;
   remote: boolean;
   jobType: string;
   industry?: string;
