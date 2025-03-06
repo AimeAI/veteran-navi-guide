@@ -126,11 +126,15 @@ const filterMockJobs = (params: SearchParams): Job[] => {
     ...job,
     // Add the required properties from the Job interface that are missing in JobListing
     category: job.industry?.toLowerCase() || 'other',
-    salaryRange: 'range2', // Default salary range
+    salaryRange: job.salaryRange || 'range2', // Default salary range
     clearanceLevel: job.clearanceLevel || job.securityClearanceRequired || 'none',
     mosCode: job.requiredMosCodes?.[0] || '',
-    // Make sure these exist in the Job type
-    date: new Date().toISOString(),
+    // Make sure these required properties exist in each job
+    industry: job.industry || '',
+    experienceLevel: job.experienceLevel || '',
+    educationLevel: job.educationLevel || '',
+    // Ensure date is always defined
+    date: job.date || new Date().toISOString(),
   }));
 
   let filteredJobs = [...jobsWithRequiredProps];
@@ -204,7 +208,6 @@ const filterMockJobs = (params: SearchParams): Job[] => {
   }
 
   // Filter by radius (if we had coordinates)
-  // This is a placeholder for actual radius search implementation
   if (params.radius && params.radius > 0 && params.locations && params.locations.length > 0) {
     // In a real implementation, we would:
     // 1. Geocode the location to get lat/lng
@@ -306,7 +309,6 @@ const filterMockJobs = (params: SearchParams): Job[] => {
 };
 
 // Function to manually trigger a Jobicy RSS feed fetch
-// This would typically be called by an Edge Function or a scheduled task
 export const refreshJobicyFeed = async (): Promise<void> => {
   try {
     const { fetchAndParseJobicyFeed } = await import('@/utils/jobicyRssParser');

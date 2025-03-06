@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Briefcase, Filter, ChevronDown, Banknote, Medal, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,7 +28,9 @@ const JobSearch = () => {
     educationLevel: '',
     companySize: '',
     companyRating: 0,
-    benefits: []
+    benefits: [],
+    skills: [], // Add missing required property
+    useJobicy: false // Add missing required property
   });
 
   const getLightcastParams = (): LightcastSearchParams => {
@@ -199,7 +202,9 @@ const JobSearch = () => {
       educationLevel: '',
       companySize: '',
       companyRating: 0,
-      benefits: []
+      benefits: [],
+      skills: [], // Add missing required property
+      useJobicy: false // Add missing required property
     });
     toast.info("Filters cleared");
   };
