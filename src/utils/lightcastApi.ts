@@ -105,6 +105,9 @@ const searchGitHubJobs = async (params: LightcastSearchParams): Promise<{
     });
     
     if (!response.ok) {
+      if (response.status === 403 || data.includes('/corsdemo')) {
+        throw new Error('CORS proxy requires activation');
+      }
       throw new Error(`GitHub Jobs API returned status: ${response.status}`);
     }
     
@@ -139,7 +142,7 @@ const searchReedJobs = async (params: LightcastSearchParams): Promise<{
   totalPages: number;
 }> => {
   try {
-    console.log("Searching for jobs with Reed API");
+    console.log("Searching for jobs with API-Ninjas");
     
     // Reed API uses different query parameters
     const queryParams = new URLSearchParams();
@@ -186,13 +189,16 @@ const searchReedJobs = async (params: LightcastSearchParams): Promise<{
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'X-Api-Key': 'YOUR_API_NINJAS_KEY', // This is a free API with generous limits
+        'X-Api-Key': 'YOUR_API_NINJAS_KEY', // This needs to be configured properly
         'Content-Type': 'application/json'
       }
     });
     
     if (!response.ok) {
-      throw new Error(`API-Ninjas Jobs API returned status: ${response.status}`);
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid or missing API key');
+      }
+      throw new Error(`API-Ninjas returned status: ${response.status}`);
     }
     
     const data = await response.json();
@@ -359,12 +365,9 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
   currentPage: number;
   totalPages: number;
 }> => {
-  // Try each API in sequence until one works
   let apis = [];
   
-  // Determine which APIs to try based on country parameter
   if (params.country === 'canada') {
-    // For Canadian jobs, prioritize the Job Bank API
     apis = [
       { name: "Canadian Job Bank API", fn: searchCanadianJobBankJobs },
       { name: "GitHub Jobs API", fn: searchGitHubJobs },
@@ -372,7 +375,6 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
       { name: "Proxy Jobs API", fn: searchProxyJobs },
     ];
   } else {
-    // For US jobs, use the original API ordering
     apis = [
       { name: "GitHub Jobs API", fn: searchGitHubJobs },
       { name: "Reed Jobs API", fn: searchReedJobs },
@@ -380,22 +382,33 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     ];
   }
   
-  let lastError: Error | null = null;
+  const errors: Record<string, string> = {};
   
   // Try each API in sequence
   for (const api of apis) {
     try {
       console.log(`Attempting to use ${api.name}`);
       const result = await api.fn(params);
-      console.log(`Successfully retrieved jobs from ${api.name}`);
-      return result;
+      
+      if (result.jobs.length > 0) {
+        console.log(`Successfully retrieved ${result.jobs.length} jobs from ${api.name}`);
+        return result;
+      } else {
+        console.log(`No jobs found from ${api.name}, trying next API`);
+        errors[api.name] = 'No jobs found';
+        continue;
+      }
     } catch (error) {
       console.error(`${api.name} failed:`, error);
-      lastError = error instanceof Error ? error : new Error(`${api.name} failed`);
+      errors[api.name] = error instanceof Error ? error.message : 'Unknown error';
     }
   }
   
-  // If we get here, all APIs failed
-  console.error("All job APIs failed");
-  throw lastError || new Error("All job search APIs failed");
+  // All APIs failed, throw detailed error
+  const errorMessages = Object.entries(errors)
+    .map(([api, error]) => `${api}: ${error}`)
+    .join('\n');
+    
+  console.error('All job APIs failed with errors:', errorMessages);
+  throw new Error('Unable to fetch jobs from any available source');
 };
