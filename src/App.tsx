@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -32,6 +31,7 @@ import EmailVerificationBanner from "./components/EmailVerificationBanner";
 import JobFairsEventsPage from "./pages/JobFairsEventsPage";
 import MessagesPage from "./pages/MessagesPage";
 import { MessageProvider } from "./context/MessageContext";
+import RequireAuth from "./components/RequireAuth";
 
 function App() {
   return (
@@ -68,6 +68,11 @@ function App() {
               <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/dashboard" element={<VeteranDashboardPage />} />
               <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/employer-profile" element={
+                <RequireAuth>
+                  <EmployerProfilePage />
+                </RequireAuth>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
