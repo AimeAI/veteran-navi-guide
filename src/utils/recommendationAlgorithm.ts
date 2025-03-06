@@ -118,6 +118,12 @@ export interface JobListing {
   securityClearanceRequired?: string;
   remote: boolean;
   jobType: string;
+  industry?: string;
+  experienceLevel?: string;
+  educationLevel?: string;
+  companySize?: string;
+  companyRating?: number;
+  benefits?: string[];
 }
 
 export interface RecommendationResult {

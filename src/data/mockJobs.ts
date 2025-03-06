@@ -1,4 +1,3 @@
-
 import { JobListing } from '../utils/recommendationAlgorithm';
 
 // Mock job listings with skills and MOS codes
@@ -13,7 +12,13 @@ export const mockJobs: JobListing[] = [
     preferredSkills: ['project management', 'communication'],
     securityClearanceRequired: 'Secret',
     remote: false,
-    jobType: 'full-time'
+    jobType: 'full-time',
+    industry: 'Security',
+    experienceLevel: 'Mid-level',
+    educationLevel: "Bachelor's Degree",
+    companySize: 'Medium',
+    companyRating: 4.5,
+    benefits: ['Health Insurance', 'Retirement Plan', 'Paid Time Off']
   },
   {
     id: '2',
@@ -25,7 +30,13 @@ export const mockJobs: JobListing[] = [
     preferredSkills: ['leadership', 'communication'],
     requiredMosCodes: ['00168', 'SUPPLY'],
     remote: false,
-    jobType: 'full-time'
+    jobType: 'full-time',
+    industry: 'Logistics',
+    experienceLevel: 'Entry-level',
+    educationLevel: 'High School',
+    companySize: 'Large',
+    companyRating: 4.2,
+    benefits: ['Health Insurance', 'Dental Insurance', 'Vision Insurance']
   },
   {
     id: '3',
@@ -36,7 +47,13 @@ export const mockJobs: JobListing[] = [
     requiredSkills: ['healthcare', 'administration', 'organization'],
     preferredSkills: ['leadership', 'project management'],
     remote: true,
-    jobType: 'full-time'
+    jobType: 'full-time',
+    industry: 'Healthcare',
+    experienceLevel: 'Mid-level',
+    educationLevel: "Associate's Degree",
+    companySize: 'Large',
+    companyRating: 4.0,
+    benefits: ['Health Insurance', 'Retirement Plan', 'Flexible Hours']
   },
   {
     id: '4',
@@ -49,7 +66,13 @@ export const mockJobs: JobListing[] = [
     requiredMosCodes: ['00271', '00378'],
     securityClearanceRequired: 'Secret',
     remote: false,
-    jobType: 'full-time'
+    jobType: 'full-time',
+    industry: 'Technology',
+    experienceLevel: 'Mid-level',
+    educationLevel: "Bachelor's Degree",
+    companySize: 'Medium',
+    companyRating: 4.7,
+    benefits: ['Health Insurance', 'Stock Options', 'Training Budget']
   },
   {
     id: '5',
@@ -60,7 +83,13 @@ export const mockJobs: JobListing[] = [
     requiredSkills: ['project management', 'leadership', 'organization'],
     preferredSkills: ['communication', 'budgeting'],
     remote: false,
-    jobType: 'contract'
+    jobType: 'contract',
+    industry: 'Construction',
+    experienceLevel: 'Senior-level',
+    educationLevel: "Bachelor's Degree",
+    companySize: 'Small',
+    companyRating: 4.3,
+    benefits: ['Competitive Pay', 'Flexible Hours', 'Career Growth']
   },
   {
     id: '6',
@@ -72,7 +101,13 @@ export const mockJobs: JobListing[] = [
     preferredSkills: ['communication', 'stress management'],
     requiredMosCodes: ['00334', 'Med Tech'],
     remote: false,
-    jobType: 'full-time'
+    jobType: 'full-time',
+    industry: 'Healthcare',
+    experienceLevel: 'Entry-level',
+    educationLevel: 'Certification',
+    companySize: 'Medium',
+    companyRating: 4.1,
+    benefits: ['Health Insurance', 'Continuing Education', 'Shift Differential']
   },
   {
     id: '7',
@@ -84,7 +119,13 @@ export const mockJobs: JobListing[] = [
     preferredSkills: ['leadership', 'communication'],
     requiredMosCodes: ['00153', 'AERE'],
     remote: false,
-    jobType: 'full-time'
+    jobType: 'full-time',
+    industry: 'Aviation',
+    experienceLevel: 'Mid-level',
+    educationLevel: 'Technical Certification',
+    companySize: 'Large',
+    companyRating: 4.6,
+    benefits: ['Health Insurance', 'Retirement Plan', 'Travel Benefits']
   },
   {
     id: '8',
@@ -96,6 +137,12 @@ export const mockJobs: JobListing[] = [
     preferredSkills: ['communication', 'networking'],
     requiredMosCodes: ['00369', 'CISTM'],
     remote: true,
-    jobType: 'part-time'
+    jobType: 'part-time',
+    industry: 'Technology',
+    experienceLevel: 'Entry-level',
+    educationLevel: 'Certification',
+    companySize: 'Small',
+    companyRating: 4.4,
+    benefits: ['Flexible Hours', 'Work From Home', 'Training Opportunities']
   }
 ];

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -35,7 +36,7 @@ const VeteranDashboard = () => {
         earnedBadges: [
           {
             id: "badge1",
-            type: "profile-complete",
+            type: "profile" as BadgeType,
             name: "Profile Master",
             description: "Completed your profile with all required information",
             earnedDate: new Date().toISOString(),
@@ -44,7 +45,7 @@ const VeteranDashboard = () => {
           },
           {
             id: "badge2",
-            type: "first-application",
+            type: "application" as BadgeType,
             name: "Job Seeker",
             description: "Applied to your first job on the platform",
             earnedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
