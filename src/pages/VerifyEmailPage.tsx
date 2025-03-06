@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -6,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useUser } from '@/context/UserContext';
 import { CheckCircle, ArrowLeft, Mail } from 'lucide-react';
 import LoadingButton from '@/components/ui/LoadingButton';
-import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,17 +16,9 @@ const VerifyEmailPage: React.FC = () => {
   // Check if this is a redirect from email verification
   useEffect(() => {
     const handleEmailVerification = async () => {
-      // Get Supabase URL and key from environment variables
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !supabaseKey) return;
-      
       // Only process if we have email verification parameters
       if (searchParams.has('type') && searchParams.get('type') === 'email_confirmation') {
         try {
-          const supabase = createClient(supabaseUrl, supabaseKey);
-          
           // Exchange the email verification token
           const { error } = await supabase.auth.exchangeCodeForSession(
             searchParams.toString()

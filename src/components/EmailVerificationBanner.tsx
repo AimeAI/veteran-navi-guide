@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, AlertTriangle } from "lucide-react";
 import LoadingButton from "./ui/LoadingButton";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface EmailVerificationBannerProps {
   className?: string;
@@ -15,13 +16,20 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
   const { user, isLoading, resendVerificationEmail } = useUser();
   const navigate = useNavigate();
 
-  // Don't show if user is not logged in or email is already verified
+  // Don't show if user is not logged in or email is already verified or if user object is undefined
   if (!user || !user.isAuthenticated || user.emailVerified) {
     return null;
   }
 
   const handleResendVerification = async () => {
-    await resendVerificationEmail();
+    try {
+      await resendVerificationEmail();
+    } catch (error) {
+      console.error("Failed to resend verification email:", error);
+      toast.error("Failed to send verification email", {
+        description: "Please try again later or contact support."
+      });
+    }
   };
 
   const handleVerifyPage = () => {
