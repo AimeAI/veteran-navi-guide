@@ -83,10 +83,12 @@ let authTokenCache: { token: string; expiresAt: number } | null = null;
 export const getLightcastAuthToken = async (): Promise<string> => {
   // Check if we have a cached token that's still valid
   if (authTokenCache && authTokenCache.expiresAt > Date.now()) {
+    console.log("Using cached auth token");
     return authTokenCache.token;
   }
   
   try {
+    console.log("Requesting new Lightcast auth token");
     const response = await fetch('https://auth.emsicloud.com/connect/token', {
       method: 'POST',
       headers: {
@@ -101,10 +103,13 @@ export const getLightcastAuthToken = async (): Promise<string> => {
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Auth token request failed with status:", response.status, errorText);
       throw new Error(`Authentication failed: ${response.status} ${response.statusText}`);
     }
     
     const data: LightcastAuthToken = await response.json();
+    console.log("Received new auth token, expires in:", data.expires_in, "seconds");
     
     // Cache the token
     authTokenCache = {
@@ -183,6 +188,7 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     const url = `https://emsiservices.com/job-postings/us/jobs?${queryParams.toString()}`;
     console.log("Lightcast API URL:", url);
     
+    console.log("Making API request to Lightcast jobs endpoint");
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -194,6 +200,8 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Lightcast API error response:", errorText);
+      console.error("Response status:", response.status, response.statusText);
+      console.error("Response headers:", [...response.headers.entries()]);
       throw new Error(`Job search failed: ${response.status} ${response.statusText}`);
     }
     
@@ -208,6 +216,15 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     };
   } catch (error) {
     console.error('Failed to search Lightcast jobs:', error);
+    
+    // Add more context to the error
+    if (error instanceof Error) {
+      if (error.message.includes('NetworkError')) {
+        console.error('This appears to be a CORS or network connectivity issue');
+        throw new Error(`Network connectivity issue: ${error.message}. This might be due to CORS restrictions.`);
+      }
+    }
+    
     throw error;
   }
 };

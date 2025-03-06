@@ -2,8 +2,9 @@
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, AlertCircle } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface JobListProps {
   jobs: Job[];
@@ -46,10 +47,18 @@ const JobList: React.FC<JobListProps> = ({
 
   if (error) {
     return (
-      <div className="bg-red-50 text-red-600 p-4 rounded-md">
-        <h3 className="font-medium">Error loading jobs</h3>
-        <p>{error.message}</p>
-      </div>
+      <Alert variant="destructive" className="mb-6">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error loading jobs</AlertTitle>
+        <AlertDescription>
+          {error.message}
+          {error.message.includes('NetworkError') && (
+            <p className="mt-2 text-sm">
+              This appears to be a network connectivity issue. We're showing you fallback job data instead.
+            </p>
+          )}
+        </AlertDescription>
+      </Alert>
     );
   }
 
