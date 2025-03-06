@@ -20,6 +20,7 @@ import ResumeAssistance from "./pages/ResumeAssistance";
 import InterviewPreparation from "./pages/InterviewPreparation";
 import MilitaryTransitionResources from "./pages/MilitaryTransitionResources";
 import AuthPage from "./pages/AuthPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/sonner";
 import { AppProvider } from "./context/AppContext";
@@ -50,6 +51,7 @@ function App() {
             <Route path="/resources/forums" element={<CommunityForums />} />
             <Route path="/topic/:topicId" element={<TopicDetail />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/dashboard" element={<VeteranDashboardPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="*" element={<NotFound />} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import LoadingButton from "@/components/ui/LoadingButton";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
 import { isValidEmail, isStrongPassword } from "@/utils/validation";
+import FormErrorMessage from "@/components/ui/form-error-message";
 
 interface FormError {
   [key: string]: string;
@@ -159,23 +160,19 @@ const AuthPage: React.FC = () => {
                       className={loginErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
                     />
-                    {renderFormError(loginErrors.email)}
+                    <FormErrorMessage message={loginErrors.email} />
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password" className={loginErrors.password ? "text-red-500" : ""}>
                         Password
                       </Label>
-                      <a 
-                        href="#" 
+                      <Link 
+                        to="/forgot-password" 
                         className="text-sm text-primary hover:underline"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toast.info("Password reset functionality will be implemented in a future update.");
-                        }}
                       >
                         Forgot password?
-                      </a>
+                      </Link>
                     </div>
                     <Input 
                       id="password" 
@@ -191,7 +188,7 @@ const AuthPage: React.FC = () => {
                       className={loginErrors.password ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
                     />
-                    {renderFormError(loginErrors.password)}
+                    <FormErrorMessage message={loginErrors.password} />
                   </div>
                 </CardContent>
                 <CardFooter>
@@ -236,7 +233,7 @@ const AuthPage: React.FC = () => {
                       className={signupErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
                     />
-                    {renderFormError(signupErrors.email)}
+                    <FormErrorMessage message={signupErrors.email} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="military-branch" className={signupErrors.militaryBranch ? "text-red-500" : ""}>
@@ -256,7 +253,7 @@ const AuthPage: React.FC = () => {
                       className={signupErrors.militaryBranch ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
                     />
-                    {renderFormError(signupErrors.militaryBranch)}
+                    <FormErrorMessage message={signupErrors.militaryBranch} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className={signupErrors.password ? "text-red-500" : ""}>
@@ -276,7 +273,7 @@ const AuthPage: React.FC = () => {
                       className={signupErrors.password ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
                     />
-                    {renderFormError(signupErrors.password)}
+                    <FormErrorMessage message={signupErrors.password} />
                     <p className="text-xs text-gray-500">
                       Password must be at least 8 characters with uppercase, lowercase, and numbers
                     </p>
@@ -299,7 +296,7 @@ const AuthPage: React.FC = () => {
                       className={signupErrors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
                     />
-                    {renderFormError(signupErrors.confirmPassword)}
+                    <FormErrorMessage message={signupErrors.confirmPassword} />
                   </div>
                 </CardContent>
                 <CardFooter>
