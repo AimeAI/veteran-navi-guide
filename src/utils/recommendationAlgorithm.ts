@@ -95,8 +95,15 @@ export interface UserProfile {
     duration: string;
     description: string;
   }[];
-  photo?: string; // Adding missing photo property
-  serviceYears?: number; // Adding this for consistency
+  photo?: string;
+  serviceYears?: number;
+  clearanceLevel?: string;
+  securityClearance?: string;
+  militaryBackground?: {
+    branch: string;
+    rank: string;
+    mosCodes: string[];
+  };
 }
 
 export interface JobListing {

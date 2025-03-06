@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -55,14 +54,14 @@ const RecommendedJobs = () => {
               <div>
                 <h3 className="font-medium text-gray-700 mb-2">Military Background</h3>
                 <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-medium">Branch:</span> {currentUserProfile.militaryBackground.branch}
+                  <span className="font-medium">Branch:</span> {currentUserProfile.militaryBranch}
                 </p>
                 <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-medium">Rank:</span> {currentUserProfile.militaryBackground.rank}
+                  <span className="font-medium">Rank:</span> {currentUserProfile.rank}
                 </p>
                 <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-medium">MOS Codes:</span>{" "}
-                  {currentUserProfile.militaryBackground.mosCodes.join(", ")}
+                  <span className="font-medium">MOS Code:</span>{" "}
+                  {currentUserProfile.mosId}
                 </p>
                 <p className="text-sm text-gray-600">
                   <span className="font-medium">Security Clearance:</span>{" "}
