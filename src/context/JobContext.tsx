@@ -271,23 +271,23 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         companyRating: filters.companyRating,
         benefits: filters.benefits,
         useLightcastApi: true, // Always try to use Lightcast API
-        country: "canada", // Default to Canada for now
+        country: "canada" as "canada", // Type assertion to ensure it's a valid enum value
         useJobicy: filters.useJobicy // Include Jobicy jobs if requested
       };
       
       // Import and call the searchJobs function from the data module
       const { searchJobs: searchJobsFunc } = await import('@/data/jobs');
-      const results = await searchJobsFunc(searchParams);
+      const jobResults = await searchJobsFunc(searchParams);
       
-      setFilteredJobs(results);
+      setFilteredJobs(jobResults);
     } catch (error) {
       console.error('Error searching jobs:', error);
       // Fallback to local filtering if API calls fail
-      let results = [...jobs];
+      let jobResults = [...jobs];
       
       if (filters.keywords) {
         const keywords = filters.keywords.toLowerCase();
-        results = results.filter(job => 
+        jobResults = jobResults.filter(job => 
           job.title.toLowerCase().includes(keywords) || 
           job.company.toLowerCase().includes(keywords) || 
           job.description.toLowerCase().includes(keywords)
@@ -296,72 +296,72 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       if (filters.location) {
         const location = filters.location.toLowerCase();
-        results = results.filter(job => 
+        jobResults = jobResults.filter(job => 
           job.location.toLowerCase().includes(location)
         );
       }
 
       if (filters.category) {
-        results = results.filter(job => job.category === filters.category);
+        jobResults = jobResults.filter(job => job.category === filters.category);
       }
 
       if (filters.industry) {
-        results = results.filter(job => 
+        jobResults = jobResults.filter(job => 
           job.industry?.toLowerCase().includes(filters.industry.toLowerCase())
         );
       }
 
       if (filters.salaryRange && filters.salaryRange !== 'any') {
-        results = results.filter(job => job.salaryRange === filters.salaryRange);
+        jobResults = jobResults.filter(job => job.salaryRange === filters.salaryRange);
       }
 
       if (filters.mosCodes.length > 0) {
-        results = results.filter(job => filters.mosCodes.includes(job.mosCode));
+        jobResults = jobResults.filter(job => filters.mosCodes.includes(job.mosCode));
       }
 
       if (filters.clearanceLevel.length > 0) {
-        results = results.filter(job => filters.clearanceLevel.includes(job.clearanceLevel));
+        jobResults = jobResults.filter(job => filters.clearanceLevel.includes(job.clearanceLevel));
       }
 
       if (filters.remote) {
-        results = results.filter(job => job.remote === true);
+        jobResults = jobResults.filter(job => job.remote === true);
       }
 
       // Filter by job type if provided
       if (filters.jobType) {
-        results = results.filter(job => job.jobType === filters.jobType);
+        jobResults = jobResults.filter(job => job.jobType === filters.jobType);
       }
 
       // Filter by experience level if provided
       if (filters.experienceLevel) {
-        results = results.filter(job => job.experienceLevel === filters.experienceLevel);
+        jobResults = jobResults.filter(job => job.experienceLevel === filters.experienceLevel);
       }
 
       // Filter by education level if provided
       if (filters.educationLevel) {
-        results = results.filter(job => job.educationLevel === filters.educationLevel);
+        jobResults = jobResults.filter(job => job.educationLevel === filters.educationLevel);
       }
 
       // Filter by company size if provided
       if (filters.companySize) {
-        results = results.filter(job => job.companySize === filters.companySize);
+        jobResults = jobResults.filter(job => job.companySize === filters.companySize);
       }
 
       // Filter by company rating if provided
       if (filters.companyRating) {
-        results = results.filter(job => job.companyRating >= filters.companyRating);
+        jobResults = jobResults.filter(job => job.companyRating >= filters.companyRating);
       }
 
       // Filter by benefits if provided
       if (filters.benefits && filters.benefits.length > 0) {
-        results = results.filter(job => 
+        jobResults = jobResults.filter(job => 
           job.benefits && filters.benefits.some(benefit => job.benefits.includes(benefit))
         );
       }
 
       // Filter by military skills if provided
       if (filters.militarySkills && filters.militarySkills.length > 0) {
-        results = results.filter(job => {
+        jobResults = jobResults.filter(job => {
           // Check if any of the job's required skills match the selected military skills
           if (!job.requiredSkills) return false;
           
@@ -373,12 +373,12 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         });
       }
 
-      setFilteredJobs(results);
+      setFilteredJobs(jobResults);
     } finally {
       setIsLoading(false);
     }
     
-    return results;
+    return filteredJobs;
   };
 
   // Function to save a job

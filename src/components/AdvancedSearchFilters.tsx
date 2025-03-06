@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, Buildings, GraduationCap, Star, Heart, MapPin, Database, Medal } from 'lucide-react';
+import { Briefcase, Building, GraduationCap, Star, Heart, MapPin, Database, Medal } from 'lucide-react';
 import { JobFilterState } from '@/context/JobContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -193,7 +193,7 @@ const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
       
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-          <Buildings className="h-4 w-4 mr-2 text-primary" />
+          <Building className="h-4 w-4 mr-2 text-primary" />
           Company Size
         </label>
         <select

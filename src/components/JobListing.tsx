@@ -14,6 +14,7 @@ export interface JobListingProps {
   url?: string;
   className?: string;
   matchScore?: number;
+  date?: string;
 }
 
 const JobListing: React.FC<JobListingProps> = ({ 
@@ -25,7 +26,8 @@ const JobListing: React.FC<JobListingProps> = ({
   source, 
   url, 
   className,
-  matchScore 
+  matchScore,
+  date
 }) => {
   // Format job source for display
   const getSourceLabel = (source?: string) => {
@@ -87,7 +89,7 @@ const JobListing: React.FC<JobListingProps> = ({
       <div className="mt-3 flex justify-between items-center">
         <div className="flex items-center">
           <Briefcase className="h-4 w-4 text-gray-400 mr-1" />
-          <span className="text-xs text-gray-500">Posted: {new Date(job.date || new Date()).toLocaleDateString()}</span>
+          <span className="text-xs text-gray-500">Posted: {new Date(date || new Date()).toLocaleDateString()}</span>
         </div>
         
         {url && (
