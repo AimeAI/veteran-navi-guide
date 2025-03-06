@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -34,7 +33,6 @@ const JobList: React.FC<JobListProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   
-  // Calculate page range to display
   const getPageRange = () => {
     const range = [];
     const maxVisiblePages = 5;
@@ -73,7 +71,6 @@ const JobList: React.FC<JobListProps> = ({
     }
   };
 
-  // Group jobs by source
   const jobsBySource = jobs.reduce((acc, job) => {
     const source = job.source || 'other';
     if (!acc[source]) {
@@ -83,7 +80,6 @@ const JobList: React.FC<JobListProps> = ({
     return acc;
   }, {} as Record<string, Job[]>);
 
-  // Calculate source statistics
   const jobBankCount = jobsBySource['jobbank']?.length || 0;
   const otherSourcesCount = totalJobs - jobBankCount;
 
@@ -140,8 +136,7 @@ const JobList: React.FC<JobListProps> = ({
                 source={job.source}
                 url={job.url}
                 date={job.date}
-                // Only pass matchScore if it exists in the job object
-                {...('matchScore' in job ? { matchScore: job.matchScore } : {})}
+                {...('matchScore' in job && typeof job.matchScore === 'number' ? { matchScore: job.matchScore } : {})}
               />
             ))}
           </div>
