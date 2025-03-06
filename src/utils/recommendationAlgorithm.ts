@@ -3,6 +3,7 @@
 export interface UserProfile {
   id: string;
   name: string;
+  email?: string; // Added email property as optional
   skills: string[];
   militaryBackground: {
     branch: string;
@@ -44,6 +45,7 @@ export interface RecommendationResult {
 export const currentUserProfile: UserProfile = {
   id: "user1",
   name: "John Doe",
+  email: "john.doe@example.com", // Added email
   skills: ["leadership", "communication", "project management", "security", "logistics"],
   militaryBackground: {
     branch: "Canadian Army",
