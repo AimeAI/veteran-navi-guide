@@ -26,7 +26,7 @@ const JobList: React.FC<JobListProps> = ({
   totalPages,
   totalJobs,
   onPageChange,
-  country = "us", // Default to US
+  country = "canada", // Default to Canada instead of US
 }) => {
   // Calculate page range to display
   const getPageRange = () => {

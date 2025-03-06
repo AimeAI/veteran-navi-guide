@@ -24,7 +24,10 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
   const [currentPage, setCurrentPage] = useState(searchParams.page || 1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalJobs, setTotalJobs] = useState(0);
-  const [currentSearchParams, setCurrentSearchParams] = useState<LightcastSearchParams>(searchParams);
+  const [currentSearchParams, setCurrentSearchParams] = useState<LightcastSearchParams>({
+    ...searchParams,
+    country: searchParams.country || "canada" // Default to Canada
+  });
   const [useFallbackData, setUseFallbackData] = useState(false);
 
   // Update searchParams when external params change

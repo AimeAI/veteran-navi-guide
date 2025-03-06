@@ -41,7 +41,8 @@ const JobSearch = () => {
       education_level: filters.educationLevel,
       remote_type: filters.remote ? 'Full' : undefined,
       page: 1,
-      limit: 10
+      limit: 10,
+      country: "canada"
     };
   };
 
