@@ -17,6 +17,7 @@ import { AlertCircle, Bell, BellOff, Mail, Lock, Save } from "lucide-react";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import VeteranBadges from "@/components/VeteranBadges";
 import { determineEarnedBadges } from "@/utils/badgeUtils";
+import ResumeParser from "@/components/resume/ResumeParser";
 
 const UserProfile = () => {
   const { user, updateProfile } = useUser();
@@ -372,9 +373,10 @@ const UserProfile = () => {
   return (
     <div className="container mx-auto py-10">
       <Tabs defaultValue={activeTab} value={activeTab} onValueChange={handleTabChange} className="w-full max-w-3xl mx-auto">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="resume">Resume/CV</TabsTrigger>
+          <TabsTrigger value="resume-parser">Resume Analysis</TabsTrigger>
           <TabsTrigger value="alerts">Job Alerts</TabsTrigger>
           <TabsTrigger value="applications">Applications</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -464,6 +466,10 @@ const UserProfile = () => {
               </Button>
             </CardFooter>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="resume-parser">
+          <ResumeParser />
         </TabsContent>
         
         <TabsContent value="alerts">

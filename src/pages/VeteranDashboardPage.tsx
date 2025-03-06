@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import VeteranDashboard from '@/components/VeteranDashboard';
 import { User, PlusCircle, RefreshCw } from 'lucide-react';
@@ -7,11 +6,9 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
-import { useToast } from 'sonner';
+import { toast } from 'sonner';
 
 const VeteranDashboardPage = () => {
-  const toast = useToast();
-  
   // This would fetch veteran-specific data in a real implementation
   const { refetch, isRefetching } = useQuery({
     queryKey: ['veteranProfile'],
