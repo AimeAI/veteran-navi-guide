@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Briefcase, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface JobListingProps {
   jobId: string;
@@ -64,6 +65,11 @@ const JobListing: React.FC<JobListingProps> = ({
   const sourceLabel = getSourceLabel(source);
   const sourceBadgeVariant = getSourceColor(source);
   
+  const handleApplyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Log application click for analytics
+    console.log('User clicked Apply Now for job:', jobId, title, company);
+  };
+  
   return (
     <div className={cn("bg-white rounded-md shadow-sm border border-gray-200 p-4", className)}>
       <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -92,15 +98,25 @@ const JobListing: React.FC<JobListingProps> = ({
           <span className="text-xs text-gray-500">Posted: {new Date(date || new Date()).toLocaleDateString()}</span>
         </div>
         
-        {url && (
+        {url ? (
           <a 
             href={url} 
             target="_blank" 
             rel="noopener noreferrer" 
             className="flex items-center text-primary hover:text-primary/80 text-sm font-medium"
+            onClick={handleApplyClick}
           >
             Apply Now <ExternalLink className="h-3 w-3 ml-1" />
           </a>
+        ) : (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs"
+            disabled
+          >
+            No application link
+          </Button>
         )}
       </div>
     </div>

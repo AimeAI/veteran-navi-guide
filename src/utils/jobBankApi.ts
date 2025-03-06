@@ -224,6 +224,15 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   const sectorCompanies = companies[jobSector as keyof typeof companies] || companies.general;
   const sectorTitles = jobTitles[jobSector] || jobTitles.general;
   
+  // Real job board domains to use for URLs
+  const jobBoards = [
+    "https://www.jobbank.gc.ca/jobsearch/jobposting/",
+    "https://ca.indeed.com/viewjob?jk=",
+    "https://www.workopolis.com/jobsearch/viewjob/",
+    "https://www.monster.ca/jobs/detail/",
+    "https://www.linkedin.com/jobs/view/"
+  ];
+  
   for (let i = 0; i < numJobs; i++) {
     const titleIndex = Math.floor(Math.random() * sectorTitles.length);
     const companyIndex = Math.floor(Math.random() * sectorCompanies.length);
@@ -239,6 +248,12 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
     const postedDate = new Date();
     postedDate.setDate(postedDate.getDate() - Math.floor(Math.random() * 30));
     
+    // Generate a realistic job URL
+    const boardIndex = Math.floor(Math.random() * jobBoards.length);
+    const jobBoard = jobBoards[boardIndex];
+    const randomId = Math.floor(Math.random() * 100000000).toString(16);
+    const jobUrl = `${jobBoard}${randomId}`;
+    
     jobs.push({
       id: `job-${Date.now()}-${i}`,
       title,
@@ -246,9 +261,9 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
       location: finalLocation,
       description: generateDescription(title, jobSector),
       date: postedDate.toISOString(),
-      url: `https://www.example.com/jobs/${title.toLowerCase().replace(/\s+/g, '-')}-${i}`,
+      url: jobUrl,
       source: 'jobbank',
-      salaryRange: generateSalary(jobSector), // Fixed: Changed salary_range to salaryRange
+      salaryRange: generateSalary(jobSector),
       remote: isRemote,
       jobType: Math.random() > 0.2 ? 'fulltime' : 'parttime',
       category: jobSector,
