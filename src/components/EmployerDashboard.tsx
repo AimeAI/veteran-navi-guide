@@ -254,7 +254,7 @@ const EmployerDashboard: React.FC = () => {
     return "";
   };
 
-  const statusCounts = applications?.reduce((counts, app) => {
+  const statusCounts: Record<ApplicationStatus, number> = applications?.reduce((counts, app) => {
     counts[app.status] = (counts[app.status] || 0) + 1;
     return counts;
   }, {} as Record<ApplicationStatus, number>) || {};
