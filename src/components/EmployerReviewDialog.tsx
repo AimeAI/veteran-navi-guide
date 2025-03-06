@@ -62,7 +62,7 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
       // In a real app, this would send data to Supabase
       console.log('Submitting review:', {
         employerId,
-        reviewerId: user?.id,
+        reviewerId: user?.email, // Changed from user?.id to user?.email
         reviewerName: user?.name,
         rating,
         title,
