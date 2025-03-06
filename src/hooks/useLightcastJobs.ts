@@ -101,7 +101,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
-      // First try the Lightcast API
+      // First try the job search API
       const result = await searchLightcastJobs(params);
       console.log("Received job results:", result);
       
@@ -117,11 +117,11 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       console.error('Error fetching jobs:', err);
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch jobs');
       
-      // For network/CORS errors, fall back to mock data without showing error to user
-      if (errorObj.message.includes('NetworkError') || errorObj.message.includes('CORS')) {
-        await fetchFallbackJobs();
-      } else {
-        // For non-network errors, show the error
+      // Always fall back to mock data for now to ensure users see something
+      await fetchFallbackJobs();
+      
+      // Only set user-visible errors for non-network issues
+      if (!errorObj.message.includes('NetworkError') && !errorObj.message.includes('CORS')) {
         setError(errorObj);
       }
     } finally {
