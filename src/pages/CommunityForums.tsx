@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
-import { Search, X, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, X, Check, ChevronLeft, ChevronRight, Pencil, Save, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
 import {
@@ -19,8 +19,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useUser } from "@/context/UserContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
-// Mock forum topics data
 const forumTopics = [
   {
     id: 1,
@@ -80,7 +87,6 @@ const forumTopics = [
   }
 ];
 
-// Forum categories
 const categories = [
   { name: "All Topics", value: "all" },
   { name: "Career Transition", value: "career-transition" },
@@ -109,6 +115,22 @@ const CommunityForums = () => {
   
   const [currentPage, setCurrentPage] = useState(1);
   const topicsPerPage = 5;
+  
+  const [editingTopicId, setEditingTopicId] = useState<number | null>(null);
+  const [editFormOpen, setEditFormOpen] = useState(false);
+  const [editTopic, setEditTopic] = useState({
+    id: 0,
+    title: "",
+    content: "",
+    category: ""
+  });
+  const [editErrors, setEditErrors] = useState({
+    title: "",
+    content: ""
+  });
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+  
+  const { user } = useUser();
 
   const filteredTopics = topics.filter(topic => {
     const matchesCategory = activeCategory === "all" || topic.category === activeCategory;
@@ -146,6 +168,28 @@ const CommunityForums = () => {
     }
     
     setErrors(newErrors);
+    return !newErrors.title && !newErrors.content;
+  };
+
+  const validateEditForm = () => {
+    const newErrors = {
+      title: "",
+      content: ""
+    };
+    
+    if (isEmptyOrWhitespace(editTopic.title)) {
+      newErrors.title = "Topic title is required";
+    } else if (editTopic.title.length < 5) {
+      newErrors.title = "Title must be at least 5 characters";
+    }
+    
+    if (isEmptyOrWhitespace(editTopic.content)) {
+      newErrors.content = "Content is required";
+    } else if (editTopic.content.length < 10) {
+      newErrors.content = "Content must be at least 10 characters";
+    }
+    
+    setEditErrors(newErrors);
     return !newErrors.title && !newErrors.content;
   };
 
@@ -227,6 +271,120 @@ const CommunityForums = () => {
         [name]: ""
       }));
     }
+  };
+
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditTopic(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    if (editErrors[name as keyof typeof editErrors]) {
+      setEditErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+  };
+
+  const handleEditTopic = (topic: any) => {
+    setEditingTopicId(topic.id);
+    setEditTopic({
+      id: topic.id,
+      title: topic.title,
+      content: topic.content || "",
+      category: topic.category
+    });
+    setEditFormOpen(true);
+    setEditErrors({
+      title: "",
+      content: ""
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditFormOpen(false);
+    setEditingTopicId(null);
+    setEditErrors({
+      title: "",
+      content: ""
+    });
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateEditForm()) {
+      return;
+    }
+    
+    setIsEditSubmitting(true);
+    
+    try {
+      console.log("Updated topic data to be sent to Supabase:", editTopic);
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const updatedTopics = topics.map(topic => 
+        topic.id === editTopic.id 
+          ? { 
+              ...topic, 
+              title: editTopic.title, 
+              content: editTopic.content,
+              category: editTopic.category 
+            }
+          : topic
+      );
+      
+      setTopics(updatedTopics);
+      setEditFormOpen(false);
+      setEditingTopicId(null);
+      
+      toast.success("Topic updated successfully", {
+        description: "Your changes have been saved",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error updating topic:", error);
+      toast.error("Failed to update topic", {
+        description: "Please try again later",
+      });
+    } finally {
+      setIsEditSubmitting(false);
+    }
+  };
+
+  const handleDeleteTopic = async (topicId: number) => {
+    if (!window.confirm("Are you sure you want to delete this topic? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      console.log("Delete topic request to be sent to Supabase:", { topicId });
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const filteredTopics = topics.filter(topic => topic.id !== topicId);
+      
+      setTopics(filteredTopics);
+      setEditFormOpen(false);
+      setEditingTopicId(null);
+      
+      toast.success("Topic deleted successfully", {
+        description: "Your topic has been removed",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error deleting topic:", error);
+      toast.error("Failed to delete topic", {
+        description: "Please try again later",
+      });
+    }
+  };
+
+  const isCurrentUserAuthor = (authorName: string) => {
+    return user?.name === authorName || authorName === "CurrentUser";
   };
 
   const indexOfLastTopic = currentPage * topicsPerPage;
@@ -438,6 +596,20 @@ const CommunityForums = () => {
                           <span>{topic.replies} replies</span>
                           <span>{topic.views} views</span>
                         </div>
+                        
+                        {isCurrentUserAuthor(topic.author) && (
+                          <div className="mt-3">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEditTopic(topic)}
+                              className="flex items-center text-muted-foreground hover:text-foreground"
+                            >
+                              <Pencil className="h-3.5 w-3.5 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </Card>
                   </article>
@@ -489,6 +661,92 @@ const CommunityForums = () => {
           )}
         </main>
       </div>
+      
+      <Dialog open={editFormOpen} onOpenChange={(open) => !open && handleCancelEdit()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Topic</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveEdit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-topic-title">Topic Title</Label>
+              <Input
+                id="edit-topic-title"
+                name="title"
+                placeholder="Enter a descriptive title"
+                value={editTopic.title}
+                onChange={handleEditInputChange}
+                aria-invalid={!!editErrors.title}
+                aria-describedby={editErrors.title ? "edit-title-error" : undefined}
+              />
+              <FormErrorMessage message={editErrors.title} id="edit-title-error" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-topic-category">Category</Label>
+              <select
+                id="edit-topic-category"
+                name="category"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={editTopic.category}
+                onChange={handleEditInputChange}
+              >
+                {categories.filter(cat => cat.value !== "all").map(category => (
+                  <option key={category.value} value={category.value}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-topic-content">Content</Label>
+              <Textarea
+                id="edit-topic-content"
+                name="content"
+                placeholder="Describe your topic or question in detail"
+                rows={5}
+                value={editTopic.content}
+                onChange={handleEditInputChange}
+                aria-invalid={!!editErrors.content}
+                aria-describedby={editErrors.content ? "edit-content-error" : undefined}
+              />
+              <FormErrorMessage message={editErrors.content} id="edit-content-error" />
+            </div>
+          </form>
+          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2">
+            <Button 
+              type="button"
+              variant="destructive" 
+              onClick={() => handleDeleteTopic(editTopic.id)}
+              className="w-full sm:w-auto order-3 sm:order-1 flex items-center justify-center"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete Topic
+            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-2">
+              <Button 
+                type="button"
+                variant="outline" 
+                onClick={handleCancelEdit}
+                className="flex items-center justify-center"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <Button 
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={isEditSubmitting}
+                className="flex items-center justify-center"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isEditSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
