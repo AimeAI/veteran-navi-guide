@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -58,7 +59,7 @@ const JobList: React.FC<JobListProps> = ({
 
   // Group jobs by source
   const jobsBySource = jobs.reduce((acc, job) => {
-    const source = (job as any).source || 'other';
+    const source = job.source || 'other';
     if (!acc[source]) {
       acc[source] = [];
     }
@@ -142,8 +143,8 @@ const JobList: React.FC<JobListProps> = ({
                 company={job.company}
                 location={job.location}
                 description={job.description}
-                source={(job as any).source}
-                url={(job as any).url}
+                source={job.source}
+                url={job.url}
               />
             ))}
           </div>

@@ -189,7 +189,6 @@ export const searchJobBankJobs = async (params: JobBankSearchParams): Promise<{
         industry: '', // Not provided in search results
         experienceLevel: '', // Not provided in search results
         educationLevel: '', // Not provided in search results
-        // Add a source identifier and URL for later reference
         source: 'jobbank',
         url: jobUrl,
       });

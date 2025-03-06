@@ -1,9 +1,10 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { searchLightcastJobs, LightcastSearchParams } from '@/utils/lightcastApi';
 import { toast } from 'sonner';
 import { searchJobs as searchMockJobs } from '@/data/jobs';
-import { militarySkillsToNOCMapping, getNOCCodesForSkill } from '@/utils/jobBankApi';
+import { militarySkillsToNOCMapping, getNOCCodesForSkill, searchJobBankJobs } from '@/utils/jobBankApi';
 
 export type { LightcastSearchParams } from '@/utils/lightcastApi';
 
@@ -153,8 +154,44 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
-      // Try to use the Job Bank API first (particularly for Canadian jobs)
+      // Try Job Bank API first for Canadian jobs
+      if (params.country === "canada" || !params.country) {
+        try {
+          console.log("Trying Job Bank API (Canada)");
+          const jobBankParams = {
+            keywords: params.keywords,
+            location: params.location,
+            distance: params.radius,
+            page: currentPage,
+          };
+          
+          const jobBankResults = await searchJobBankJobs(jobBankParams);
+          
+          // If we got results, use them
+          if (jobBankResults.jobs.length > 0) {
+            console.log(`Found ${jobBankResults.jobs.length} jobs from Job Bank`);
+            setJobs(jobBankResults.jobs);
+            setTotalPages(jobBankResults.totalPages);
+            setTotalJobs(jobBankResults.totalJobs);
+            
+            // If we were using fallback data before but API now works, update state
+            if (usingFallbackData) {
+              setUsingFallbackData(false);
+              toast.success("Connected to Job Bank API successfully!");
+            }
+            
+            setIsLoading(false);
+            return;
+          }
+        } catch (jobBankError) {
+          console.error("Job Bank API failed:", jobBankError);
+          // Continue to try other APIs
+        }
+      }
+      
+      // Try Lightcast API second
       try {
+        console.log("Trying Lightcast API");
         const result = await searchLightcastJobs(params);
         console.log("Received job results:", result);
         
