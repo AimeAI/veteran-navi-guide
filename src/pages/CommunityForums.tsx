@@ -7,9 +7,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
-import { Search, X, Check } from "lucide-react";
+import { Search, X, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 // Mock forum topics data
 const forumTopics = [
@@ -97,8 +106,10 @@ const CommunityForums = () => {
     content: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const topicsPerPage = 5;
 
-  // Filter topics based on active category and search query
   const filteredTopics = topics.filter(topic => {
     const matchesCategory = activeCategory === "all" || topic.category === activeCategory;
     const matchesSearch = topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -165,19 +176,16 @@ const CommunityForums = () => {
     setIsSubmitting(true);
     
     try {
-      // This is where Supabase integration would go
       console.log("New topic data to be sent to Supabase:", newTopic);
       
-      // Simulate a delay for the API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For now, we'll just add the topic to our local state
       const currentDate = new Date().toISOString();
       const newTopicEntry = {
         id: topics.length + 1,
         title: newTopic.title,
         content: newTopic.content,
-        author: "CurrentUser", // This would be the authenticated user
+        author: "CurrentUser",
         lastPostDate: currentDate,
         replies: 0,
         views: 0,
@@ -213,13 +221,57 @@ const CommunityForums = () => {
       [name]: value
     }));
     
-    // Clear error when user types
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({
         ...prev,
         [name]: ""
       }));
     }
+  };
+
+  const indexOfLastTopic = currentPage * topicsPerPage;
+  const indexOfFirstTopic = indexOfLastTopic - topicsPerPage;
+  const currentTopics = filteredTopics.slice(indexOfFirstTopic, indexOfLastTopic);
+  const totalPages = Math.ceil(filteredTopics.length / topicsPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+    setCurrentPage(pageNumber);
+  };
+
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push("ellipsis");
+        pageNumbers.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pageNumbers.push(1);
+        pageNumbers.push("ellipsis");
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      } else {
+        pageNumbers.push(1);
+        pageNumbers.push("ellipsis");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(i);
+        }
+        pageNumbers.push("ellipsis");
+        pageNumbers.push(totalPages);
+      }
+    }
+    
+    return pageNumbers;
   };
 
   return (
@@ -318,7 +370,6 @@ const CommunityForums = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-        {/* Sidebar with categories */}
         <aside className="lg:col-span-1" aria-labelledby="categories-heading">
           <Card>
             <CardHeader className="pb-3">
@@ -346,9 +397,7 @@ const CommunityForums = () => {
           </Card>
         </aside>
 
-        {/* Forums main content */}
         <main className="lg:col-span-3">
-          {/* Search bar */}
           <div className="relative mb-6">
             <label htmlFor="search-topics" className="sr-only">Search topics</label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
@@ -362,12 +411,11 @@ const CommunityForums = () => {
             />
           </div>
 
-          {/* Topics list */}
           <section aria-label="Forum topics" aria-live="polite">
             <h2 id="topics-heading" className="sr-only">Forum Topics</h2>
             <div className="space-y-4">
-              {filteredTopics.length > 0 ? (
-                filteredTopics.map(topic => (
+              {currentTopics.length > 0 ? (
+                currentTopics.map(topic => (
                   <article 
                     key={topic.id} 
                     className="overflow-hidden hover:shadow-md transition-shadow"
@@ -401,6 +449,44 @@ const CommunityForums = () => {
               )}
             </div>
           </section>
+          
+          {filteredTopics.length > topicsPerPage && (
+            <Pagination className="mt-6">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} 
+                    aria-disabled={currentPage === 1}
+                  />
+                </PaginationItem>
+                
+                {getPageNumbers().map((pageNumber, index) => (
+                  <PaginationItem key={index}>
+                    {pageNumber === "ellipsis" ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink 
+                        isActive={currentPage === pageNumber}
+                        onClick={() => handlePageChange(pageNumber as number)}
+                        className="cursor-pointer"
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    aria-disabled={currentPage === totalPages}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </main>
       </div>
     </div>
