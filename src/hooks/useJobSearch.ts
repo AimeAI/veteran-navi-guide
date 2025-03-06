@@ -4,6 +4,7 @@ import { Job } from '@/context/JobContext';
 import { searchJobs as searchMockJobs } from '@/data/jobs';
 import { searchJobBankJobs, getNOCCodesForSkill } from '@/utils/jobBankApi';
 import { JobCache } from '@/utils/jobCache';
+import { toast } from 'sonner';
 
 export interface JobSearchParams {
   keywords?: string;
@@ -27,7 +28,6 @@ export interface JobSearchResults {
   totalJobs: number;
   setPage: (page: number) => void;
   refreshJobs: () => Promise<void>;
-  usingFallbackData: boolean;
 }
 
 export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults => {
@@ -37,7 +37,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
   const [currentPage, setCurrentPage] = useState(searchParams.page || 1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalJobs, setTotalJobs] = useState(0);
-  const [usingFallbackData, setUsingFallbackData] = useState(false);
   const [currentSearchParams, setCurrentSearchParams] = useState<JobSearchParams>({
     ...searchParams,
     country: searchParams.country || "canada" // Default to Canada for Job Bank API
@@ -91,7 +90,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
 
   const fetchFallbackJobs = useCallback(async () => {
     try {
-      console.log("Using fallback mock data (silently)");
+      console.log("Using fallback mock data");
       
       // Enhanced to use military skills
       let skillKeywords = '';
@@ -127,10 +126,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       setTotalPages(1);
       setTotalJobs(fallbackJobs.length);
       
-      // Don't set usingFallbackData to true visibly anymore
-      // setUsingFallbackData(true);
-      setUsingFallbackData(false);
-      
       // Store fallback data in cache too
       const cacheKey = getCacheKey(currentSearchParams, currentPage);
       JobCache.saveSearchResults(cacheKey, {
@@ -145,8 +140,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       console.error('Error fetching fallback jobs:', err);
       // Still need jobs to display, use empty array as last resort
       setJobs([]);
-      // Don't show error messages to users
-      setError(null);
       return [];
     }
   }, [currentPage, currentSearchParams, convertMilitarySkillsToKeywords, getCacheKey]);
@@ -189,7 +182,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
         setJobs(cachedResults.jobs);
         setTotalPages(cachedResults.totalPages);
         setTotalJobs(cachedResults.totalJobs);
-        setUsingFallbackData(false); // Don't show fallback data message
         setIsLoading(false);
         return;
       }
@@ -220,18 +212,17 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
             // Cache the results
             JobCache.saveSearchResults(cacheKey, jobBankResults);
             
-            // Don't show usingFallbackData indicator
-            setUsingFallbackData(false);
-            
             setIsLoading(false);
             return;
           } else {
-            console.log("No jobs found, using fallback data silently");
+            console.log("No jobs found, using fallback data");
             await fetchFallbackJobs();
           }
         } catch (jobBankError) {
           console.error("Error fetching jobs:", jobBankError);
-          // Fall back to mock data silently
+          
+          // Try fallback data and don't show error to user
+          toast.error("Unable to connect to job search service. Showing available jobs.");
           await fetchFallbackJobs();
         }
       } else {
@@ -242,8 +233,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       console.error('Error in job fetch flow:', err);
       // Fall back to mock data silently
       await fetchFallbackJobs();
-      // Don't show errors to users
-      setError(null);
     } finally {
       setIsLoading(false);
     }
@@ -284,6 +273,5 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     totalJobs,
     setPage,
     refreshJobs,
-    usingFallbackData: false, // Always false to prevent showing the message
   };
 };

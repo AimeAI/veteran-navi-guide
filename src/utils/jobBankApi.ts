@@ -75,7 +75,21 @@ export const searchJobBankJobs = async (params: {
       throw new Error(`Job search returned status: ${response.status}`);
     }
     
-    const data = await response.json();
+    const responseText = await response.text();
+    
+    // Check if the response is HTML (which would indicate an error)
+    if (responseText.trim().startsWith('<!DOCTYPE html>') || responseText.trim().startsWith('<html>')) {
+      console.error('Received HTML response instead of JSON');
+      throw new Error('Invalid response format from job search API');
+    }
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Error parsing job search response:', parseError);
+      throw new Error('Failed to parse job search results');
+    }
     
     // If we have jobs, return them
     if (data.jobs && data.jobs.length > 0) {
@@ -92,12 +106,7 @@ export const searchJobBankJobs = async (params: {
   } catch (error) {
     console.error('Error searching for jobs:', error);
     
-    // Return an empty result set instead of throwing
-    return {
-      jobs: [],
-      totalJobs: 0,
-      currentPage: 1,
-      totalPages: 1,
-    };
+    // Throw the error to be handled by the caller
+    throw error;
   }
 };

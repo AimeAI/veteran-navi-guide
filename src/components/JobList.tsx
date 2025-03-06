@@ -2,7 +2,7 @@
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase, AlertCircle, Globe, Loader2, AlertTriangle } from 'lucide-react';
+import { Briefcase, AlertCircle, Globe, Loader2 } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,6 @@ interface JobListProps {
   totalJobs: number;
   onPageChange: (page: number) => void;
   country?: "us" | "canada";
-  usingFallbackData?: boolean;
 }
 
 const JobList: React.FC<JobListProps> = ({
@@ -29,7 +28,6 @@ const JobList: React.FC<JobListProps> = ({
   totalJobs,
   onPageChange,
   country = "canada",
-  usingFallbackData = false,
 }) => {
   // Calculate page range to display
   const getPageRange = () => {
@@ -70,22 +68,6 @@ const JobList: React.FC<JobListProps> = ({
   // Calculate source statistics
   const jobBankCount = jobsBySource['jobbank']?.length || 0;
   const otherSourcesCount = totalJobs - jobBankCount;
-
-  // Only show non-network errors
-  if (error && !error.message.includes('NetworkError') && !error.message.includes('CORS')) {
-    return (
-      <Alert variant="destructive" className="mb-6">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error loading jobs</AlertTitle>
-        <AlertDescription className="flex flex-col gap-4">
-          {error.message}
-          <Button onClick={handleRetry} className="self-start">
-            Try Again
-          </Button>
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
     <div className="space-y-6">
