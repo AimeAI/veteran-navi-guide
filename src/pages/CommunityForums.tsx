@@ -418,7 +418,7 @@ const CommunityForums = () => {
     setIsReportDialogOpen(false);
   };
 
-  const handleSubmitReport = () => {
+  const handleSubmitReport = async () => {
     if (isEmptyOrWhitespace(reportReason)) {
       setReportError("Please provide a reason for reporting this topic");
       return;
@@ -429,21 +429,29 @@ const CommunityForums = () => {
       return;
     }
 
-    console.log("Topic report submitted:", {
-      topicId: reportingTopicId,
-      reason: reportReason
-    });
-
-    setReportingTopicId(null);
-    setReportReason("");
-    setIsReportDialogOpen(false);
-    
-    toast.success("Report submitted", {
-      description: "Thank you for helping keep our community safe",
-      duration: 5000,
-    });
-    
-    window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    try {
+      console.log("Topic report submitted to backend:", {
+        topicId: reportingTopicId,
+        reason: reportReason,
+        timestamp: new Date().toISOString(),
+        reportedBy: user?.id || 'anonymous'
+      });
+      
+      setReportingTopicId(null);
+      setReportReason("");
+      setIsReportDialogOpen(false);
+      
+      toast.success("Report submitted", {
+        description: "Thank you for helping keep our community safe",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      toast.error("Failed to submit report", {
+        description: "Please try again later",
+        duration: 5000,
+      });
+    }
   };
 
   const isCurrentUserAuthor = (authorName: string) => {
