@@ -64,7 +64,7 @@ const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur supports-backdrop-blur:bg-nav/80">
+    <header className="sticky top-0 z-50 w-full backdrop-blur supports-backdrop-blur:bg-nav/80">
       <div className="border-b border-nav-border bg-nav/85 backdrop-blur-sm">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">

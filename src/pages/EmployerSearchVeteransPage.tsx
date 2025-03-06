@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Search, User, Shield, Medal, Briefcase, ChevronDown, Filter } from 'lucide-react';
@@ -257,7 +256,7 @@ const EmployerSearchVeteransPage: React.FC = () => {
 
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col">
         <div className="max-w-7xl mx-auto w-full flex flex-col h-full">
-          <div className="bg-gradient-to-b from-white to-gray-50 z-10 pb-4">
+          <div className="sticky top-16 bg-gradient-to-b from-white to-gray-50 z-10 pb-4">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Veteran Talent</h1>
             <p className="text-gray-600 mb-8">Search for qualified Canadian veterans based on skills, experience, and military background</p>
 
