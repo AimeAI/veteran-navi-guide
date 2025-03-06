@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,25 +9,41 @@ import { AlertCircle, ArrowLeft, CheckCircle } from "lucide-react";
 import { isValidEmail } from "@/utils/validation";
 import { Link } from "react-router-dom";
 import LoadingButton from "./ui/LoadingButton";
+import { sanitizeInput, shouldRateLimit, storeCSRFToken } from "@/utils/securityUtils";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [csrfToken, setCsrfToken] = useState("");
+
+  // Generate CSRF token on component mount
+  useEffect(() => {
+    setCsrfToken(storeCSRFToken());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    // Sanitize email
+    const sanitizedEmail = sanitizeInput(email);
+
     // Validate email
-    if (!email) {
+    if (!sanitizedEmail) {
       setError("Email is required");
       return;
     }
 
-    if (!isValidEmail(email)) {
+    if (!isValidEmail(sanitizedEmail)) {
       setError("Please enter a valid email address");
+      return;
+    }
+
+    // Rate limiting check
+    if (shouldRateLimit(sanitizedEmail, 3, 10 * 60 * 1000)) { // 3 attempts in 10 minutes
+      setError("Too many password reset attempts. Please try again later.");
       return;
     }
 
@@ -35,12 +51,20 @@ const ForgotPassword: React.FC = () => {
 
     try {
       // Simulate API call - in a real app with Supabase, this would be:
-      // await supabase.auth.resetPasswordForEmail(email)
+      // await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
+      //   redirectTo: window.location.origin + '/reset-password',
+      //   captchaToken: captchaToken // If using reCAPTCHA
+      // })
+      console.log('Password reset for:', sanitizedEmail, 'CSRF Token:', csrfToken);
+      
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Simulate success
       setIsSubmitted(true);
       toast.success("Password reset email sent!");
+      
+      // Generate new CSRF token
+      setCsrfToken(storeCSRFToken());
     } catch (error) {
       console.error("Error sending reset email:", error);
       setError("Failed to send reset email. Please try again.");
@@ -68,6 +92,9 @@ const ForgotPassword: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <CardContent>
               <div className="space-y-4">
+                {/* Hidden CSRF token field */}
+                <input type="hidden" name="csrf_token" value={csrfToken} />
+                
                 <div className="space-y-2">
                   <Label htmlFor="email" className={error ? "text-red-500" : ""}>
                     Email

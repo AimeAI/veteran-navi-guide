@@ -20,6 +20,8 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
+import { sanitizeInput, storeCSRFToken } from '@/utils/securityUtils';
+import { isValidEmail } from '@/utils/validation';
 
 type FeedbackType = 'suggestion' | 'bug' | 'support';
 
@@ -42,6 +44,12 @@ const FeedbackForm = () => {
     email: '',
     priority: 'medium',
   });
+  const [csrfToken, setCsrfToken] = useState('');
+
+  // Generate CSRF token on component mount
+  React.useEffect(() => {
+    setCsrfToken(storeCSRFToken());
+  }, []);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as FeedbackType);
@@ -60,7 +68,7 @@ const FeedbackForm = () => {
     const { name, value, type } = e.target;
     const newValue = type === 'checkbox' 
       ? (e.target as HTMLInputElement).checked 
-      : value;
+      : sanitizeInput(value); // Sanitize input
     
     setFormData(prev => ({
       ...prev,
@@ -68,14 +76,49 @@ const FeedbackForm = () => {
     }));
   };
 
+  const validateFormData = (): boolean => {
+    // Validate email
+    if (!isValidEmail(formData.email)) {
+      toast.error("Invalid email address");
+      return false;
+    }
+
+    // Validate title
+    if (!formData.title.trim()) {
+      toast.error("Title is required");
+      return false;
+    }
+
+    // Validate description
+    if (!formData.description.trim()) {
+      toast.error("Description is required");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form data
+    if (!validateFormData()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       // In a real app, this would send data to Supabase
-      // Example: await supabase.from('feedback').insert([formData]);
-      console.log('Submitting feedback:', formData);
+      // Example: await supabase.from('feedback').insert([
+      //   {
+      //     ...formData,
+      //     csrf_token: csrfToken, // Include CSRF token for verification on server
+      //     created_at: new Date().toISOString()
+      //   }
+      // ]);
+      
+      console.log('Submitting feedback:', formData, 'CSRF Token:', csrfToken);
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -88,6 +131,9 @@ const FeedbackForm = () => {
         email: '',
         priority: activeTab === 'bug' ? 'medium' : undefined,
       });
+      
+      // Generate new CSRF token for next submission
+      setCsrfToken(storeCSRFToken());
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast.error('Failed to submit. Please try again later.');

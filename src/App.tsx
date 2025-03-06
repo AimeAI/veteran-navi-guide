@@ -39,6 +39,7 @@ import { LanguageProvider } from "./context/LanguageContext";
 import "./i18n";
 import NotificationPreferences from "./components/NotificationPreferences";
 import FeedbackSupportPage from "./pages/FeedbackSupportPage";
+import SecurityMonitor from "./components/security/SecurityMonitor";
 
 function App() {
   return (
@@ -112,6 +113,7 @@ function App() {
                 </Routes>
               </main>
               <Toaster position="top-right" />
+              <SecurityMonitor />
             </div>
           </Router>
         </MessageProvider>

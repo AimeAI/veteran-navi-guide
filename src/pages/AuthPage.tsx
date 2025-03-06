@@ -8,12 +8,13 @@ import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
-import { AlertCircle, Building, Briefcase, User } from "lucide-react";
+import { AlertCircle, Building, Briefcase, User, ShieldAlert } from "lucide-react";
 import { isValidEmail, isStrongPassword } from "@/utils/validation";
 import FormErrorMessage from "@/components/ui/form-error-message";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTranslation } from "react-i18next";
 import SocialLoginButtons from "@/components/ui/SocialLoginButtons";
+import { sanitizeInput, checkPasswordStrength, shouldRateLimit, storeCSRFToken } from "@/utils/securityUtils";
 
 interface FormError {
   [key: string]: string;
@@ -24,6 +25,25 @@ const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, signup, socialLogin, isLoading, user } = useUser();
   
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginAsEmployer, setLoginAsEmployer] = useState(false);
+  const [loginErrors, setLoginErrors] = useState<FormError>({});
+  
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
+  const [militaryBranch, setMilitaryBranch] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [userType, setUserType] = useState<"veteran" | "employer">("veteran");
+  const [signupErrors, setSignupErrors] = useState<FormError>({});
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: "" });
+  const [csrfToken, setCsrfToken] = useState("");
+  
+  useEffect(() => {
+    setCsrfToken(storeCSRFToken());
+  }, []);
+
   useEffect(() => {
     if (user?.isAuthenticated) {
       if (!user.emailVerified) {
@@ -38,25 +58,23 @@ const AuthPage: React.FC = () => {
     }
   }, [user, navigate]);
   
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginAsEmployer, setLoginAsEmployer] = useState(false);
-  const [loginErrors, setLoginErrors] = useState<FormError>({});
-  
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
-  const [militaryBranch, setMilitaryBranch] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [userType, setUserType] = useState<"veteran" | "employer">("veteran");
-  const [signupErrors, setSignupErrors] = useState<FormError>({});
+  useEffect(() => {
+    if (signupPassword) {
+      const strength = checkPasswordStrength(signupPassword);
+      setPasswordStrength(strength);
+    } else {
+      setPasswordStrength({ score: 0, feedback: "" });
+    }
+  }, [signupPassword]);
   
   const validateLoginForm = (): boolean => {
     const errors: FormError = {};
     
-    if (!loginEmail) {
+    const sanitizedEmail = sanitizeInput(loginEmail);
+    
+    if (!sanitizedEmail) {
       errors.email = "Email is required";
-    } else if (!isValidEmail(loginEmail)) {
+    } else if (!isValidEmail(sanitizedEmail)) {
       errors.email = "Please enter a valid email address";
     }
     
@@ -71,9 +89,13 @@ const AuthPage: React.FC = () => {
   const validateSignupForm = (): boolean => {
     const errors: FormError = {};
     
-    if (!signupEmail) {
+    const sanitizedEmail = sanitizeInput(signupEmail);
+    const sanitizedMilitaryBranch = sanitizeInput(militaryBranch);
+    const sanitizedCompanyName = sanitizeInput(companyName);
+    
+    if (!sanitizedEmail) {
       errors.email = "Email is required";
-    } else if (!isValidEmail(signupEmail)) {
+    } else if (!isValidEmail(sanitizedEmail)) {
       errors.email = "Please enter a valid email address";
     }
     
@@ -87,12 +109,16 @@ const AuthPage: React.FC = () => {
       errors.confirmPassword = "Passwords do not match";
     }
     
-    if (userType === "veteran" && !militaryBranch) {
+    if (userType === "veteran" && !sanitizedMilitaryBranch) {
       errors.militaryBranch = "Military branch is required";
     }
     
-    if (userType === "employer" && !companyName) {
+    if (userType === "employer" && !sanitizedCompanyName) {
       errors.companyName = "Company name is required";
+    }
+    
+    if (passwordStrength.score < 3 && signupPassword) {
+      errors.password = errors.password || passwordStrength.feedback;
     }
     
     setSignupErrors(errors);
@@ -106,8 +132,15 @@ const AuthPage: React.FC = () => {
       return;
     }
     
+    if (shouldRateLimit(loginEmail)) {
+      return;
+    }
+    
     try {
-      await login(loginEmail, loginPassword, loginAsEmployer);
+      const sanitizedEmail = sanitizeInput(loginEmail);
+      await login(sanitizedEmail, loginPassword, loginAsEmployer);
+      
+      setCsrfToken(storeCSRFToken());
       
       if (loginAsEmployer) {
         navigate("/employer/manage-applications");
@@ -116,7 +149,7 @@ const AuthPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      // Error is handled by the UserContext with toast
+      toast.error("Login failed");
     }
   };
   
@@ -128,13 +161,19 @@ const AuthPage: React.FC = () => {
     }
     
     try {
+      const sanitizedEmail = sanitizeInput(signupEmail);
+      const sanitizedMilitaryBranch = sanitizeInput(militaryBranch);
+      const sanitizedCompanyName = sanitizeInput(companyName);
+      
       await signup(
-        signupEmail, 
+        sanitizedEmail, 
         signupPassword, 
-        userType === "veteran" ? militaryBranch : "", 
+        userType === "veteran" ? sanitizedMilitaryBranch : "", 
         userType === "employer",
-        userType === "employer" ? companyName : undefined
+        userType === "employer" ? sanitizedCompanyName : undefined
       );
+      
+      setCsrfToken(storeCSRFToken());
       
       if (userType === "employer") {
         navigate("/employer/manage-applications");
@@ -143,7 +182,7 @@ const AuthPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Signup error:", error);
-      // Error is handled by the UserContext with toast
+      toast.error("Signup failed");
     }
   };
 
@@ -158,8 +197,38 @@ const AuthPage: React.FC = () => {
       }
     } catch (error) {
       console.error(`${provider} login error:`, error);
-      // Error is handled by the UserContext with toast
+      toast.error("Login failed");
     }
+  };
+
+  const renderPasswordStrength = () => {
+    if (!signupPassword) return null;
+    
+    const getColorClass = () => {
+      switch (passwordStrength.score) {
+        case 0:
+        case 1: return "bg-red-500";
+        case 2: return "bg-orange-500";
+        case 3: return "bg-yellow-500";
+        case 4: return "bg-green-500";
+        case 5: return "bg-green-600";
+        default: return "bg-gray-300";
+      }
+    };
+    
+    return (
+      <div className="mt-1">
+        <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div 
+            className={`h-full ${getColorClass()}`} 
+            style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+          />
+        </div>
+        {passwordStrength.feedback && (
+          <p className="text-xs mt-1 text-gray-500">{passwordStrength.feedback}</p>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -181,6 +250,8 @@ const AuthPage: React.FC = () => {
               </CardHeader>
               <form onSubmit={handleLogin}>
                 <CardContent className="space-y-4">
+                  <input type="hidden" name="csrf_token" value={csrfToken} />
+                  
                   <div className="space-y-2">
                     <Label htmlFor="email" className={loginErrors.email ? "text-red-500" : ""}>
                       {t('auth.email')}
@@ -198,6 +269,7 @@ const AuthPage: React.FC = () => {
                       }}
                       className={loginErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
+                      autoComplete="email"
                     />
                     <FormErrorMessage message={loginErrors.email} />
                   </div>
@@ -226,6 +298,7 @@ const AuthPage: React.FC = () => {
                       }}
                       className={loginErrors.password ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
+                      autoComplete="current-password"
                     />
                     <FormErrorMessage message={loginErrors.password} />
                   </div>
@@ -273,6 +346,8 @@ const AuthPage: React.FC = () => {
               </CardHeader>
               <form onSubmit={handleSignup}>
                 <CardContent className="space-y-4">
+                  <input type="hidden" name="csrf_token" value={csrfToken} />
+                  
                   <div className="space-y-2">
                     <Label htmlFor="account-type">{t('auth.accountType')}</Label>
                     <RadioGroup 
@@ -314,6 +389,7 @@ const AuthPage: React.FC = () => {
                       }}
                       className={signupErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
+                      autoComplete="email"
                     />
                     <FormErrorMessage message={signupErrors.email} />
                   </div>
@@ -379,7 +455,9 @@ const AuthPage: React.FC = () => {
                       }}
                       className={signupErrors.password ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
+                      autoComplete="new-password"
                     />
+                    {renderPasswordStrength()}
                     <FormErrorMessage message={signupErrors.password} />
                     <p className="text-xs text-gray-500">
                       {t('auth.passwordRequirements')}
@@ -402,9 +480,27 @@ const AuthPage: React.FC = () => {
                       }}
                       className={signupErrors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""}
                       required
+                      autoComplete="new-password"
                     />
                     <FormErrorMessage message={signupErrors.confirmPassword} />
                   </div>
+                  
+                  <div className="rounded-md bg-yellow-50 p-4">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <ShieldAlert className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-yellow-800">Security Notice</h3>
+                        <div className="mt-2 text-sm text-yellow-700">
+                          <p>
+                            Your security is important to us. We use encryption to protect your data.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <SocialLoginButtons 
                     onSocialLogin={handleSocialLogin}
                     isLoading={isLoading}
