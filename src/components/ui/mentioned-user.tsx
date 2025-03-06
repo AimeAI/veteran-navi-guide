@@ -1,10 +1,10 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { MentionedUser } from "@/utils/mentionUtils";
+import { type MentionedUser as MentionedUserType } from "@/utils/mentionUtils";
 
 interface MentionedUserProps {
-  user: MentionedUser;
+  user: MentionedUserType;
 }
 
 const MentionedUser: React.FC<MentionedUserProps> = ({ user }) => {

@@ -3,6 +3,7 @@ import { Search, MapPin, Briefcase, Filter, ChevronDown, Banknote, Medal, Shield
 import { cn } from '@/lib/utils';
 import JobListing from '@/components/JobListing';
 import { toast } from 'sonner';
+import JobAlertButton from '@/components/JobAlertButton';
 
 interface FilterState {
   keywords: string;
@@ -264,7 +265,10 @@ const JobSearch = () => {
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-primary/5 rounded-lg px-6 py-8 mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Find Your Next Career</h1>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold text-gray-900">Find Your Next Career</h1>
+              <JobAlertButton />
+            </div>
             
             <form onSubmit={handleSearch} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

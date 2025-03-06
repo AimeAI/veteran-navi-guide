@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
 import FormErrorMessage from "./ui/form-error-message";
+import { useJobs } from "@/context/JobContext";
 
 const jobCategories = [
   { value: "cybersecurity", label: "Cybersecurity" },
@@ -41,6 +42,7 @@ const JobAlertForm = ({ initialData, onSuccess, className }: JobAlertFormProps) 
   const [category, setCategory] = useState(initialData?.category || "");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { searchJobs } = useJobs();
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -63,9 +65,11 @@ const JobAlertForm = ({ initialData, onSuccess, className }: JobAlertFormProps) 
     setIsSubmitting(true);
     
     try {
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const alertData = {
+        id: initialData ? initialData.keywords : Date.now().toString(),
         keywords,
         location,
         category,
@@ -73,6 +77,28 @@ const JobAlertForm = ({ initialData, onSuccess, className }: JobAlertFormProps) 
       };
       
       console.log("Job Alert Created:", alertData);
+      
+      // Check for matching jobs as a demo of the alert functionality
+      const matchingJobs = searchJobs({
+        keywords,
+        location,
+        category,
+        salaryRange: "",
+        mosCodes: [],
+        clearanceLevel: [],
+        remote: false
+      });
+      
+      console.log(`Found ${matchingJobs.length} jobs matching your new alert criteria.`);
+      
+      if (matchingJobs.length > 0) {
+        // This would eventually be an in-app notification or email
+        console.log("Job Alert Notification:", {
+          alertId: alertData.id,
+          message: `We found ${matchingJobs.length} jobs that match your alert criteria.`,
+          jobs: matchingJobs.slice(0, 3)
+        });
+      }
       
       if (!initialData) {
         toast.success("Job alert created successfully", {
