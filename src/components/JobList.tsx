@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -148,7 +149,7 @@ const JobList: React.FC<JobListProps> = ({
                 source={job.source}
                 url={job.url}
                 date={job.date}
-                {...('matchScore' in job && typeof job.matchScore === 'number' ? { matchScore: job.matchScore } : {})}
+                {...(typeof job.matchScore === 'number' ? { matchScore: job.matchScore } : {})}
               />
             ))}
           </div>

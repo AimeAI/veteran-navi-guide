@@ -65,7 +65,7 @@ const JobListing: React.FC<JobListingProps> = ({
       case 'indeed':
         return 'orange';
       case 'linkedin':
-        return 'indigo';
+        return 'purple';
       default:
         return 'secondary';
     }
@@ -84,6 +84,9 @@ const JobListing: React.FC<JobListingProps> = ({
     // Show a toast notification
     toast.success(`Opening application for ${title} at ${company}`);
     
+    // Open in new tab
+    window.open(url, '_blank', 'noopener,noreferrer');
+    
     // Log click with source details for analytics
     console.log(`User is applying via ${getSourceLabel(source) || 'external site'}. URL: ${url}`);
   };
@@ -91,10 +94,23 @@ const JobListing: React.FC<JobListingProps> = ({
   // Determine if the URL is valid
   const isValidUrl = url && (url.startsWith('http://') || url.startsWith('https://'));
   
-  // Format date properly
-  const formattedDate = date 
-    ? new Date(date).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })
-    : 'Recently posted';
+  // Format date properly for recent jobs
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Recently posted';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+  
+  const formattedDate = formatDate(date);
   
   return (
     <div className={cn("bg-white rounded-md shadow-sm border border-gray-200 p-4", className)}>
