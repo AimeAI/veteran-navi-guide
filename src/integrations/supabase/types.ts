@@ -50,6 +50,42 @@ export type Database = {
           },
         ]
       }
+      employer_leads: {
+        Row: {
+          company_name: string
+          date_added: string
+          id: string
+          lead_status: string
+          linkedin_url: string | null
+          notes: string | null
+          updated_at: string
+          user_id: string | null
+          website_url: string
+        }
+        Insert: {
+          company_name: string
+          date_added?: string
+          id?: string
+          lead_status?: string
+          linkedin_url?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+          website_url: string
+        }
+        Update: {
+          company_name?: string
+          date_added?: string
+          id?: string
+          lead_status?: string
+          linkedin_url?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           company: string

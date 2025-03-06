@@ -1,191 +1,206 @@
-
-import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useTranslation } from 'react-i18next';
-import LanguageSelector from './LanguageSelector';
-import { useUser } from '@/context/UserContext';
-
-interface MobileMenuSection {
-  title: string;
-  items: {
-    label: string;
-    href: string;
-  }[];
-}
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface MobileMenuProps {
-  sections: MobileMenuSection[];
+  className?: string;
 }
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
-  const { t } = useTranslation();
-  const { user } = useUser();
+const MobileMenu: React.FC<MobileMenuProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const { isAuthenticated, isEmployer, isAdmin } = useAuth();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    } else {
-      document.body.style.overflow = 'auto';
-    }
+  // Define menu items based on user role
+  const menuItems = [
+    {
+      section: "Jobs",
+      items: [
+        { name: "Job Search", path: "/job-search" },
+        { name: "Saved Jobs", path: "/saved" },
+        { name: "Application History", path: "/history" },
+        { name: "Recommended Jobs", path: "/recommendations" },
+      ],
+    },
+    {
+      section: "Resources",
+      items: [
+        { name: "Career Counseling", path: "/resources/career-counseling" },
+        { name: "Resume Assistance", path: "/resources/resume-assistance" },
+        { name: "Interview Preparation", path: "/resources/interview-prep" },
+        { name: "Military Transition", path: "/resources/military-transition" },
+        { name: "Community Forums", path: "/resources/forums" },
+      ],
+    },
+    {
+      section: "Events",
+      items: [{ name: "Job Fairs & Events", path: "/events" }],
+    },
+    {
+      section: "Employer",
+      items: [
+        { name: "Post a Job", path: "/employer/post-job" },
+        { name: "Manage Applications", path: "/employer/manage-applications" },
+        { name: "Search Veterans", path: "/employer/search-veterans" },
+        { name: "Employer Profile", path: "/employer-profile" },
+        { name: "Lead Management", path: "/leads" },
+      ],
+    },
+    {
+      section: "Admin",
+      items: [
+        { name: "Dashboard", path: "/admin" },
+        { name: "Content Management", path: "/admin/content" },
+        { name: "A/B Testing", path: "/ab-testing" },
+      ],
+    },
+  ];
+
+  // Filter menu items based on user role
+  const filteredMenuItems = menuItems.filter((section) => {
+    if (section.section === "Admin" && !isAdmin) return false;
+    if (section.section === "Employer" && !isEmployer) return false;
+    return true;
+  });
+
+  const handleLinkClick = () => {
+    setIsOpen(false);
   };
-
-  const toggleSection = (title: string) => {
-    setExpandedSection(expandedSection === title ? null : title);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && isOpen) {
-      toggleMenu();
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto'; // Reset body overflow when unmounting
-    };
-  }, [isOpen]);
 
   return (
-    <div className="lg:hidden">
-      <button
-        onClick={toggleMenu}
-        className="flex items-center p-2 text-nav-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-        aria-label={isOpen ? "Close menu" : "Open menu"}
-        aria-expanded={isOpen}
-        aria-controls="mobile-menu"
-      >
-        {isOpen ? (
-          <X className="h-6 w-6" aria-hidden="true" />
-        ) : (
-          <Menu className="h-6 w-6" aria-hidden="true" />
-        )}
-      </button>
-
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
-          aria-hidden="true"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) toggleMenu();
-          }}
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("md:hidden", className)}
+          aria-label="Open menu"
         >
-          <div 
-            id="mobile-menu"
-            ref={menuRef}
-            className={cn(
-              "fixed inset-y-0 left-0 w-full sm:max-w-sm bg-nav-dropdown shadow-xl animate-slide-in",
-              "p-4 sm:p-6 overflow-y-auto"
-            )}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Mobile navigation menu"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-semibold" id="mobile-menu-title">Menu</h2>
-              <button
-                onClick={toggleMenu}
-                className="p-2 text-nav-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-md"
+          <Menu className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
+        <div className="flex flex-col h-full">
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <Link to="/" onClick={handleLinkClick}>
+                <h2 className="text-xl font-bold">VeteranJobBoard</h2>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
                 aria-label="Close menu"
               >
-                <X className="h-6 w-6" aria-hidden="true" />
-              </button>
+                <X className="h-5 w-5" />
+              </Button>
             </div>
-            
-            <nav className="space-y-4" aria-labelledby="mobile-menu-title">
-              {sections.map((section) => (
-                <div key={section.title} className="border-b border-nav-border pb-4">
-                  <button
-                    onClick={() => toggleSection(section.title)}
-                    className="flex items-center justify-between w-full py-2 text-left text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-md"
-                    aria-expanded={expandedSection === section.title}
-                    aria-controls={`section-${section.title.toLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    <span>{section.title}</span>
-                    <ChevronRight 
-                      className={cn(
-                        "h-4 w-4 transition-transform", 
-                        expandedSection === section.title ? "rotate-90" : ""
-                      )} 
-                      aria-hidden="true"
-                    />
-                  </button>
-                  
-                  {expandedSection === section.title && (
-                    <div 
-                      id={`section-${section.title.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="mt-2 pl-4 space-y-2 animate-fade-in"
-                    >
-                      {section.items.map((item, idx) => (
+          </div>
+
+          <div className="flex-1 overflow-auto py-2">
+            {isAuthenticated ? (
+              <div className="space-y-4">
+                {filteredMenuItems.map((section) => (
+                  <div key={section.section} className="px-2">
+                    <h3 className="mb-1 px-4 text-sm font-medium text-gray-500">
+                      {section.section}
+                    </h3>
+                    <div className="space-y-1">
+                      {section.items.map((item) => (
                         <Link
-                          key={idx}
-                          to={item.href}
-                          className="block py-2 text-sm text-nav-muted hover:text-primary transition-colors focus:outline-none focus:text-primary focus:underline"
-                          onClick={toggleMenu}
+                          key={item.path}
+                          to={item.path}
+                          onClick={handleLinkClick}
                         >
-                          {item.label}
+                          <div
+                            className={cn(
+                              "block px-4 py-2 text-sm rounded-md",
+                              location.pathname === item.path
+                                ? "bg-gray-100 font-medium text-primary"
+                                : "text-gray-700 hover:bg-gray-50"
+                            )}
+                          >
+                            {item.name}
+                          </div>
                         </Link>
                       ))}
                     </div>
-                  )}
-                </div>
-              ))}
-              
-              {/* Add language selector to mobile menu */}
-              <div className="py-2">
-                <LanguageSelector />
+                  </div>
+                ))}
               </div>
-            </nav>
-
-            {/* Mobile login/signup buttons */}
-            <div className="mt-8 pt-4 border-t border-nav-border">
-              {user ? (
-                <div className="flex flex-col space-y-3">
-                  <Link
-                    to="/profile"
-                    className="w-full py-2.5 px-4 text-center text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 border border-gray-200"
-                    onClick={toggleMenu}
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    to="/dashboard"
-                    className="w-full py-2.5 px-4 text-center text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    onClick={toggleMenu}
-                  >
-                    Dashboard
-                  </Link>
+            ) : (
+              <div className="flex flex-col gap-2 p-4">
+                <Link to="/auth?mode=login" onClick={handleLinkClick}>
+                  <Button variant="outline" className="w-full justify-start">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/auth?mode=signup" onClick={handleLinkClick}>
+                  <Button className="w-full justify-start">Sign Up</Button>
+                </Link>
+                <div className="pt-4">
+                  <h3 className="mb-1 px-2 text-sm font-medium text-gray-500">
+                    Explore
+                  </h3>
+                  <div className="space-y-1">
+                    <Link to="/job-search" onClick={handleLinkClick}>
+                      <div
+                        className={cn(
+                          "block px-4 py-2 text-sm rounded-md",
+                          location.pathname === "/job-search"
+                            ? "bg-gray-100 font-medium text-primary"
+                            : "text-gray-700 hover:bg-gray-50"
+                        )}
+                      >
+                        Job Search
+                      </div>
+                    </Link>
+                    <Link to="/resources/military-transition" onClick={handleLinkClick}>
+                      <div
+                        className={cn(
+                          "block px-4 py-2 text-sm rounded-md",
+                          location.pathname === "/resources/military-transition"
+                            ? "bg-gray-100 font-medium text-primary"
+                            : "text-gray-700 hover:bg-gray-50"
+                        )}
+                      >
+                        Military Transition Resources
+                      </div>
+                    </Link>
+                    <Link to="/events" onClick={handleLinkClick}>
+                      <div
+                        className={cn(
+                          "block px-4 py-2 text-sm rounded-md",
+                          location.pathname === "/events"
+                            ? "bg-gray-100 font-medium text-primary"
+                            : "text-gray-700 hover:bg-gray-50"
+                        )}
+                      >
+                        Job Fairs & Events
+                      </div>
+                    </Link>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex flex-col space-y-3">
-                  <Link
-                    to="/auth"
-                    className="w-full py-2.5 px-4 text-center text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 border border-gray-200"
-                    onClick={toggleMenu}
-                  >
-                    {t('common.login')}
-                  </Link>
-                  <Link
-                    to="/auth?tab=signup"
-                    className="w-full py-2.5 px-4 text-center text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    onClick={toggleMenu}
-                  >
-                    {t('common.signup')}
-                  </Link>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
+
+          {isAuthenticated && (
+            <div className="border-t p-4">
+              <Link to="/profile" onClick={handleLinkClick}>
+                <Button variant="outline" className="w-full justify-start">
+                  My Profile
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
