@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
   Briefcase, 
   Calendar, 
@@ -7,10 +7,8 @@ import {
   UserRound, 
   XCircle, 
   User,
-  BarChart3,
   Mail,
   Eye,
-  Building
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,85 +19,153 @@ import { Application, ApplicationStatus } from '@/types/application';
 import { useToast } from "@/hooks/use-toast";
 import StatsCard from '@/components/StatsCard';
 import { Card, CardContent } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const sampleApplications: Application[] = [
-  {
-    id: 'app-1',
-    applicantName: 'John Smith',
-    jobTitle: 'Software Engineer',
-    company: 'TechVets Inc.',
-    appliedDate: new Date(2023, 9, 5),
-    status: 'reviewing',
-    resume: 'resume-john-smith.pdf',
-    coverLetter: true,
-    matchScore: 92
-  },
-  {
-    id: 'app-2',
-    applicantName: 'Maria Rodriguez',
-    jobTitle: 'Network Administrator',
-    company: 'TechVets Inc.',
-    appliedDate: new Date(2023, 9, 10),
-    status: 'pending',
-    resume: 'resume-maria-rodriguez.pdf',
-    matchScore: 85
-  },
-  {
-    id: 'app-3',
-    applicantName: 'David Washington',
-    jobTitle: 'Cybersecurity Analyst',
-    company: 'TechVets Inc.',
-    appliedDate: new Date(2023, 9, 12),
-    status: 'interviewing',
-    resume: 'resume-david-washington.pdf',
-    coverLetter: true,
-    matchScore: 95
-  },
-  {
-    id: 'app-4',
-    applicantName: 'Sarah Johnson',
-    jobTitle: 'Project Manager',
-    company: 'DefenseLogistics Corp',
-    appliedDate: new Date(2023, 9, 15),
-    status: 'hired',
-    resume: 'resume-sarah-johnson.pdf',
-    coverLetter: true,
-    matchScore: 98
-  },
-  {
-    id: 'app-5',
-    applicantName: 'Michael Chen',
-    jobTitle: 'Data Analyst',
-    company: 'DefenseLogistics Corp',
-    appliedDate: new Date(2023, 9, 18),
-    status: 'rejected',
-    resume: 'resume-michael-chen.pdf',
-    matchScore: 72
-  }
-];
+const fetchEmployerStats = async () => {
+  console.log('Fetching employer stats from Supabase...');
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
+    activeJobs: 5,
+    totalApplications: 42,
+    newApplications: 8,
+    totalViews: 567,
+    jobViewsTrend: {
+      value: 12.5,
+      isPositive: true
+    },
+    applicationsTrend: {
+      value: 8.3,
+      isPositive: true
+    }
+  };
+};
 
-const employerStats = {
-  activeJobs: 5,
-  totalApplications: 42,
-  newApplications: 8,
-  totalViews: 567,
-  jobViewsTrend: {
-    value: 12.5,
-    isPositive: true
-  },
-  applicationsTrend: {
-    value: 8.3,
-    isPositive: true
-  }
+const fetchApplications = async () => {
+  console.log('Fetching applications from Supabase...');
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  return [
+    {
+      id: 'app-1',
+      applicantName: 'John Smith',
+      jobTitle: 'Software Engineer',
+      company: 'TechVets Inc.',
+      appliedDate: new Date(2023, 9, 5),
+      status: 'reviewing',
+      resume: 'resume-john-smith.pdf',
+      coverLetter: true,
+      matchScore: 92
+    },
+    {
+      id: 'app-2',
+      applicantName: 'Maria Rodriguez',
+      jobTitle: 'Network Administrator',
+      company: 'TechVets Inc.',
+      appliedDate: new Date(2023, 9, 10),
+      status: 'pending',
+      resume: 'resume-maria-rodriguez.pdf',
+      matchScore: 85
+    },
+    {
+      id: 'app-3',
+      applicantName: 'David Washington',
+      jobTitle: 'Cybersecurity Analyst',
+      company: 'TechVets Inc.',
+      appliedDate: new Date(2023, 9, 12),
+      status: 'interviewing',
+      resume: 'resume-david-washington.pdf',
+      coverLetter: true,
+      matchScore: 95
+    },
+    {
+      id: 'app-4',
+      applicantName: 'Sarah Johnson',
+      jobTitle: 'Project Manager',
+      company: 'DefenseLogistics Corp',
+      appliedDate: new Date(2023, 9, 15),
+      status: 'hired',
+      resume: 'resume-sarah-johnson.pdf',
+      coverLetter: true,
+      matchScore: 98
+    },
+    {
+      id: 'app-5',
+      applicantName: 'Michael Chen',
+      jobTitle: 'Data Analyst',
+      company: 'DefenseLogistics Corp',
+      appliedDate: new Date(2023, 9, 18),
+      status: 'rejected',
+      resume: 'resume-michael-chen.pdf',
+      matchScore: 72
+    }
+  ] as Application[];
+};
+
+const DashboardSkeleton = () => {
+  return (
+    <div className="w-full space-y-8">
+      <div className="mb-6">
+        <Skeleton className="h-8 w-64 mb-2" />
+        <Skeleton className="h-4 w-80" />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Card key={index}>
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="w-full">
+                  <Skeleton className="h-4 w-24 mb-2" />
+                  <Skeleton className="h-8 w-12 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-10 w-10 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      <div>
+        <Skeleton className="h-6 w-48 mb-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Card key={index}>
+              <CardContent className="p-4">
+                <Skeleton className="h-6 w-6 mx-auto mb-2" />
+                <Skeleton className="h-6 w-12 mx-auto mb-2" />
+                <Skeleton className="h-4 w-16 mx-auto" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const EmployerDashboard: React.FC = () => {
-  const [applications, setApplications] = useState<Application[]>(sampleApplications);
-  const { toast } = useToast();
-  
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all');
   const [jobTitleFilter, setJobTitleFilter] = useState('');
+  const { toast } = useToast();
+  
+  const { 
+    data: employerStats, 
+    isLoading: isLoadingStats 
+  } = useQuery({
+    queryKey: ['employerStats'],
+    queryFn: fetchEmployerStats,
+  });
+  
+  const { 
+    data: applications = [], 
+    isLoading: isLoadingApplications,
+    refetch: refetchApplications
+  } = useQuery({
+    queryKey: ['applications'],
+    queryFn: fetchApplications,
+  });
 
   const resetFilters = () => {
     setSearchQuery('');
@@ -107,29 +173,27 @@ const EmployerDashboard: React.FC = () => {
     setJobTitleFilter('');
   };
 
-  const filteredApplications = useMemo(() => {
-    return applications.filter(app => {
-      const matchesName = app.applicantName.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesJobTitle = jobTitleFilter === '' || 
-        app.jobTitle.toLowerCase().includes(jobTitleFilter.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
-      return matchesName && matchesJobTitle && matchesStatus;
-    });
-  }, [applications, searchQuery, statusFilter, jobTitleFilter]);
+  const filteredApplications = applications?.filter(app => {
+    const matchesName = app.applicantName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesJobTitle = jobTitleFilter === '' || 
+      app.jobTitle.toLowerCase().includes(jobTitleFilter.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+    return matchesName && matchesJobTitle && matchesStatus;
+  });
 
   const handleStatusChange = (appId: string, newStatus: ApplicationStatus) => {
-    setApplications(prevApps => 
-      prevApps.map(app => 
-        app.id === appId ? { ...app, status: newStatus } : app
-      )
-    );
-    
+    console.log(`Updating application ${appId} status to ${newStatus}`);
     const application = applications.find(app => app.id === appId);
+    
     toast({
       title: `Status Updated`,
       description: `${application?.applicantName}'s application is now ${newStatus}`,
       variant: newStatus === 'rejected' ? 'destructive' : 'default',
     });
+    
+    setTimeout(() => {
+      refetchApplications();
+    }, 500);
   };
 
   const renderStatusBadge = (status: ApplicationStatus) => {
@@ -190,12 +254,14 @@ const EmployerDashboard: React.FC = () => {
     return "";
   };
 
-  const statusCounts = useMemo(() => {
-    return applications.reduce((counts, app) => {
-      counts[app.status] = (counts[app.status] || 0) + 1;
-      return counts;
-    }, {} as Record<ApplicationStatus, number>);
-  }, [applications]);
+  const statusCounts = applications?.reduce((counts, app) => {
+    counts[app.status] = (counts[app.status] || 0) + 1;
+    return counts;
+  }, {} as Record<ApplicationStatus, number>) || {};
+
+  if (isLoadingStats && isLoadingApplications) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="w-full">
@@ -207,80 +273,94 @@ const EmployerDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard 
           title="Active Job Postings" 
-          value={employerStats.activeJobs} 
+          value={isLoadingStats ? "..." : employerStats?.activeJobs} 
           icon={Briefcase}
           description="Currently active positions" 
         />
         <StatsCard 
           title="Total Applications" 
-          value={employerStats.totalApplications} 
+          value={isLoadingStats ? "..." : employerStats?.totalApplications} 
           icon={Mail}
           description="Across all positions"
-          trend={employerStats.applicationsTrend} 
+          trend={employerStats?.applicationsTrend} 
         />
         <StatsCard 
           title="New Applications" 
-          value={employerStats.newApplications} 
+          value={isLoadingStats ? "..." : employerStats?.newApplications} 
           icon={Clock}
           description="In the last 7 days" 
         />
         <StatsCard 
           title="Total Views" 
-          value={employerStats.totalViews} 
+          value={isLoadingStats ? "..." : employerStats?.totalViews} 
           icon={Eye}
           description="On all job postings"
-          trend={employerStats.jobViewsTrend} 
+          trend={employerStats?.jobViewsTrend} 
         />
       </div>
 
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Status Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <div className="mb-2 text-blue-500">
-                <Clock className="h-6 w-6" />
-              </div>
-              <p className="text-xl font-bold">{statusCounts.pending || 0}</p>
-              <p className="text-sm text-gray-500">Pending</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <div className="mb-2 text-yellow-500">
-                <Clock className="h-6 w-6" />
-              </div>
-              <p className="text-xl font-bold">{statusCounts.reviewing || 0}</p>
-              <p className="text-sm text-gray-500">Reviewing</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <div className="mb-2 text-purple-500">
-                <Calendar className="h-6 w-6" />
-              </div>
-              <p className="text-xl font-bold">{statusCounts.interviewing || 0}</p>
-              <p className="text-sm text-gray-500">Interviewing</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <div className="mb-2 text-green-500">
-                <CheckCircle2 className="h-6 w-6" />
-              </div>
-              <p className="text-xl font-bold">{statusCounts.hired || 0}</p>
-              <p className="text-sm text-gray-500">Hired</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <div className="mb-2 text-red-500">
-                <XCircle className="h-6 w-6" />
-              </div>
-              <p className="text-xl font-bold">{statusCounts.rejected || 0}</p>
-              <p className="text-sm text-gray-500">Rejected</p>
-            </CardContent>
-          </Card>
+          {isLoadingApplications ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <Card key={index}>
+                <CardContent className="p-4">
+                  <Skeleton className="h-6 w-6 mx-auto mb-2" />
+                  <Skeleton className="h-6 w-12 mx-auto mb-2" />
+                  <Skeleton className="h-4 w-16 mx-auto" />
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <>
+              <Card>
+                <CardContent className="p-4 flex flex-col items-center justify-center">
+                  <div className="mb-2 text-blue-500">
+                    <Clock className="h-6 w-6" />
+                  </div>
+                  <p className="text-xl font-bold">{statusCounts.pending || 0}</p>
+                  <p className="text-sm text-gray-500">Pending</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex flex-col items-center justify-center">
+                  <div className="mb-2 text-yellow-500">
+                    <Clock className="h-6 w-6" />
+                  </div>
+                  <p className="text-xl font-bold">{statusCounts.reviewing || 0}</p>
+                  <p className="text-sm text-gray-500">Reviewing</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex flex-col items-center justify-center">
+                  <div className="mb-2 text-purple-500">
+                    <Calendar className="h-6 w-6" />
+                  </div>
+                  <p className="text-xl font-bold">{statusCounts.interviewing || 0}</p>
+                  <p className="text-sm text-gray-500">Interviewing</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex flex-col items-center justify-center">
+                  <div className="mb-2 text-green-500">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <p className="text-xl font-bold">{statusCounts.hired || 0}</p>
+                  <p className="text-sm text-gray-500">Hired</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex flex-col items-center justify-center">
+                  <div className="mb-2 text-red-500">
+                    <XCircle className="h-6 w-6" />
+                  </div>
+                  <p className="text-xl font-bold">{statusCounts.rejected || 0}</p>
+                  <p className="text-sm text-gray-500">Rejected</p>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       </div>
 
@@ -299,7 +379,27 @@ const EmployerDashboard: React.FC = () => {
       />
 
       <div className="space-y-4 mt-6">
-        {filteredApplications.length > 0 ? (
+        {isLoadingApplications ? (
+          Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+              <div className="flex items-start gap-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-40 mb-2" />
+                  <Skeleton className="h-4 w-60 mb-2" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+                <div>
+                  <Skeleton className="h-8 w-24 mb-2" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-8 w-20" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : filteredApplications.length > 0 ? (
           filteredApplications.map((application) => (
             <div
               key={application.id}
