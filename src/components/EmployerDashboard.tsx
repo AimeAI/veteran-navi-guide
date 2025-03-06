@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { 
   Briefcase, 
@@ -15,8 +14,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import FilterBar from '@/components/FilterBar';
 import { Application, ApplicationStatus } from '@/types/application';
+import { useToast } from "@/hooks/use-toast";
 
-// Sample placeholder data
 const sampleApplications: Application[] = [
   {
     id: 'app-1',
@@ -75,47 +74,44 @@ const sampleApplications: Application[] = [
 
 const EmployerDashboard: React.FC = () => {
   const [applications, setApplications] = useState<Application[]>(sampleApplications);
+  const { toast } = useToast();
   
-  // Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all');
   const [jobTitleFilter, setJobTitleFilter] = useState('');
 
-  // Reset all filters
   const resetFilters = () => {
     setSearchQuery('');
     setStatusFilter('all');
     setJobTitleFilter('');
   };
-  
-  // Filter applications based on all filter criteria
+
   const filteredApplications = useMemo(() => {
     return applications.filter(app => {
-      // Filter by applicant name
       const matchesName = app.applicantName.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Filter by job title
       const matchesJobTitle = jobTitleFilter === '' || 
         app.jobTitle.toLowerCase().includes(jobTitleFilter.toLowerCase());
-      
-      // Filter by status
       const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
-      
       return matchesName && matchesJobTitle && matchesStatus;
     });
   }, [applications, searchQuery, statusFilter, jobTitleFilter]);
 
-  // Update application status
   const handleStatusChange = (appId: string, newStatus: ApplicationStatus) => {
     setApplications(prevApps => 
       prevApps.map(app => 
         app.id === appId ? { ...app, status: newStatus } : app
       )
     );
-    console.log(`Application ${appId} status changed to ${newStatus}`);
+    
+    const application = applications.find(app => app.id === appId);
+    toast({
+      title: `Status Updated`,
+      description: `${application?.applicantName}'s application is now ${newStatus}`,
+      variant: newStatus === 'hired' ? 'success' : 
+               newStatus === 'rejected' ? 'destructive' : 'default',
+    });
   };
 
-  // Function to render status badge with appropriate styling and icon
   const renderStatusBadge = (status: ApplicationStatus) => {
     switch (status) {
       case 'pending':
@@ -158,6 +154,22 @@ const EmployerDashboard: React.FC = () => {
     }
   };
 
+  const getButtonVariant = (appStatus: ApplicationStatus, buttonStatus: ApplicationStatus) => {
+    if (appStatus === buttonStatus) {
+      return "default";
+    }
+    return "outline";
+  };
+
+  const getButtonStyle = (appStatus: ApplicationStatus, buttonStatus: ApplicationStatus) => {
+    if (appStatus === buttonStatus) {
+      if (buttonStatus === 'hired') return "bg-green-600 hover:bg-green-700";
+      if (buttonStatus === 'rejected') return "bg-red-600 hover:bg-red-700";
+      return "";
+    }
+    return "";
+  };
+
   return (
     <div className="w-full">
       <div className="mb-6">
@@ -165,7 +177,6 @@ const EmployerDashboard: React.FC = () => {
         <p className="text-gray-600">Manage applicants for your posted jobs</p>
       </div>
 
-      {/* Filter Bar */}
       <FilterBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -176,7 +187,6 @@ const EmployerDashboard: React.FC = () => {
         resetFilters={resetFilters}
       />
 
-      {/* Applications list */}
       <div className="space-y-4">
         {filteredApplications.length > 0 ? (
           filteredApplications.map((application) => (
@@ -225,32 +235,40 @@ const EmployerDashboard: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       <Button 
                         size="sm" 
-                        variant={application.status === "reviewing" ? "default" : "outline"}
+                        variant={getButtonVariant(application.status, 'reviewing')}
                         onClick={() => handleStatusChange(application.id, 'reviewing')}
+                        className="transition-all duration-200"
                       >
+                        <Clock className="w-3.5 h-3.5 mr-1" />
                         Review
                       </Button>
                       <Button 
                         size="sm" 
-                        variant={application.status === "interviewing" ? "default" : "outline"}
+                        variant={getButtonVariant(application.status, 'interviewing')}
                         onClick={() => handleStatusChange(application.id, 'interviewing')}
+                        className="transition-all duration-200"
                       >
+                        <Calendar className="w-3.5 h-3.5 mr-1" />
                         Interview
                       </Button>
                       <Button 
                         size="sm" 
-                        variant={application.status === "hired" ? "default" : "outline"}
-                        className={application.status === "hired" ? "bg-green-600 hover:bg-green-700" : ""}
+                        variant={getButtonVariant(application.status, 'hired')}
+                        className={cn("transition-all duration-200", 
+                          getButtonStyle(application.status, 'hired'))}
                         onClick={() => handleStatusChange(application.id, 'hired')}
                       >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                         Hire
                       </Button>
                       <Button 
                         size="sm" 
-                        variant={application.status === "rejected" ? "default" : "outline"}
-                        className={application.status === "rejected" ? "bg-red-600 hover:bg-red-700" : ""}
+                        variant={getButtonVariant(application.status, 'rejected')}
+                        className={cn("transition-all duration-200", 
+                          getButtonStyle(application.status, 'rejected'))}
                         onClick={() => handleStatusChange(application.id, 'rejected')}
                       >
+                        <XCircle className="w-3.5 h-3.5 mr-1" />
                         Reject
                       </Button>
                     </div>
