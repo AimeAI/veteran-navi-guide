@@ -11,6 +11,7 @@ import ApplicationsPage from "./pages/ApplicationsPage";
 import PostJobPage from "./pages/PostJobPage";
 import EmployerDashboardPage from "./pages/EmployerDashboardPage";
 import VeteranDashboardPage from "./pages/VeteranDashboardPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import EmployerSearchVeteransPage from "./pages/EmployerSearchVeteransPage";
 import CommunityForums from "./pages/CommunityForums";
 import RecommendedJobs from "./pages/RecommendedJobs";
@@ -50,6 +51,7 @@ function App() {
             <Route path="/topic/:topicId" element={<TopicDetail />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<VeteranDashboardPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
