@@ -1,327 +1,344 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useJobs } from '@/context/JobContext';
+import { useJobContext, Job } from '@/context/JobContext';
 import { useUser } from '@/context/UserContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  ClipboardList, 
+  Briefcase, 
+  BookmarkCheck, 
+  Bookmark,
+  CheckCircle2,
+  Clock,
+  Calendar,
+  Ban
+} from 'lucide-react';
+import StatsCardGroup from './StatsCardGroup';
+import StatsCard from './StatsCard';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import StatsCardGroup from './StatsCardGroup';
-import { BadgeType } from '@/types/badges';
-import VeteranBadges from './VeteranBadges';
-import PersonalizedRecommendations from './PersonalizedRecommendations';
-import { Eye, Calendar, Bookmark, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { VeteranBadge as UIVeteranBadge } from '@/components/ui/veteran-badge';
+import { Separator } from '@/components/ui/separator';
+import { useTranslation } from 'react-i18next';
 
-const VeteranDashboard = () => {
+const VeteranDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useUser();
-  const { savedJobs, jobs, appliedJobs } = useJobs();
+  const { savedJobs, appliedJobs } = useJobContext();
+  const [recentJobs, setRecentJobs] = useState<Job[]>([]);
   
-  const { data, isLoading } = useQuery({
-    queryKey: ['veteranDashboard'],
-    queryFn: async () => {
-      console.log('Fetching veteran dashboard data...');
-      
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      return {
-        stats: {
-          applications: appliedJobs.length,
-          saved: savedJobs.length,
-          recommendations: 7,
-          forumPosts: 3
-        },
-        earnedBadges: [
-          {
-            id: "badge1",
-            type: "profile" as BadgeType,
-            name: "Profile Master",
-            description: "Completed your profile with all required information",
-            earnedDate: new Date().toISOString(),
-            icon: "badge",
-            level: 1
-          },
-          {
-            id: "badge2",
-            type: "application" as BadgeType,
-            name: "Job Seeker",
-            description: "Applied to your first job on the platform",
-            earnedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            icon: "briefcase",
-            level: 1
-          }
-        ] as UIVeteranBadge[],
-        recentApplications: appliedJobs.slice(0, 3).map(id => {
-          const job = jobs.find(j => j.id === id) || savedJobs.find(j => j.id === id);
-          return {
-            id,
-            jobTitle: job?.title || 'Unknown Position',
-            company: job?.company || 'Unknown Company',
-            appliedDate: new Date(),
-            status: Math.random() > 0.5 ? 'reviewing' : 'pending'
-          };
-        }),
-        recommendedJobs: savedJobs.slice(0, 3).map(job => ({
-          id: job.id,
-          title: job.title,
-          company: job.company,
-          matchScore: Math.floor(Math.random() * 30) + 70
-        })),
-        forumActivity: [
+  useEffect(() => {
+    // Fetch recent job listings
+    const fetchRecentJobs = async () => {
+      try {
+        const response = await fetch('/api/jobs/recent');
+        const data = await response.json();
+        setRecentJobs(data.slice(0, 3));
+      } catch (error) {
+        console.error('Error fetching recent jobs:', error);
+        // Use mock data if fetch fails
+        setRecentJobs([
           {
             id: '1',
-            title: 'Tips for transitioning to civilian IT roles',
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            replies: 5
+            title: 'Software Engineer',
+            company: 'TechCorp',
+            location: 'Toronto, ON',
+            description: 'Develop and maintain software applications using modern technologies',
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            category: 'technology',
+            salaryRange: 'range4',
+            remote: false,
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['JavaScript', 'React', 'Node.js'],
+            preferredSkills: ['TypeScript', 'AWS'],
+            industry: 'technology',
+            experienceLevel: 'mid',
+            educationLevel: 'bachelors',
           },
           {
             id: '2',
-            title: 'Resume help for logistics experience',
-            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            replies: 3
+            title: 'Logistics Coordinator',
+            company: 'Supply Chain Inc',
+            location: 'Vancouver, BC',
+            description: 'Coordinate logistics operations and maintain efficiency',
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            category: 'logistics',
+            salaryRange: 'range3',
+            remote: false,
+            clearanceLevel: 'confidential',
+            mosCode: 'LOG01',
+            requiredSkills: ['Logistics Management', 'Supply Chain', 'Inventory Control'],
+            preferredSkills: ['SAP', 'Six Sigma'],
+            industry: 'logistics',
+            experienceLevel: 'mid',
+            educationLevel: 'bachelors',
+          },
+          {
+            id: '3',
+            title: 'Security Analyst',
+            company: 'DefenseTech',
+            location: 'Ottawa, ON',
+            description: 'Analyze security requirements and provide recommendations',
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            category: 'security',
+            salaryRange: 'range4',
+            remote: true,
+            clearanceLevel: 'secret',
+            mosCode: 'SEC02',
+            requiredSkills: ['Risk Assessment', 'Security Analysis', 'Documentation'],
+            preferredSkills: ['CISSP', 'Security+'],
+            industry: 'defense',
+            experienceLevel: 'senior',
+            educationLevel: 'masters',
           }
-        ]
-      };
+        ]);
+      }
+    };
+    
+    fetchRecentJobs();
+  }, []);
+  
+  // Get the job application status counts
+  const statuses = {
+    saved: savedJobs.length,
+    applied: appliedJobs.length,
+    interviews: 2, // Mock data - would come from a real API
+    offers: 1, // Mock data - would come from a real API
+  };
+  
+  // Get upcoming events/interviews
+  const upcomingEvents = [
+    {
+      id: 'event1',
+      title: 'Interview with TechCorp',
+      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      type: 'interview'
+    },
+    {
+      id: 'event2',
+      title: 'Virtual Job Fair - Technology Sector',
+      date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      type: 'jobfair'
+    },
+    {
+      id: 'event3',
+      title: 'Follow-up with DefenseTech',
+      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      type: 'followup'
     }
-  });
+  ];
 
-  const welcomeMessage = user?.name 
-    ? `Welcome back, ${user.name.split(' ')[0]}!` 
-    : 'Welcome to your dashboard!';
-
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-CA', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  
+  const getEventIcon = (type: string) => {
+    switch (type) {
+      case 'interview':
+        return <Briefcase className="h-4 w-4 text-blue-500" />;
+      case 'jobfair':
+        return <Calendar className="h-4 w-4 text-green-500" />;
+      case 'followup':
+        return <Clock className="h-4 w-4 text-amber-500" />;
+      default:
+        return <Calendar className="h-4 w-4 text-gray-500" />;
+    }
+  };
+  
   return (
-    <div className="space-y-8">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{welcomeMessage}</h2>
-        <p className="text-gray-600">
-          Track your job search progress and get personalized recommendations.
-        </p>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{t('Welcome back')}, {user?.name || 'Veteran'}</h1>
+          <p className="text-gray-500">{t('Here\'s an overview of your job search progress')}</p>
+        </div>
+        <Button asChild>
+          <Link to="/jobs/search">{t('Find New Jobs')}</Link>
+        </Button>
       </div>
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index}>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="w-full">
-                    <Skeleton className="h-4 w-24 mb-2" />
-                    <Skeleton className="h-8 w-12 mb-2" />
-                    <Skeleton className="h-3 w-32" />
-                  </div>
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <StatsCardGroup stats={data?.stats || { applications: 0, saved: 0, recommendations: 0, forumPosts: 0 }} />
-      )}
-
-      {/* Personalized Recommendations Section */}
-      <div className="mb-8">
-        <PersonalizedRecommendations />
-      </div>
-
-      {/* Earned Badges Section */}
-      {!isLoading && data?.earnedBadges && (
-        <div className="mb-8">
-          <VeteranBadges 
-            earnedBadges={data.earnedBadges} 
-            className="animate-fade-in"
-          />
-        </div>
-      )}
-
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Recent Applications</h3>
-          <Link to="/history" className="text-primary text-sm font-medium flex items-center hover:underline">
-            View all <ArrowRight className="ml-1 h-3 w-3" />
-          </Link>
-        </div>
-        
-        {isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between">
-                    <div>
-                      <Skeleton className="h-5 w-40 mb-2" />
-                      <Skeleton className="h-4 w-24 mb-1" />
-                    </div>
-                    <Skeleton className="h-10 w-24" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : data?.recentApplications && data.recentApplications.length > 0 ? (
-          <div className="space-y-4">
-            {data.recentApplications.map((application) => (
-              <Card key={application.id} className="hover:border-primary/50 transition-colors">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium text-gray-900">{application.jobTitle}</h4>
-                      <p className="text-sm text-gray-600">{application.company}</p>
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        Applied {application.appliedDate.toLocaleDateString()}
-                      </div>
-                    </div>
-                    <Badge 
-                      className={cn(
-                        "px-3 py-1 capitalize",
-                        application.status === 'reviewing' ? "bg-blue-100 text-blue-800 hover:bg-blue-100" : 
-                        application.status === 'pending' ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" : ""
-                      )}
-                    >
-                      {application.status}
+      
+      <StatsCardGroup>
+        <StatsCard 
+          title={t('Saved Jobs')} 
+          value={statuses.saved.toString()} 
+          icon={<Bookmark className="h-4 w-4" />}
+          description={t('Jobs you\'ve bookmarked')}
+          href="/jobs/saved"
+        />
+        <StatsCard 
+          title={t('Applications')} 
+          value={statuses.applied.toString()} 
+          icon={<ClipboardList className="h-4 w-4" />}
+          description={t('Jobs you\'ve applied to')}
+          href="/applications"
+        />
+        <StatsCard 
+          title={t('Interviews')} 
+          value={statuses.interviews.toString()} 
+          icon={<BookmarkCheck className="h-4 w-4" />}
+          description={t('Scheduled interviews')}
+          href="/applications?filter=interviewing"
+        />
+        <StatsCard 
+          title={t('Offers')} 
+          value={statuses.offers.toString()} 
+          icon={<CheckCircle2 className="h-4 w-4" />}
+          description={t('Job offers received')}
+          href="/applications?filter=offered"
+        />
+      </StatsCardGroup>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="md:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle>{t('Recent Job Opportunities')}</CardTitle>
+            <CardDescription>
+              {t('Jobs that match your profile and preferences')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {recentJobs.length > 0 ? (
+              recentJobs.map((job) => (
+                <div key={job.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">
+                      <Link to={`/jobs/${job.id}`} className="hover:text-primary">
+                        {job.title}
+                      </Link>
+                    </h3>
+                    <Badge variant={job.remote ? "outline" : "secondary"}>
+                      {job.remote ? t('Remote') : t('On-site')}
                     </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <FileText className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-              <h4 className="text-gray-900 font-medium mb-1">No applications yet</h4>
-              <p className="text-gray-600 text-sm mb-4">Start applying to jobs to track your progress</p>
-              <Button asChild size="sm">
-                <Link to="/job-search">Browse Jobs</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Recommended For You</h3>
-          <Link to="/recommendations" className="text-primary text-sm font-medium flex items-center hover:underline">
-            View all <ArrowRight className="ml-1 h-3 w-3" />
-          </Link>
-        </div>
-        
-        {isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between">
-                    <div>
-                      <Skeleton className="h-5 w-40 mb-2" />
-                      <Skeleton className="h-4 w-24 mb-1" />
-                    </div>
-                    <Skeleton className="h-8 w-16" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : data?.recommendedJobs && data.recommendedJobs.length > 0 ? (
-          <div className="space-y-4">
-            {data.recommendedJobs.map(job => (
-              <Card key={job.id} className="hover:border-primary/50 transition-colors">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium text-gray-900">{job.title}</h4>
-                      <p className="text-sm text-gray-600">{job.company}</p>
-                    </div>
-                    <div className="flex items-center">
-                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                        {job.matchScore}% Match
+                  <div className="text-sm text-gray-500 mb-2">{job.company} • {job.location}</div>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">{job.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {job.requiredSkills.slice(0, 3).map((skill, i) => (
+                      <Badge key={i} variant="outline" className="text-xs">
+                        {skill}
                       </Badge>
-                      <Button variant="ghost" size="icon" className="ml-2">
-                        <Bookmark className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    ))}
+                    {job.requiredSkills.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{job.requiredSkills.length - 3} more
+                      </Badge>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Star className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-              <h4 className="text-gray-900 font-medium mb-1">No recommendations yet</h4>
-              <p className="text-gray-600 text-sm mb-4">Complete your profile to get personalized job matches</p>
-              <Button asChild size="sm">
-                <Link to="/profile">Update Profile</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Community Activity</h3>
-          <Link to="/resources/forums" className="text-primary text-sm font-medium flex items-center hover:underline">
-            View all <ArrowRight className="ml-1 h-3 w-3" />
-          </Link>
-        </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6">
+                <Ban className="mx-auto h-12 w-12 text-gray-300" />
+                <h3 className="mt-2 text-lg font-medium">{t('No jobs found')}</h3>
+                <p className="mt-1 text-gray-500">
+                  {t('Search for jobs to see recommendations here')}
+                </p>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/jobs/search">{t('View All Job Listings')}</Link>
+            </Button>
+          </CardFooter>
+        </Card>
         
-        {isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 2 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-32 mb-2" />
-                      <Skeleton className="h-3 w-64" />
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle>{t('Upcoming Events')}</CardTitle>
+            <CardDescription>
+              {t('Your scheduled interviews and job fairs')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {upcomingEvents.length > 0 ? (
+                upcomingEvents.map((event) => (
+                  <div key={event.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                    <div className="mt-0.5">
+                      {getEventIcon(event.type)}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="font-medium text-sm">{event.title}</p>
+                      <p className="text-xs text-gray-500">{formatDate(event.date)}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : data?.forumActivity && data.forumActivity.length > 0 ? (
-          <div className="space-y-4">
-            {data.forumActivity.map(post => (
-              <Card key={post.id} className="hover:border-primary/50 transition-colors">
-                <CardContent className="p-4">
-                  <div className="flex items-center">
-                    <MessageSquare className="h-10 w-10 text-primary/60 mr-4" />
-                    <div>
-                      <h4 className="font-medium text-gray-900">{post.title}</h4>
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {post.date.toLocaleDateString()}
-                        <span className="mx-2">•</span>
-                        <Eye className="h-3 w-3 mr-1" />
-                        {post.replies} {post.replies === 1 ? 'reply' : 'replies'}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <MessageSquare className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-              <h4 className="text-gray-900 font-medium mb-1">No forum activity yet</h4>
-              <p className="text-gray-600 text-sm mb-4">Join the community to connect with other veterans</p>
-              <Button asChild size="sm">
-                <Link to="/resources/forums">Browse Forums</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+                ))
+              ) : (
+                <div className="text-center py-6">
+                  <Clock className="mx-auto h-12 w-12 text-gray-300" />
+                  <p className="mt-2 text-gray-500">
+                    {t('No upcoming events')}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/events">{t('View Calendar')}</Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
+      
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>{t('Complete Your Profile')}</CardTitle>
+          <CardDescription>
+            {t('Improve your job match rate by completing your profile')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full" style={{ width: '65%' }}></div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-medium mb-1">{t('Military Service')}</h3>
+                <p className="text-sm text-gray-500 mb-2">{t('Complete your service history')}</p>
+                <Badge variant="outline" className="bg-green-50">Completed</Badge>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-medium mb-1">{t('Skills Profile')}</h3>
+                <p className="text-sm text-gray-500 mb-2">{t('Add your skills and expertise')}</p>
+                <Badge variant="outline" className="bg-amber-50">In Progress</Badge>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-medium mb-1">{t('Resume Upload')}</h3>
+                <p className="text-sm text-gray-500 mb-2">{t('Upload your resume or CV')}</p>
+                <Badge variant="outline" className="bg-amber-50">In Progress</Badge>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-medium mb-1">{t('Job Preferences')}</h3>
+                <p className="text-sm text-gray-500 mb-2">{t('Set your job search preferences')}</p>
+                <Badge variant="outline" className="bg-red-50">Not Started</Badge>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/profile">{t('Complete Profile')}</Link>
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

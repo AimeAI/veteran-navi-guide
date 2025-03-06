@@ -1,9 +1,12 @@
 
 import React from 'react';
-import { Filter, Search, X } from 'lucide-react';
+import { Filter, Search, MapPin, Globe, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -11,95 +14,152 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ApplicationStatus } from '@/types/application';
 
 interface FilterBarProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  statusFilter: ApplicationStatus | 'all';
-  setStatusFilter: (status: ApplicationStatus | 'all') => void;
-  jobTitleFilter: string;
-  setJobTitleFilter: (title: string) => void;
-  resetFilters: () => void;
+  keywords: string;
+  location: string;
+  remote: boolean;
+  country: "us" | "canada" | undefined;
+  onKeywordChange: (keywords: string) => void;
+  onLocationChange: (location: string) => void;
+  onRemoteToggle: (remote: boolean) => void;
+  onCountryChange: (country: "us" | "canada") => void;
+  onToggleAdvancedFilters: () => void;
+  onClearFilters: () => void;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
-  searchQuery,
-  setSearchQuery,
-  statusFilter,
-  setStatusFilter,
-  jobTitleFilter,
-  setJobTitleFilter,
-  resetFilters,
+  keywords,
+  location,
+  remote,
+  country = "canada",
+  onKeywordChange,
+  onLocationChange,
+  onRemoteToggle,
+  onCountryChange,
+  onToggleAdvancedFilters,
+  onClearFilters,
 }) => {
-  const hasActiveFilters = searchQuery || statusFilter !== 'all' || jobTitleFilter;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // The parent component should handle updates as values change
+  };
+
+  const hasActiveFilters = keywords || location || remote || country !== "canada";
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-medium flex items-center">
-          <Filter className="h-5 w-5 mr-2 text-gray-500" />
-          Filter Applications
+    <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-medium flex items-center">
+          <Filter className="h-4 w-4 mr-2 text-gray-500" />
+          Search Jobs
         </h2>
+        
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={resetFilters} className="text-gray-500">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            size="sm" 
+            onClick={onClearFilters}
+            className="h-8 px-2 text-sm text-gray-500"
+          >
             <X className="h-4 w-4 mr-1" />
-            Clear Filters
+            Clear
           </Button>
         )}
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <div className="space-y-3">
         <div>
-          <Label htmlFor="searchQuery">Applicant Name</Label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
-            </div>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              id="searchQuery"
-              placeholder="Search by name..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search by applicant name"
+              type="text"
+              placeholder="Job title, keywords, or company"
+              className="pl-9"
+              value={keywords}
+              onChange={(e) => onKeywordChange(e.target.value)}
             />
           </div>
         </div>
         
         <div>
-          <Label htmlFor="jobTitleFilter">Job Title</Label>
-          <Input
-            id="jobTitleFilter"
-            placeholder="Filter by job title..."
-            value={jobTitleFilter}
-            onChange={(e) => setJobTitleFilter(e.target.value)}
-            aria-label="Filter by job title"
-          />
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="City, province, or postal code"
+              className="pl-9"
+              value={location}
+              onChange={(e) => onLocationChange(e.target.value)}
+            />
+          </div>
         </div>
         
-        <div>
-          <Label htmlFor="statusFilter">Application Status</Label>
-          <Select 
-            value={statusFilter} 
-            onValueChange={(value) => setStatusFilter(value as ApplicationStatus | 'all')}
-            aria-label="Filter by application status"
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="remote"
+              checked={remote}
+              onCheckedChange={onRemoteToggle}
+            />
+            <Label htmlFor="remote" className="text-sm">Remote only</Label>
+          </div>
+          
+          <Separator orientation="vertical" className="h-6" />
+          
+          <div className="flex items-center space-x-2">
+            <Globe className="h-4 w-4 text-gray-500" />
+            <Select
+              value={country}
+              onValueChange={(value: "us" | "canada") => onCountryChange(value)}
+            >
+              <SelectTrigger className="h-8 border-0 bg-transparent shadow-none p-0 w-[110px]">
+                <SelectValue placeholder="Country" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="canada">Canada</SelectItem>
+                <SelectItem value="us">United States</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="flex pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onToggleAdvancedFilters}
+            className="text-sm"
           >
-            <SelectTrigger id="statusFilter">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="reviewing">Reviewing</SelectItem>
-              <SelectItem value="interviewing">Interviewing</SelectItem>
-              <SelectItem value="hired">Hired</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
+            Advanced Filters
+          </Button>
+          
+          {hasActiveFilters && (
+            <div className="ml-2 flex items-center">
+              <Badge variant="secondary" className="ml-auto">
+                {Object.entries({
+                  keywords,
+                  location,
+                  remote,
+                }).filter(([_, value]) => 
+                  value === true || (typeof value === 'string' && value.trim() !== '')
+                ).length + (country !== "canada" ? 1 : 0)} 
+                filter{hasActiveFilters && 
+                  Object.entries({
+                    keywords,
+                    location,
+                    remote,
+                  }).filter(([_, value]) => 
+                    value === true || (typeof value === 'string' && value.trim() !== '')
+                  ).length + (country !== "canada" ? 1 : 0) > 1 ? 's' : ''} active
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </form>
   );
 };
 

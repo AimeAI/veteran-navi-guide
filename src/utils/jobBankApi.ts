@@ -1,3 +1,4 @@
+
 import { Job } from "@/context/JobContext";
 import * as cheerio from 'cheerio';
 
@@ -240,9 +241,9 @@ export const searchJobBankJobs = async (params: JobBankSearchParams): Promise<{
       
       return {
         jobs,
-        totalJobs: jobs.length,
+        totalJobs,
         currentPage: params.page || 1,
-        totalPages: 1
+        totalPages
       };
     } catch (error) {
       console.error(`Job Bank API failed with proxy ${proxyUrl}:`, error);
