@@ -1,202 +1,288 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import LoadingButton from "@/components/ui/LoadingButton";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
-import { isEmptyOrWhitespace } from "@/utils/validation";
-import FormErrorMessage from "./ui/form-error-message";
-import { useJobs } from "@/context/JobContext";
-
-const jobCategories = [
-  { value: "cybersecurity", label: "Cybersecurity" },
-  { value: "logistics", label: "Logistics & Supply Chain" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "engineering", label: "Engineering" },
-  { value: "administration", label: "Administration" },
-  { value: "it", label: "Information Technology" },
-  { value: "leadership", label: "Leadership & Management" },
-  { value: "maintenance", label: "Maintenance & Repair" },
-];
-
-interface FormErrors {
-  [key: string]: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
+import { useJobAlerts } from "@/context/JobAlertContext";
+import { searchJobs } from "@/data/jobs";
 
 interface JobAlertFormProps {
-  initialData?: {
-    keywords: string;
-    location: string;
-    category: string;
-  };
   onSuccess?: () => void;
-  className?: string;
 }
 
-const JobAlertForm = ({ initialData, onSuccess, className }: JobAlertFormProps) => {
-  const [keywords, setKeywords] = useState(initialData?.keywords || "");
-  const [location, setLocation] = useState(initialData?.location || "");
-  const [category, setCategory] = useState(initialData?.category || "");
-  const [errors, setErrors] = useState<FormErrors>({});
+const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
+  const { addJobAlert } = useJobAlerts();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { searchJobs } = useJobs();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [keywordInput, setKeywordInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+  const [jobMatchPreview, setJobMatchPreview] = useState([]);
+  
+  const [formData, setFormData] = useState({
+    title: "",
+    keywords: [],
+    locations: [],
+    jobType: "",
+    frequency: "daily"
+  });
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    if (isEmptyOrWhitespace(keywords)) {
-      newErrors.keywords = "Keywords are required";
+  const handleAddKeyword = () => {
+    if (keywordInput.trim() !== "" && !formData.keywords.includes(keywordInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        keywords: [...prev.keywords, keywordInput.trim()]
+      }));
+      setKeywordInput("");
     }
+  };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleRemoveKeyword = (keywordToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      keywords: prev.keywords.filter(keyword => keyword !== keywordToRemove)
+    }));
+  };
+
+  const handleAddLocation = () => {
+    if (locationInput.trim() !== "" && !formData.locations.includes(locationInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        locations: [...prev.locations, locationInput.trim()]
+      }));
+      setLocationInput("");
+    }
+  };
+
+  const handleRemoveLocation = (locationToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      locations: prev.locations.filter(location => location !== locationToRemove)
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-    
     setIsSubmitting(true);
+    setErrorMessage("");
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Validate form
+      if (!formData.title.trim()) {
+        throw new Error("Please provide a title for your job alert");
+      }
       
-      const alertData = {
-        id: initialData ? initialData.keywords : Date.now().toString(),
-        keywords,
-        location,
-        category,
-        createdAt: new Date().toISOString(),
-      };
+      if (formData.keywords.length === 0 && formData.locations.length === 0 && !formData.jobType) {
+        throw new Error("Please provide at least one search criteria");
+      }
       
-      console.log("Job Alert Created:", alertData);
+      // In a real app, this would save to a database via API
+      console.log("Creating job alert:", formData);
       
-      // Check for matching jobs as a demo of the alert functionality
+      // Simulate fetch matching jobs
       const matchingJobs = searchJobs({
-        keywords,
-        location,
-        category,
-        salaryRange: "",
+        keywords: formData.keywords,
+        locations: formData.locations,
+        jobType: formData.jobType,
         mosCodes: [],
         clearanceLevel: [],
         remote: false
-      }) || [];
+      });
       
-      console.log(`Found ${matchingJobs.length} jobs matching your new alert criteria.`);
+      const jobMatches = matchingJobs || [];
       
-      if (matchingJobs.length > 0) {
-        // This would eventually be an in-app notification or email
-        console.log("Job Alert Notification:", {
-          alertId: alertData.id,
-          message: `We found ${matchingJobs.length} jobs that match your alert criteria.`,
-          jobs: matchingJobs.slice(0, 3)
+      console.log(`Found ${jobMatches.length} jobs matching your new alert criteria.`);
+      
+      if (jobMatches.length > 0) {
+        setJobMatchPreview(jobMatches.slice(0, 3));
+      }
+      
+      setTimeout(() => {
+        // Simulate API call
+        console.log("Job alert created successfully");
+        
+        // Update context with the new alert
+        addJobAlert({
+          id: `alert-${Date.now()}`,
+          title: formData.title,
+          criteria: {
+            keywords: formData.keywords,
+            locations: formData.locations,
+            jobType: formData.jobType
+          },
+          frequency: formData.frequency,
+          createdAt: new Date().toISOString(),
+          lastSent: null,
+          matchCount: jobMatches.length
         });
-      }
-      
-      if (!initialData) {
-        toast.success("Job alert created successfully", {
-          description: "You'll receive notifications when new matching jobs are posted."
-        });
-      }
-      
-      // Call onSuccess callback if provided
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        setKeywords("");
-        setLocation("");
-        setCategory("");
-      }
+        
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Reset form
+          setFormData({
+            title: "",
+            keywords: [],
+            locations: [],
+            jobType: "",
+            frequency: "daily"
+          });
+          setKeywordInput("");
+          setLocationInput("");
+          setJobMatchPreview([]);
+          setSuccessMessage("Job alert created successfully!");
+        }
+      }, 1000);
     } catch (error) {
       console.error("Error creating job alert:", error);
-      toast.error("Failed to create job alert", {
-        description: "Please try again later."
-      });
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("An unexpected error occurred");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className={`w-full max-w-md mx-auto bg-white shadow-md ${className}`}>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-primary">
-          {initialData ? "Update Job Alert" : "Create Job Alert"}
-        </CardTitle>
-        <CardDescription>
-          {initialData 
-            ? "Modify your job alert settings" 
-            : "Get notified when new jobs matching your criteria are posted."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="keywords">
-              Keywords <span className="text-destructive">*</span>
-            </Label>
-            <Input 
-              id="keywords" 
-              placeholder="Job title, skills, or keywords" 
-              value={keywords}
-              onChange={(e) => {
-                setKeywords(e.target.value);
-                if (errors.keywords) {
-                  setErrors({ ...errors, keywords: "" });
-                }
-              }}
-              className={errors.keywords ? "border-destructive" : ""}
-              required
-            />
-            <FormErrorMessage message={errors.keywords} />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Input 
-              id="location" 
-              placeholder="City, state, or zip code" 
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="category">Job Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {jobCategories.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <LoadingButton 
-          type="submit" 
-          onClick={handleSubmit}
-          className="w-full"
-          isLoading={isSubmitting}
-          loadingText={initialData ? "Updating Alert..." : "Creating Alert..."}
-        >
-          {initialData ? "Update Alert" : "Create Alert"}
-        </LoadingButton>
-      </CardFooter>
-    </Card>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="title">Alert Title</Label>
+        <Input
+          id="title"
+          name="title"
+          value={formData.title}
+          onChange={handleInputChange}
+          placeholder="e.g., Software Engineer Jobs in Ottawa"
+          required
+        />
+      </div>
+
+      <div>
+        <Label>Keywords</Label>
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="Add keyword"
+            value={keywordInput}
+            onChange={(e) => setKeywordInput(e.target.value)}
+          />
+          <Button type="button" onClick={handleAddKeyword}>
+            Add
+          </Button>
+        </div>
+        <div className="mt-2">
+          {formData.keywords.map((keyword) => (
+            <Badge key={keyword} className="mr-1 cursor-pointer" onClick={() => handleRemoveKeyword(keyword)}>
+              {keyword}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Label>Locations</Label>
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="Add location"
+            value={locationInput}
+            onChange={(e) => setLocationInput(e.target.value)}
+          />
+          <Button type="button" onClick={handleAddLocation}>
+            Add
+          </Button>
+        </div>
+        <div className="mt-2">
+          {formData.locations.map((location) => (
+            <Badge key={location} className="mr-1 cursor-pointer" onClick={() => handleRemoveLocation(location)}>
+              {location}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="jobType">Job Type</Label>
+        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, jobType: value }))}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a job type" defaultValue={formData.jobType} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Any</SelectItem>
+            <SelectItem value="full-time">Full-Time</SelectItem>
+            <SelectItem value="part-time">Part-Time</SelectItem>
+            <SelectItem value="contract">Contract</SelectItem>
+            <SelectItem value="temporary">Temporary</SelectItem>
+            <SelectItem value="volunteer">Volunteer</SelectItem>
+            <SelectItem value="internship">Internship</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="frequency">Frequency</Label>
+        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, frequency: value }))}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select frequency" defaultValue={formData.frequency} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="daily">Daily</SelectItem>
+            <SelectItem value="weekly">Weekly</SelectItem>
+            <SelectItem value="monthly">Monthly</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {jobMatchPreview.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">Job Match Preview</h3>
+          <p className="text-sm text-muted-foreground">
+            Here's a preview of jobs matching your criteria:
+          </p>
+          <ScrollArea className="h-[200px] w-full rounded-md border">
+            <div className="p-4 space-y-3">
+              {jobMatchPreview.map((job) => (
+                <div key={job.id} className="border rounded-md p-3">
+                  <h4 className="font-medium">{job.title}</h4>
+                  <p className="text-sm text-muted-foreground">{job.company} - {job.location}</p>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="text-red-500">
+          Error: {errorMessage}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="text-green-500">
+          {successMessage}
+        </div>
+      )}
+
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Creating Alert..." : "Create Job Alert"}
+      </Button>
+    </form>
   );
 };
 
