@@ -75,11 +75,8 @@ const JobListing: React.FC<JobListingProps> = ({
     // Log application click for analytics
     console.log('User clicked Apply Now for job:', jobId, title, company);
     
-    // Show a toast notification
-    toast.success(`Opening application for ${title} at ${company}`);
-    
-    // Determine job source from URL
-    let detectedSource = 'job board';
+    // Determine job source from URL for better tracking
+    let detectedSource = source || 'job board';
     if (url) {
       if (url.includes('jobbank.gc.ca')) detectedSource = 'Job Bank Canada';
       else if (url.includes('indeed.com')) detectedSource = 'Indeed';
@@ -87,6 +84,9 @@ const JobListing: React.FC<JobListingProps> = ({
       else if (url.includes('workopolis.com')) detectedSource = 'Workopolis';
       else if (url.includes('monster.ca')) detectedSource = 'Monster';
     }
+    
+    // Show a toast notification
+    toast.success(`Opening application for ${title} at ${company}`);
     
     // Log click with more details for analytics
     console.log(`User is applying via ${detectedSource}. URL: ${url}`);
