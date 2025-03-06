@@ -13,6 +13,7 @@ export interface UserProfile {
   bio: string;
   isAuthenticated: boolean;
   emailVerified: boolean;
+  profilePicture?: string;
 }
 
 // Interface for the context
@@ -24,6 +25,7 @@ interface UserContextType {
   logout: () => void;
   updateProfile: (updatedProfile: Partial<UserProfile>) => void;
   resendVerificationEmail: () => Promise<void>;
+  uploadProfilePicture: (file: File) => Promise<string>;
 }
 
 // Create the context with initial values
@@ -41,6 +43,7 @@ const initialUserProfile: UserProfile = {
   bio: "Software Engineer with 4 years of experience. Former CAF member with background in communications and logistics. Skilled in team leadership and project management.",
   isAuthenticated: false,
   emailVerified: false,
+  profilePicture: undefined
 };
 
 // Provider component
@@ -211,8 +214,82 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // New function to handle profile picture uploads
+  const uploadProfilePicture = async (file: File): Promise<string> => {
+    setIsLoading(true);
+    
+    try {
+      // Validate file
+      if (!file) {
+        throw new Error("No file selected");
+      }
+      
+      // Check file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        throw new Error("Invalid file type. Please upload a JPEG, PNG, or GIF image.");
+      }
+      
+      // Check file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        throw new Error("File is too large. Maximum size is 5MB.");
+      }
+      
+      // In a real app with Supabase, this would be:
+      // const filePath = `profile-pictures/${user?.id}/${file.name}`;
+      // const { data, error } = await supabase.storage
+      //   .from('profile-pictures')
+      //   .upload(filePath, file, {
+      //     upsert: true,
+      //   });
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Create a local URL for the uploaded file
+      const fileUrl = URL.createObjectURL(file);
+      console.log("Profile picture uploaded:", fileUrl);
+      
+      // Update user profile with the new picture URL
+      if (user) {
+        const updatedUser = { ...user, profilePicture: fileUrl };
+        setUser(updatedUser);
+      }
+      
+      toast.success("Profile picture updated successfully!");
+      return fileUrl;
+    } catch (error) {
+      console.error("Profile picture upload error:", error);
+      
+      // Show appropriate error message
+      if (error instanceof Error) {
+        toast.error("Upload failed", {
+          description: error.message || "Please try again"
+        });
+      } else {
+        toast.error("Upload failed", {
+          description: "An unexpected error occurred. Please try again."
+        });
+      }
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, isLoading, login, signup, logout, updateProfile, resendVerificationEmail }}>
+    <UserContext.Provider value={{ 
+      user, 
+      isLoading, 
+      login, 
+      signup, 
+      logout, 
+      updateProfile, 
+      resendVerificationEmail,
+      uploadProfilePicture 
+    }}>
       {children}
     </UserContext.Provider>
   );

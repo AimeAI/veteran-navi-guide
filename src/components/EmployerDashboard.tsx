@@ -254,10 +254,40 @@ const EmployerDashboard: React.FC = () => {
     return "";
   };
 
-  const statusCounts = applications?.reduce((counts, app) => {
-    counts[app.status] = (counts[app.status] || 0) + 1;
+  const getStatusColor = (status: ApplicationStatus) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'reviewing':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'interviewing':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'hired':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'rejected':
+        return 'bg-red-50 text-red-700 border-red-200';
+      default:
+        return '';
+    }
+  };
+
+  const statusCounts: Record<ApplicationStatus, number> = applications?.reduce((counts, app) => {
+    const currentCount = counts[app.status] || 0;
+    counts[app.status] = currentCount + 1;
     return counts;
-  }, {} as Record<ApplicationStatus, number>) || {};
+  }, {
+    pending: 0,
+    reviewing: 0,
+    interviewing: 0,
+    hired: 0,
+    rejected: 0
+  } as Record<ApplicationStatus, number>) || {
+    pending: 0,
+    reviewing: 0,
+    interviewing: 0,
+    hired: 0,
+    rejected: 0
+  };
 
   if (isLoadingStats && isLoadingApplications) {
     return <DashboardSkeleton />;

@@ -23,11 +23,11 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
   };
 
   return (
-    <Alert variant="warning" className={`mb-6 border-yellow-400 bg-yellow-50 text-yellow-800 ${className}`}>
-      <AlertTriangle className="h-5 w-5 text-yellow-600" />
+    <Alert variant="warning" className={`mb-6 ${className}`}>
+      <AlertTriangle className="h-5 w-5" />
       <div className="flex-1">
-        <AlertTitle className="font-medium text-yellow-800">Verify your email address</AlertTitle>
-        <AlertDescription className="mt-1 text-sm text-yellow-700">
+        <AlertTitle className="font-medium">Verify your email address</AlertTitle>
+        <AlertDescription className="mt-1 text-sm">
           <p className="mb-2">
             We've sent a verification email to <span className="font-medium">{user.email}</span>. 
             Please verify your email to access all features.
