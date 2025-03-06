@@ -41,64 +41,195 @@ const fetchEmployerStats = async () => {
   };
 };
 
-const fetchApplications = async () => {
+const fetchApplications = async (): Promise<JobApplication[]> => {
   console.log('Fetching applications from Supabase...');
   await new Promise(resolve => setTimeout(resolve, 1500));
+  
   return [
     {
       id: 'app-1',
-      applicantName: 'John Smith',
-      jobTitle: 'Software Engineer',
-      company: 'TechVets Inc.',
-      appliedDate: new Date(2023, 9, 5),
+      jobId: 'job-1',
+      job: {
+        id: 'job-1',
+        title: 'Software Engineer',
+        company: 'TechVets Inc.',
+        location: 'Seattle, WA',
+        description: 'Join our team of developers.',
+        category: 'tech',
+        salaryRange: 'range3',
+        remote: false,
+        clearanceLevel: 'secret',
+        mosCode: '25B'
+      },
+      applicantId: 'user-1',
+      applicant: {
+        id: 'user-1',
+        email: 'john@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+        photo: '',
+        militaryBranch: 'Army',
+        serviceYears: 5,
+        skills: ['leadership', 'technology'],
+        mosId: '25B',
+        clearanceLevel: 'secret'
+      },
+      appliedDate: '2023-10-05',
       status: 'reviewing',
       resume: 'resume-john-smith.pdf',
-      coverLetter: true,
-      matchScore: 92
+      coverLetter: 'cover-letter.pdf',
+      matchScore: 92,
+      applicantName: 'John Smith',
+      jobTitle: 'Software Engineer',
+      company: 'TechVets Inc.'
     },
     {
       id: 'app-2',
-      applicantName: 'Maria Rodriguez',
-      jobTitle: 'Network Administrator',
-      company: 'TechVets Inc.',
-      appliedDate: new Date(2023, 9, 10),
+      jobId: 'job-2',
+      job: {
+        id: 'job-2',
+        title: 'Network Administrator',
+        company: 'TechVets Inc.',
+        location: 'Portland, OR',
+        description: 'Manage our network infrastructure.',
+        category: 'tech',
+        salaryRange: 'range2',
+        remote: false,
+        clearanceLevel: 'confidential',
+        mosCode: '25N'
+      },
+      applicantId: 'user-2',
+      applicant: {
+        id: 'user-2',
+        email: 'maria@example.com',
+        firstName: 'Maria',
+        lastName: 'Rodriguez',
+        photo: '',
+        militaryBranch: 'Air Force',
+        serviceYears: 4,
+        skills: ['networking', 'security'],
+        mosId: '25N',
+        clearanceLevel: 'confidential'
+      },
+      appliedDate: '2023-10-10',
       status: 'pending',
       resume: 'resume-maria-rodriguez.pdf',
-      matchScore: 85
+      matchScore: 85,
+      applicantName: 'Maria Rodriguez',
+      jobTitle: 'Network Administrator',
+      company: 'TechVets Inc.'
     },
     {
       id: 'app-3',
-      applicantName: 'David Washington',
-      jobTitle: 'Cybersecurity Analyst',
-      company: 'TechVets Inc.',
-      appliedDate: new Date(2023, 9, 12),
+      jobId: 'job-3',
+      job: {
+        id: 'job-3',
+        title: 'Cybersecurity Analyst',
+        company: 'TechVets Inc.',
+        location: 'Remote',
+        description: 'Protect our systems from cyber threats.',
+        category: 'security',
+        salaryRange: 'range3',
+        remote: true,
+        clearanceLevel: 'topsecret',
+        mosCode: '17C'
+      },
+      applicantId: 'user-3',
+      applicant: {
+        id: 'user-3',
+        email: 'david@example.com',
+        firstName: 'David',
+        lastName: 'Washington',
+        photo: '',
+        militaryBranch: 'Army',
+        serviceYears: 8,
+        skills: ['cybersecurity', 'risk assessment'],
+        mosId: '17C',
+        clearanceLevel: 'topsecret'
+      },
+      appliedDate: '2023-10-12',
       status: 'interviewing',
       resume: 'resume-david-washington.pdf',
-      coverLetter: true,
-      matchScore: 95
+      coverLetter: 'cover-letter.pdf',
+      matchScore: 95,
+      applicantName: 'David Washington',
+      jobTitle: 'Cybersecurity Analyst',
+      company: 'TechVets Inc.'
     },
     {
       id: 'app-4',
-      applicantName: 'Sarah Johnson',
-      jobTitle: 'Project Manager',
-      company: 'DefenseLogistics Corp',
-      appliedDate: new Date(2023, 9, 15),
+      jobId: 'job-4',
+      job: {
+        id: 'job-4',
+        title: 'Project Manager',
+        company: 'DefenseLogistics Corp',
+        location: 'Chicago, IL',
+        description: 'Lead projects in our logistics division.',
+        category: 'management',
+        salaryRange: 'range4',
+        remote: false,
+        clearanceLevel: 'secret',
+        mosCode: '90A'
+      },
+      applicantId: 'user-4',
+      applicant: {
+        id: 'user-4',
+        email: 'sarah@example.com',
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        photo: '',
+        militaryBranch: 'Navy',
+        serviceYears: 6,
+        skills: ['project management', 'leadership'],
+        mosId: '90A',
+        clearanceLevel: 'secret'
+      },
+      appliedDate: '2023-10-15',
       status: 'hired',
       resume: 'resume-sarah-johnson.pdf',
-      coverLetter: true,
-      matchScore: 98
+      coverLetter: 'cover-letter.pdf',
+      matchScore: 98,
+      applicantName: 'Sarah Johnson',
+      jobTitle: 'Project Manager',
+      company: 'DefenseLogistics Corp'
     },
     {
       id: 'app-5',
-      applicantName: 'Michael Chen',
-      jobTitle: 'Data Analyst',
-      company: 'DefenseLogistics Corp',
-      appliedDate: new Date(2023, 9, 18),
+      jobId: 'job-5',
+      job: {
+        id: 'job-5',
+        title: 'Data Analyst',
+        company: 'DefenseLogistics Corp',
+        location: 'Denver, CO',
+        description: 'Analyze data to improve our operations.',
+        category: 'tech',
+        salaryRange: 'range2',
+        remote: true,
+        clearanceLevel: 'confidential',
+        mosCode: '35F'
+      },
+      applicantId: 'user-5',
+      applicant: {
+        id: 'user-5',
+        email: 'michael@example.com',
+        firstName: 'Michael',
+        lastName: 'Chen',
+        photo: '',
+        militaryBranch: 'Marines',
+        serviceYears: 3,
+        skills: ['data analysis', 'statistics'],
+        mosId: '35F',
+        clearanceLevel: 'confidential'
+      },
+      appliedDate: '2023-10-18',
       status: 'rejected',
       resume: 'resume-michael-chen.pdf',
-      matchScore: 72
+      matchScore: 72,
+      applicantName: 'Michael Chen',
+      jobTitle: 'Data Analyst',
+      company: 'DefenseLogistics Corp'
     }
-  ] as JobApplication[];
+  ];
 };
 
 const DashboardSkeleton = () => {
@@ -279,12 +410,14 @@ const EmployerDashboard: React.FC = () => {
     pending: 0,
     reviewing: 0,
     interviewing: 0,
+    offered: 0,
     hired: 0,
     rejected: 0
   } as Record<ApplicationStatus, number>) || {
     pending: 0,
     reviewing: 0,
     interviewing: 0,
+    offered: 0,
     hired: 0,
     rejected: 0
   };
