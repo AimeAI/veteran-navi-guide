@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
-import { Search, X, Check, ChevronLeft, ChevronRight, Pencil, Save, Trash } from "lucide-react";
+import { Search, X, Check, ChevronLeft, ChevronRight, Pencil, Save, Trash, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
 import {
@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 const forumTopics = [
@@ -129,6 +130,9 @@ const CommunityForums = () => {
     content: ""
   });
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+  
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   
   const { user } = useUser();
 
@@ -432,6 +436,42 @@ const CommunityForums = () => {
     return pageNumbers;
   };
 
+  const handleDeleteConfirmation = (topicId: number) => {
+    setTopicToDelete(topicId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setTopicToDelete(null);
+    setDeleteConfirmOpen(false);
+  };
+
+  const confirmDeleteTopic = async () => {
+    if (topicToDelete === null) return;
+    
+    try {
+      console.log("Delete topic request to be sent to Supabase:", { topicId: topicToDelete });
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const filteredTopics = topics.filter(topic => topic.id !== topicToDelete);
+      setTopics(filteredTopics);
+      
+      toast.success("Topic deleted successfully", {
+        description: "Your topic has been removed from the forum",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error deleting topic:", error);
+      toast.error("Failed to delete topic", {
+        description: "Please try again later",
+      });
+    } finally {
+      setDeleteConfirmOpen(false);
+      setTopicToDelete(null);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -598,7 +638,7 @@ const CommunityForums = () => {
                         </div>
                         
                         {isCurrentUserAuthor(topic.author) && (
-                          <div className="mt-3">
+                          <div className="mt-3 flex gap-2">
                             <Button
                               size="sm"
                               variant="ghost"
@@ -607,6 +647,15 @@ const CommunityForums = () => {
                             >
                               <Pencil className="h-3.5 w-3.5 mr-1" />
                               Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteConfirmation(topic.id)}
+                              className="flex items-center text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash className="h-3.5 w-3.5 mr-1" />
+                              Delete
                             </Button>
                           </div>
                         )}
@@ -679,7 +728,7 @@ const CommunityForums = () => {
                 aria-invalid={!!editErrors.title}
                 aria-describedby={editErrors.title ? "edit-title-error" : undefined}
               />
-              <FormErrorMessage message={editErrors.title} id="edit-title-error" />
+              <FormErrorMessage message={editErrors.title} />
             </div>
             
             <div className="space-y-2">
@@ -711,39 +760,69 @@ const CommunityForums = () => {
                 aria-invalid={!!editErrors.content}
                 aria-describedby={editErrors.content ? "edit-content-error" : undefined}
               />
-              <FormErrorMessage message={editErrors.content} id="edit-content-error" />
+              <FormErrorMessage message={editErrors.content} />
             </div>
           </form>
           <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2">
             <Button 
               type="button"
+              variant="outline" 
+              onClick={handleCancelEdit}
+              className="flex items-center justify-center order-2 sm:order-1"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button 
+              type="button"
+              onClick={handleSaveEdit}
+              disabled={isEditSubmitting}
+              className="flex items-center justify-center order-1 sm:order-2"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isEditSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={deleteConfirmOpen} onOpenChange={(open) => !open && handleCancelDelete()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Confirm Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this topic? This action cannot be undone and will 
+              remove all associated replies as well.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Once deleted, you will not be able to recover this topic or any of the conversations 
+              within it.
+            </p>
+          </div>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button 
+              type="button"
+              variant="outline" 
+              onClick={handleCancelDelete}
+              className="flex items-center"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button 
+              type="button"
               variant="destructive" 
-              onClick={() => handleDeleteTopic(editTopic.id)}
-              className="w-full sm:w-auto order-3 sm:order-1 flex items-center justify-center"
+              onClick={confirmDeleteTopic}
+              className="flex items-center"
             >
               <Trash className="h-4 w-4 mr-2" />
               Delete Topic
             </Button>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-2">
-              <Button 
-                type="button"
-                variant="outline" 
-                onClick={handleCancelEdit}
-                className="flex items-center justify-center"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-              <Button 
-                type="button"
-                onClick={handleSaveEdit}
-                disabled={isEditSubmitting}
-                className="flex items-center justify-center"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {isEditSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
