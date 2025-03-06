@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StatsCardGroup from './StatsCardGroup';
-import { Eye, Calendar, Bookmark, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';
+import { Eye, Calendar, Bookmark, ArrowRight, FileText, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const VeteranDashboard = () => {

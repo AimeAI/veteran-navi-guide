@@ -87,7 +87,7 @@ const JobAlertForm = ({ initialData, onSuccess, className }: JobAlertFormProps) 
         mosCodes: [],
         clearanceLevel: [],
         remote: false
-      }) || [];
+      });
       
       console.log(`Found ${matchingJobs.length} jobs matching your new alert criteria.`);
       
