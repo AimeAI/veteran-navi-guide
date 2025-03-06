@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import JobAlertForm from "@/components/JobAlertForm";
+import JobAlertsList from "@/components/JobAlertsList";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useUser } from "@/context/UserContext";
@@ -18,6 +19,8 @@ const UserProfile = () => {
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+  const [showCreateAlert, setShowCreateAlert] = useState(false);
   
   // Form input state (for editing)
   const [formData, setFormData] = useState({
@@ -30,6 +33,23 @@ const UserProfile = () => {
     rank: "",
     bio: ""
   });
+
+  // Handle hash change for alert creation
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === "#create-alert") {
+        setActiveTab("alerts");
+        setShowCreateAlert(true);
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    handleHashChange(); // Check hash on mount
+    
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
 
   // Set form data from user profile when it loads or changes
   useEffect(() => {
@@ -97,6 +117,20 @@ const UserProfile = () => {
     console.log("Profile data to be saved:", formData);
     updateProfile(formData);
     setIsEditing(false);
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    
+    // Clear create alert mode when switching tabs
+    if (value !== "alerts") {
+      setShowCreateAlert(false);
+      
+      // Remove hash if it exists
+      if (window.location.hash === "#create-alert") {
+        window.history.pushState("", document.title, window.location.pathname + window.location.search);
+      }
+    }
   };
 
   const renderProfileViewMode = () => (
@@ -219,7 +253,7 @@ const UserProfile = () => {
 
   return (
     <div className="container mx-auto py-10">
-      <Tabs defaultValue="profile" className="w-full max-w-3xl mx-auto">
+      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={handleTabChange} className="w-full max-w-3xl mx-auto">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="resume">Resume/CV</TabsTrigger>
@@ -307,17 +341,24 @@ const UserProfile = () => {
         
         {/* Job alerts tab content */}
         <TabsContent value="alerts">
-          <Card>
-            <CardHeader>
-              <CardTitle>Job Alerts</CardTitle>
-              <CardDescription>
-                Manage your job alerts and notification preferences.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <JobAlertForm />
-            </CardContent>
-          </Card>
+          {showCreateAlert ? (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Create New Job Alert</h2>
+                <Button variant="outline" onClick={() => setShowCreateAlert(false)}>
+                  Back to Alerts
+                </Button>
+              </div>
+              <JobAlertForm 
+                onSuccess={() => {
+                  setShowCreateAlert(false);
+                  toast.success("Job alert created successfully");
+                }}
+              />
+            </div>
+          ) : (
+            <JobAlertsList />
+          )}
         </TabsContent>
         
         {/* Applications tab content */}

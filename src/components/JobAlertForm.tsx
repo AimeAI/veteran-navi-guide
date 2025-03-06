@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import LoadingButton from "@/components/ui/LoadingButton";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { AlertCircle } from "lucide-react";
 import { isEmptyOrWhitespace } from "@/utils/validation";
+import FormErrorMessage from "./ui/form-error-message";
 
 const jobCategories = [
   { value: "cybersecurity", label: "Cybersecurity" },
@@ -24,10 +25,20 @@ interface FormErrors {
   [key: string]: string;
 }
 
-const JobAlertForm = () => {
-  const [keywords, setKeywords] = useState("");
-  const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("");
+interface JobAlertFormProps {
+  initialData?: {
+    keywords: string;
+    location: string;
+    category: string;
+  };
+  onSuccess?: () => void;
+  className?: string;
+}
+
+const JobAlertForm = ({ initialData, onSuccess, className }: JobAlertFormProps) => {
+  const [keywords, setKeywords] = useState(initialData?.keywords || "");
+  const [location, setLocation] = useState(initialData?.location || "");
+  const [category, setCategory] = useState(initialData?.category || "");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,13 +74,20 @@ const JobAlertForm = () => {
       
       console.log("Job Alert Created:", alertData);
       
-      toast.success("Job alert created successfully", {
-        description: "You'll receive notifications when new matching jobs are posted."
-      });
+      if (!initialData) {
+        toast.success("Job alert created successfully", {
+          description: "You'll receive notifications when new matching jobs are posted."
+        });
+      }
       
-      setKeywords("");
-      setLocation("");
-      setCategory("");
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setKeywords("");
+        setLocation("");
+        setCategory("");
+      }
     } catch (error) {
       console.error("Error creating job alert:", error);
       toast.error("Failed to create job alert", {
@@ -80,30 +98,23 @@ const JobAlertForm = () => {
     }
   };
 
-  const renderErrorMessage = (field: string) => {
-    if (!errors[field]) return null;
-    
-    return (
-      <div className="flex items-center mt-1 text-red-500 text-sm">
-        <AlertCircle className="h-4 w-4 mr-1" />
-        <span>{errors[field]}</span>
-      </div>
-    );
-  };
-
   return (
-    <Card className="w-full max-w-md mx-auto bg-white shadow-md">
+    <Card className={`w-full max-w-md mx-auto bg-white shadow-md ${className}`}>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-primary">Job Alerts</CardTitle>
+        <CardTitle className="text-2xl font-bold text-primary">
+          {initialData ? "Update Job Alert" : "Create Job Alert"}
+        </CardTitle>
         <CardDescription>
-          Get notified when new jobs matching your criteria are posted.
+          {initialData 
+            ? "Modify your job alert settings" 
+            : "Get notified when new jobs matching your criteria are posted."}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="keywords" className={errors.keywords ? "text-red-500" : ""}>
-              Keywords
+            <Label htmlFor="keywords">
+              Keywords <span className="text-destructive">*</span>
             </Label>
             <Input 
               id="keywords" 
@@ -115,10 +126,10 @@ const JobAlertForm = () => {
                   setErrors({ ...errors, keywords: "" });
                 }
               }}
-              className={errors.keywords ? "border-red-500 focus-visible:ring-red-500" : ""}
+              className={errors.keywords ? "border-destructive" : ""}
               required
             />
-            {renderErrorMessage("keywords")}
+            <FormErrorMessage message={errors.keywords} />
           </div>
           
           <div className="space-y-2">
@@ -154,9 +165,9 @@ const JobAlertForm = () => {
           onClick={handleSubmit}
           className="w-full"
           isLoading={isSubmitting}
-          loadingText="Creating Alert..."
+          loadingText={initialData ? "Updating Alert..." : "Creating Alert..."}
         >
-          Create Alert
+          {initialData ? "Update Alert" : "Create Alert"}
         </LoadingButton>
       </CardFooter>
     </Card>
