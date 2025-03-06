@@ -1,7 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Briefcase, Building, MapPin, FileText, DollarSign, Tag, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import FormErrorMessage from './ui/form-error-message';
+import { validateJobForm, isFormValid, JobFormValidationErrors } from '@/utils/jobFormValidation';
 
 // Interface for job form data
 interface JobFormData {
@@ -39,6 +40,9 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
   const [formData, setFormData] = useState<JobFormData>(initialFormState);
   const [currentSkill, setCurrentSkill] = useState<string>('');
   const [currentMosCode, setCurrentMosCode] = useState<string>('');
+  const [errors, setErrors] = useState<JobFormValidationErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   // Common MOS codes for Canadian Army
   const commonMosCodes = [
@@ -54,12 +58,34 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
     { code: '00339', description: 'Intelligence Operator' },
   ];
 
+  // Validate form when formData changes or after first submission
+  useEffect(() => {
+    if (formSubmitted || Object.keys(touchedFields).length > 0) {
+      const validationErrors = validateJobForm(formData);
+      setErrors(validationErrors);
+    }
+  }, [formData, formSubmitted, touchedFields]);
+
   // Handle text input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value
+    }));
+    
+    // Mark field as touched
+    setTouchedFields(prev => ({
+      ...prev,
+      [name]: true
+    }));
+  };
+
+  // Handle onBlur to validate field when user moves away
+  const handleBlur = (fieldName: string) => {
+    setTouchedFields(prev => ({
+      ...prev,
+      [fieldName]: true
     }));
   };
 
@@ -90,6 +116,12 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
         mosCodes: [...prevData.mosCodes, currentMosCode.trim()]
       }));
       setCurrentMosCode('');
+      
+      // Validate MOS codes after adding
+      setTouchedFields(prev => ({
+        ...prev,
+        mosCodes: true
+      }));
     }
   };
 
@@ -111,12 +143,30 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
     }
   };
 
+  // Form is valid if there are no errors
+  const isValid = isFormValid(errors);
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Job posting data:', formData);
-    // Here you would typically send the data to an API
-    alert('Job posted successfully! Check console for details.');
+    setFormSubmitted(true);
+    
+    const validationErrors = validateJobForm(formData);
+    setErrors(validationErrors);
+    
+    if (isFormValid(validationErrors)) {
+      console.log('Job posting data:', formData);
+      // Here you would typically send the data to an API
+      alert('Job posted successfully! Check console for details.');
+    } else {
+      // Scroll to the first error
+      const firstErrorField = Object.keys(validationErrors)[0];
+      const element = document.getElementById(firstErrorField);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.focus();
+      }
+    }
   };
 
   return (
@@ -135,13 +185,18 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
               type="text"
               id="title"
               name="title"
-              required
               value={formData.title}
               onChange={handleInputChange}
-              className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              onBlur={() => handleBlur('title')}
+              className={cn(
+                "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                errors.title && touchedFields.title ? "border-red-500" : "border-gray-300"
+              )}
               placeholder="e.g. Cybersecurity Analyst"
+              aria-invalid={errors.title && touchedFields.title ? 'true' : 'false'}
             />
           </div>
+          <FormErrorMessage message={touchedFields.title ? errors.title : undefined} />
         </div>
 
         {/* Company Name */}
@@ -157,13 +212,18 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
               type="text"
               id="company"
               name="company"
-              required
               value={formData.company}
               onChange={handleInputChange}
-              className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              onBlur={() => handleBlur('company')}
+              className={cn(
+                "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                errors.company && touchedFields.company ? "border-red-500" : "border-gray-300"
+              )}
               placeholder="e.g. TechDefense Solutions"
+              aria-invalid={errors.company && touchedFields.company ? 'true' : 'false'}
             />
           </div>
+          <FormErrorMessage message={touchedFields.company ? errors.company : undefined} />
         </div>
 
         {/* Location */}
@@ -179,13 +239,18 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
               type="text"
               id="location"
               name="location"
-              required
               value={formData.location}
               onChange={handleInputChange}
-              className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              onBlur={() => handleBlur('location')}
+              className={cn(
+                "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                errors.location && touchedFields.location ? "border-red-500" : "border-gray-300"
+              )}
               placeholder="e.g. Ottawa, ON"
+              aria-invalid={errors.location && touchedFields.location ? 'true' : 'false'}
             />
           </div>
+          <FormErrorMessage message={touchedFields.location ? errors.location : undefined} />
         </div>
 
         {/* Job Type & Remote Options - Two Column Layout */}
@@ -237,35 +302,49 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
             Salary Range
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <DollarSign className="h-5 w-5 text-gray-400" />
+            <div>
+              <div className="relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <DollarSign className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="salaryMin"
+                  name="salaryMin"
+                  value={formData.salaryMin}
+                  onChange={handleInputChange}
+                  onBlur={() => handleBlur('salaryMin')}
+                  className={cn(
+                    "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                    errors.salaryMin && touchedFields.salaryMin ? "border-red-500" : "border-gray-300"
+                  )}
+                  placeholder="Minimum salary"
+                  aria-invalid={errors.salaryMin && touchedFields.salaryMin ? 'true' : 'false'}
+                />
               </div>
-              <input
-                type="number"
-                id="salaryMin"
-                name="salaryMin"
-                min="0"
-                value={formData.salaryMin}
-                onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                placeholder="Minimum salary"
-              />
+              <FormErrorMessage message={touchedFields.salaryMin ? errors.salaryMin : undefined} />
             </div>
-            <div className="relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <DollarSign className="h-5 w-5 text-gray-400" />
+            <div>
+              <div className="relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <DollarSign className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="salaryMax"
+                  name="salaryMax"
+                  value={formData.salaryMax}
+                  onChange={handleInputChange}
+                  onBlur={() => handleBlur('salaryMax')}
+                  className={cn(
+                    "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                    errors.salaryMax && touchedFields.salaryMax ? "border-red-500" : "border-gray-300"
+                  )}
+                  placeholder="Maximum salary"
+                  aria-invalid={errors.salaryMax && touchedFields.salaryMax ? 'true' : 'false'}
+                />
               </div>
-              <input
-                type="number"
-                id="salaryMax"
-                name="salaryMax"
-                min="0"
-                value={formData.salaryMax}
-                onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                placeholder="Maximum salary"
-              />
+              <FormErrorMessage message={touchedFields.salaryMax ? errors.salaryMax : undefined} />
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-1">
@@ -285,14 +364,19 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
             <textarea
               id="description"
               name="description"
-              required
               value={formData.description}
               onChange={handleInputChange}
+              onBlur={() => handleBlur('description')}
               rows={6}
-              className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              className={cn(
+                "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                errors.description && touchedFields.description ? "border-red-500" : "border-gray-300"
+              )}
               placeholder="Describe the role, responsibilities, and qualifications..."
+              aria-invalid={errors.description && touchedFields.description ? 'true' : 'false'}
             />
           </div>
+          <FormErrorMessage message={touchedFields.description ? errors.description : undefined} />
         </div>
 
         {/* Required Skills */}
@@ -316,8 +400,12 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
                     addSkill();
                   }
                 }}
-                className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                className={cn(
+                  "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                  errors.skills && touchedFields.skills ? "border-red-500" : "border-gray-300"
+                )}
                 placeholder="e.g. Project Management"
+                aria-invalid={errors.skills && touchedFields.skills ? 'true' : 'false'}
               />
             </div>
             <button
@@ -376,8 +464,12 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
                     addMosCode();
                   }
                 }}
-                className="block w-full pl-10 pr-3 py-2 sm:text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                className={cn(
+                  "block w-full pl-10 pr-3 py-2 sm:text-sm border rounded-md focus:ring-primary focus:border-primary",
+                  errors.mosCodes && touchedFields.mosCodes ? "border-red-500" : "border-gray-300"
+                )}
                 placeholder="e.g. 00005 or 00339"
+                aria-invalid={errors.mosCodes && touchedFields.mosCodes ? 'true' : 'false'}
               />
             </div>
             <button
@@ -388,6 +480,7 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
               Add
             </button>
           </div>
+          <FormErrorMessage message={touchedFields.mosCodes ? errors.mosCodes : undefined} />
           
           {/* Common MOS code suggestions */}
           <div className="mt-2">
@@ -435,10 +528,21 @@ const PostJobForm: React.FC<PostJobFormProps> = ({ className }) => {
         <div className="pt-4">
           <button
             type="submit"
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200"
+            disabled={formSubmitted && !isValid}
+            className={cn(
+              "w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors duration-200",
+              formSubmitted && !isValid 
+                ? "bg-gray-400 cursor-not-allowed" 
+                : "bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            )}
           >
             Post Job
           </button>
+          {formSubmitted && !isValid && (
+            <p className="mt-2 text-center text-sm text-destructive">
+              Please fix the errors above before submitting.
+            </p>
+          )}
         </div>
       </form>
     </div>
