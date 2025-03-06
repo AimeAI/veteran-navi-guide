@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -19,6 +18,10 @@ interface JobListProps {
   onPageChange: (page: number) => void;
   country?: "us" | "canada";
   onRefresh?: () => Promise<void>;
+}
+
+interface JobWithScore extends Job {
+  matchScore?: number;
 }
 
 const JobList: React.FC<JobListProps> = ({
@@ -138,20 +141,23 @@ const JobList: React.FC<JobListProps> = ({
       ) : jobs.length > 0 ? (
         <>
           <div className="space-y-4">
-            {jobs.map(job => (
-              <JobListing
-                key={job.id}
-                jobId={job.id}
-                title={job.title}
-                company={job.company}
-                location={job.location}
-                description={job.description}
-                source={job.source}
-                url={job.url}
-                date={job.date}
-                {...(typeof job.matchScore === 'number' ? { matchScore: job.matchScore } : {})}
-              />
-            ))}
+            {jobs.map(job => {
+              const jobWithScore = job as JobWithScore;
+              return (
+                <JobListing
+                  key={job.id}
+                  jobId={job.id}
+                  title={job.title}
+                  company={job.company}
+                  location={job.location}
+                  description={job.description}
+                  source={job.source}
+                  url={job.url}
+                  date={job.date}
+                  matchScore={jobWithScore.matchScore}
+                />
+              );
+            })}
           </div>
           
           {totalPages > 1 && (
