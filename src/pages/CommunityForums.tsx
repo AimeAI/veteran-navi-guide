@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -374,9 +375,9 @@ const CommunityForums = () => {
                       <div className="p-5">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3">
                           <h3 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
-                            <a href={`/topic/${topic.id}`} className="focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-sm">
+                            <Link to={`/topic/${topic.id}`} className="focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-sm">
                               {topic.title}
-                            </a>
+                            </Link>
                           </h3>
                           <Badge variant="outline" className="mt-2 sm:mt-0 w-fit">
                             {categories.find(c => c.value === topic.category)?.name || topic.category}

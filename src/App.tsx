@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -22,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/sonner";
 import { AppProvider } from "./context/AppContext";
 import "./App.css";
+import TopicDetail from "./pages/TopicDetail";
 
 function App() {
   return (
@@ -45,6 +45,7 @@ function App() {
             <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
             <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
             <Route path="/resources/forums" element={<CommunityForums />} />
+            <Route path="/topic/:topicId" element={<TopicDetail />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
