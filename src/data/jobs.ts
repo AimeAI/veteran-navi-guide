@@ -1,6 +1,6 @@
-
 import { mockJobs } from "./mockJobs";
 import { searchLightcastJobs } from "@/utils/lightcastApi";
+import { Job } from "@/context/JobContext";
 
 // Define the search parameters interface
 interface SearchParams {
@@ -22,7 +22,7 @@ interface SearchParams {
 }
 
 // Search function to filter jobs based on criteria
-export const searchJobs = async (params: SearchParams) => {
+export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
   // Check if we should use Lightcast API
   if (params.useLightcastApi) {
     try {
@@ -52,7 +52,7 @@ export const searchJobs = async (params: SearchParams) => {
 };
 
 // Helper function to filter mock jobs based on search params
-const filterMockJobs = (params: SearchParams) => {
+const filterMockJobs = (params: SearchParams): Job[] => {
   let filteredJobs = [...mockJobs];
 
   // Filter by keywords

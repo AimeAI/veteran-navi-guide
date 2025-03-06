@@ -11,7 +11,7 @@ export interface JobSearchResults {
   totalPages: number;
   totalJobs: number;
   setPage: (page: number) => void;
-  refreshJobs: () => void;
+  refreshJobs: () => Promise<void>;
 }
 
 export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearchResults => {

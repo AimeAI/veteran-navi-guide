@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { useJobAlerts } from "@/context/JobAlertContext";
 import { searchJobs } from "@/data/jobs";
+import { Job } from "@/context/JobContext";
 
 export interface JobAlertFormProps {
   onSuccess?: () => void;
@@ -27,7 +29,7 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
   const [successMessage, setSuccessMessage] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
-  const [jobMatchPreview, setJobMatchPreview] = useState([]);
+  const [jobMatchPreview, setJobMatchPreview] = useState<Job[]>([]);
   
   const [formData, setFormData] = useState({
     title: "",
@@ -114,7 +116,7 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
       
       console.log("Creating job alert:", formData);
       
-      const matchingJobs = searchJobs({
+      const matchingJobs = await searchJobs({
         keywords: formData.keywords,
         locations: formData.locations,
         jobType: formData.jobType,
