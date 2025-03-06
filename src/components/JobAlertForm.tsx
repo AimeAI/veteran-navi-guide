@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +13,27 @@ import { searchJobs } from "@/data/jobs";
 
 interface JobAlertFormProps {
   onSuccess?: () => void;
+  initialData?: {
+    keywords: string;
+    location: string;
+    category: string;
+  };
 }
 
-const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
+// Define job interface
+interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  requirements: string[];
+  salary: string;
+  jobType: string;
+  datePosted: string;
+}
+
+const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) => {
   const { addJobAlert } = useJobAlerts();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,14 +41,14 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
-  const [jobMatchPreview, setJobMatchPreview] = useState([]);
+  const [jobMatchPreview, setJobMatchPreview] = useState<Job[]>([]);
   
   const [formData, setFormData] = useState({
     title: "",
-    keywords: [],
-    locations: [],
+    keywords: [] as string[],
+    locations: [] as string[],
     jobType: "",
-    frequency: "daily"
+    frequency: "daily" as "daily" | "weekly" | "monthly"
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -218,7 +237,8 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
 
       <div>
         <Label htmlFor="jobType">Job Type</Label>
-        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, jobType: value }))}>
+        <Select 
+          onValueChange={(value: string) => setFormData(prev => ({ ...prev, jobType: value }))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a job type" defaultValue={formData.jobType} />
           </SelectTrigger>
@@ -236,7 +256,8 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
 
       <div>
         <Label htmlFor="frequency">Frequency</Label>
-        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, frequency: value }))}>
+        <Select 
+          onValueChange={(value: "daily" | "weekly" | "monthly") => setFormData(prev => ({ ...prev, frequency: value }))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select frequency" defaultValue={formData.frequency} />
           </SelectTrigger>
