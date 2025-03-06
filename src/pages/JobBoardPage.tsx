@@ -1,14 +1,18 @@
 
-import React, { useState } from 'react';
-import { Search, MapPin, Filter, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, MapPin, Filter, ChevronDown, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import JobList from '@/components/JobList';
 import { useJobSearch, JobSearchParams } from '@/hooks/useJobSearch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { JobCache } from '@/utils/jobCache';
 
 const JobBoardPage: React.FC = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchParams, setSearchParams] = useState<JobSearchParams>({
     keywords: '',
     location: '',
@@ -29,7 +33,9 @@ const JobBoardPage: React.FC = () => {
     currentPage, 
     totalPages, 
     totalJobs, 
-    setPage 
+    setPage,
+    refreshJobs,
+    usingFallbackData
   } = useJobSearch(searchParams);
 
   const toggleFilter = () => {
@@ -53,19 +59,57 @@ const JobBoardPage: React.FC = () => {
       ...localFilters,
       page: 1, // Reset to first page on new search
     });
-    toast.success("Search results updated");
+    toast.info("Searching for jobs...");
   };
+
+  const handleRefreshJobs = async () => {
+    setIsRefreshing(true);
+    try {
+      JobCache.clearCache();
+      toast.info("Cleared job search cache");
+      await refreshJobs();
+      toast.success("Job results refreshed");
+    } catch (error) {
+      console.error('Error refreshing jobs:', error);
+      toast.error("Failed to refresh job results");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+  
+  // Search for initial results on component mount
+  useEffect(() => {
+    // Only run once on initial mount
+    const hasInitialData = sessionStorage.getItem('hasInitialJobData');
+    if (!hasInitialData) {
+      refreshJobs().then(() => {
+        sessionStorage.setItem('hasInitialJobData', 'true');
+      });
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-3xl font-bold">Job Board</CardTitle>
-              <CardDescription>
-                Browse job listings from Job Bank Canada
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-3xl font-bold">Job Board</CardTitle>
+                <CardDescription>
+                  Browse job listings from Job Bank Canada
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefreshJobs}
+                disabled={isRefreshing || isLoading}
+                className="flex items-center gap-1"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? "Refreshing..." : "Refresh Jobs"}
+              </Button>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSearch} className="space-y-4">
@@ -93,7 +137,7 @@ const JobBoardPage: React.FC = () => {
                       name="location"
                       value={localFilters.location}
                       onChange={handleInputChange}
-                      placeholder="City, state, or zip code"
+                      placeholder="City, province, or postal code"
                       className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                     />
                   </div>
@@ -105,11 +149,11 @@ const JobBoardPage: React.FC = () => {
                       onChange={handleRadiusChange}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                     >
-                      <option value="5">Within 5 miles</option>
-                      <option value="10">Within 10 miles</option>
-                      <option value="25">Within 25 miles</option>
-                      <option value="50">Within 50 miles</option>
-                      <option value="100">Within 100 miles</option>
+                      <option value="5">Within 5 km</option>
+                      <option value="10">Within 10 km</option>
+                      <option value="25">Within 25 km</option>
+                      <option value="50">Within 50 km</option>
+                      <option value="100">Within 100 km</option>
                     </select>
                   </div>
                 </div>
@@ -149,6 +193,24 @@ const JobBoardPage: React.FC = () => {
             </CardContent>
           </Card>
           
+          {usingFallbackData && (
+            <Alert className="mb-4">
+              <AlertTitle>Using Sample Data</AlertTitle>
+              <AlertDescription>
+                We couldn't connect to Job Bank Canada API. Showing sample job listings instead.
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefreshJobs}
+                  disabled={isRefreshing}
+                  className="mt-2"
+                >
+                  Try Again
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Card>
             <CardContent className="pt-6">
               <JobList
@@ -160,6 +222,7 @@ const JobBoardPage: React.FC = () => {
                 totalJobs={totalJobs}
                 onPageChange={setPage}
                 country="canada"
+                usingFallbackData={usingFallbackData}
               />
             </CardContent>
           </Card>

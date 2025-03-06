@@ -193,6 +193,9 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
         return;
       }
       
+      // Clear any previous errors
+      setError(null);
+      
       // Try Job Bank API for Canadian jobs
       if (params.country === "canada" || !params.country) {
         try {
@@ -207,7 +210,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
           const jobBankResults = await searchJobBankJobs(jobBankParams);
           
           // If we got results, use them
-          if (jobBankResults.jobs.length > 0) {
+          if (jobBankResults.jobs && jobBankResults.jobs.length > 0) {
             console.log(`Found ${jobBankResults.jobs.length} jobs from Job Bank`);
             setJobs(jobBankResults.jobs);
             setTotalPages(jobBankResults.totalPages);
@@ -225,13 +228,15 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
             setIsLoading(false);
             return;
           } else {
-            throw new Error("No jobs found from Job Bank API");
+            console.log("No jobs found from Job Bank API, using fallback data");
+            await fetchFallbackJobs();
+            toast.info("No jobs found with current criteria. Showing sample job data instead.");
           }
         } catch (jobBankError) {
           console.error("Job Bank API failed:", jobBankError);
           // Fall back to mock data
           await fetchFallbackJobs();
-          toast.info("Unable to find jobs with current criteria. Showing sample job data instead.");
+          toast.info("Unable to connect to Job Bank API. Showing sample job data instead.");
         }
       } else {
         // For non-Canadian jobs, use mock data
@@ -268,6 +273,11 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
   };
 
   const refreshJobs = async (): Promise<void> => {
+    // Clear the cache for the current search
+    const cacheKey = getCacheKey(currentSearchParams, currentPage);
+    JobCache.clearSearchResult(cacheKey);
+    
+    // Re-fetch jobs
     return fetchJobs();
   };
 

@@ -2,18 +2,13 @@
 // Follow the Supabase Edge Function deployment instructions:
 // https://supabase.com/docs/guides/functions
 
-import { serve } from 'https://deno.land/std@0.131.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function searchJobBankCanada(params: {
   keywords?: string;
@@ -29,7 +24,7 @@ async function searchJobBankCanada(params: {
     if (params.keywords) queryParams.append('searchstring', params.keywords);
     if (params.location) queryParams.append('location', params.location);
     if (params.distance) queryParams.append('distance', params.distance.toString());
-    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.page && params.page > 1) queryParams.append('page', params.page.toString());
     
     // Add fixed sort parameter
     queryParams.append('sort', 'D');
@@ -41,8 +36,9 @@ async function searchJobBankCanada(params: {
     
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; JobSearchBot/1.0)',
-        'Accept': 'text/html',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
       },
     });
     
@@ -55,20 +51,23 @@ async function searchJobBankCanada(params: {
     
     // Extract job listings
     const jobs = [];
-    const jobResults = $('#result').find('.results-jobs article');
+    const jobResults = $('.results-jobs article');
+    
+    console.log(`Found ${jobResults.length} job results`);
     
     jobResults.each((i, elem) => {
-      const title = $(elem).find('.noctitle').text().trim();
-      const company = $(elem).find('.business').text().trim();
-      const location = $(elem).find('.location').text().trim();
-      const datePosted = $(elem).find('.date').text().trim();
-      const salary = $(elem).find('.salary').text().trim();
-      const jobIdElement = $(elem).find('a[data-did]');
+      const jobElement = $(elem);
+      const title = jobElement.find('.noctitle').text().trim();
+      const company = jobElement.find('.business').text().trim();
+      const location = jobElement.find('.location').text().trim();
+      const datePosted = jobElement.find('.date').text().trim();
+      const salary = jobElement.find('.salary').text().trim();
+      const jobIdElement = jobElement.find('a[data-did]');
       const jobId = jobIdElement.attr('data-did') || `jobbank-${Date.now()}-${i}`;
       const jobUrl = jobIdElement.attr('href') 
         ? `https://www.jobbank.gc.ca${jobIdElement.attr('href')}` 
         : undefined;
-      const description = $(elem).find('.summary').text().trim();
+      const description = jobElement.find('.summary').text().trim();
       
       jobs.push({
         id: jobId,
@@ -92,10 +91,16 @@ async function searchJobBankCanada(params: {
     // Extract pagination info
     const totalJobsText = $('.results-jobs header').text();
     const totalJobsMatch = totalJobsText.match(/(\d+)\s+jobs/i);
-    const totalJobs = totalJobsMatch ? parseInt(totalJobsMatch[1], 10) : jobs.length;
+    let totalJobs = totalJobsMatch ? parseInt(totalJobsMatch[1], 10) : jobs.length;
+    
+    if (isNaN(totalJobs) || totalJobs === 0) {
+      totalJobs = jobs.length;
+    }
     
     const currentPage = params.page || 1;
-    const totalPages = Math.ceil(totalJobs / 25); // Job Bank shows 25 jobs per page
+    const totalPages = Math.max(1, Math.ceil(totalJobs / 25)); // Job Bank shows 25 jobs per page
+    
+    console.log(`Returning ${jobs.length} jobs, total: ${totalJobs}, pages: ${totalPages}`);
     
     return {
       jobs,
@@ -111,6 +116,7 @@ async function searchJobBankCanada(params: {
 
 // Cache the results to reduce API calls and improve performance
 const resultsCache = new Map();
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 serve(async (req) => {
   // Handle CORS preflight request
@@ -123,7 +129,6 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const source = url.searchParams.get('source') || 'jobbank';
     
     // Parse query parameters
     const keywords = url.searchParams.get('keywords') || '';
@@ -132,37 +137,37 @@ serve(async (req) => {
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     
     // Create a cache key
-    const cacheKey = `${source}:${keywords}:${location}:${distance}:${page}`;
+    const cacheKey = `${keywords}:${location}:${distance}:${page}`;
     
-    // Check if we have cached results
-    if (resultsCache.has(cacheKey)) {
+    // Check if we have cached results that haven't expired
+    const cachedResult = resultsCache.get(cacheKey);
+    if (cachedResult && (Date.now() - cachedResult.timestamp < CACHE_EXPIRY)) {
       console.log('Returning cached results for:', cacheKey);
-      return new Response(JSON.stringify(resultsCache.get(cacheKey)), {
+      return new Response(JSON.stringify(cachedResult.data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
     
-    let results;
+    // If not in cache or expired, fetch new data
+    const results = await searchJobBankCanada({
+      keywords,
+      location,
+      distance,
+      page,
+    });
     
-    if (source === 'jobbank') {
-      results = await searchJobBankCanada({
-        keywords,
-        location,
-        distance,
-        page,
-      });
-    } else {
-      throw new Error(`Unsupported source: ${source}`);
-    }
-    
-    // Cache the results (with a reasonable limit)
+    // Cache the results with timestamp
     if (resultsCache.size > 100) {
       // Clear oldest entries if cache gets too large
       const oldestKey = resultsCache.keys().next().value;
       resultsCache.delete(oldestKey);
     }
-    resultsCache.set(cacheKey, results);
+    
+    resultsCache.set(cacheKey, {
+      data: results,
+      timestamp: Date.now()
+    });
     
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

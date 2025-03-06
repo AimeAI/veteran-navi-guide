@@ -54,7 +54,6 @@ export const searchJobBankJobs = async (params: {
     if (params.location) queryParams.append('location', params.location);
     if (params.distance) queryParams.append('distance', params.distance.toString());
     if (params.page) queryParams.append('page', params.page.toString());
-    queryParams.append('source', 'jobbank');
     
     // Use our Supabase function instead of direct API calls
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -69,12 +68,17 @@ export const searchJobBankJobs = async (params: {
     }
     
     const data = await response.json();
+    console.log(`Received ${data.jobs?.length || 0} jobs from Job Bank API proxy`);
+    
+    if (!data.jobs || data.jobs.length === 0) {
+      console.warn('No jobs found in API response');
+    }
     
     return {
-      jobs: data.jobs,
-      totalJobs: data.totalJobs,
-      currentPage: data.currentPage,
-      totalPages: data.totalPages,
+      jobs: data.jobs || [],
+      totalJobs: data.totalJobs || 0,
+      currentPage: data.currentPage || 1,
+      totalPages: data.totalPages || 1,
     };
   } catch (error) {
     console.error('Error searching Job Bank via proxy:', error);
