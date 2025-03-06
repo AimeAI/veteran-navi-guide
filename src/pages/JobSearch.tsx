@@ -54,7 +54,8 @@ const JobSearch = () => {
     totalPages, 
     totalJobs, 
     setPage,
-    refreshJobs
+    refreshJobs,
+    usingFallbackData
   } = useLightcastJobs(getLightcastParams());
 
   const jobCategories = [
@@ -169,7 +170,12 @@ const JobSearch = () => {
     console.log('Search filters:', filters);
     try {
       await refreshJobs();
-      toast.success("Search results updated");
+      
+      if (usingFallbackData) {
+        toast.info("Using sample job data due to API connectivity issues");
+      } else {
+        toast.success("Search results updated");
+      }
     } catch (error) {
       console.error("Search error:", error);
       toast.error("Error updating search results");
@@ -416,6 +422,7 @@ const JobSearch = () => {
               totalJobs={totalJobs}
               onPageChange={setPage}
               country="canada"
+              usingFallbackData={usingFallbackData}
             />
           </div>
         </div>

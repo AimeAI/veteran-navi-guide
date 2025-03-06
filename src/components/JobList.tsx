@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
-import { Briefcase, AlertCircle, Globe } from 'lucide-react';
+import { Briefcase, AlertCircle, Globe, Database } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +15,8 @@ interface JobListProps {
   totalPages: number;
   totalJobs: number;
   onPageChange: (page: number) => void;
-  country?: "us" | "canada"; // Add country parameter
+  country?: "us" | "canada";
+  usingFallbackData?: boolean;
 }
 
 const JobList: React.FC<JobListProps> = ({
@@ -25,7 +27,8 @@ const JobList: React.FC<JobListProps> = ({
   totalPages,
   totalJobs,
   onPageChange,
-  country = "canada", // Default to Canada instead of US
+  country = "canada",
+  usingFallbackData = false,
 }) => {
   // Calculate page range to display
   const getPageRange = () => {
@@ -71,9 +74,25 @@ const JobList: React.FC<JobListProps> = ({
             <Globe className="h-3 w-3" />
             {countryName}
           </Badge>
+          {usingFallbackData && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Database className="h-3 w-3" />
+              Sample Data
+            </Badge>
+          )}
           <span className="text-sm text-gray-500">{totalJobs} jobs found</span>
         </div>
       </div>
+      
+      {usingFallbackData && (
+        <Alert className="mb-4">
+          <Database className="h-4 w-4 mr-2" />
+          <AlertTitle>Using sample job data</AlertTitle>
+          <AlertDescription>
+            We're currently showing example job listings due to API connectivity issues.
+          </AlertDescription>
+        </Alert>
+      )}
       
       {isLoading ? (
         <div className="py-12 space-y-4">

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { searchLightcastJobs, LightcastSearchParams } from '@/utils/lightcastApi';
 import { toast } from 'sonner';
+import { searchJobs as searchMockJobs } from '@/data/jobs';
 
 export type { LightcastSearchParams } from '@/utils/lightcastApi';
 
@@ -15,6 +16,7 @@ export interface JobSearchResults {
   totalJobs: number;
   setPage: (page: number) => void;
   refreshJobs: () => Promise<void>;
+  usingFallbackData: boolean;
 }
 
 export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearchResults => {
@@ -24,12 +26,11 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
   const [currentPage, setCurrentPage] = useState(searchParams.page || 1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalJobs, setTotalJobs] = useState(0);
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
   const [currentSearchParams, setCurrentSearchParams] = useState<LightcastSearchParams>({
     ...searchParams,
     country: searchParams.country || "canada" // Default to Canada
   });
-  // Start directly with fallback data to avoid showing network errors
-  const [useFallbackData, setUseFallbackData] = useState(true);
 
   // Update searchParams when external params change
   useEffect(() => {
@@ -43,7 +44,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       experience_level: searchParams.experience_level,
       education_level: searchParams.education_level,
       remote_type: searchParams.remote_type,
-      country: searchParams.country, // Track changes to country
+      country: searchParams.country,
     }));
   }, [
     searchParams.keywords, 
@@ -54,8 +55,39 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     searchParams.experience_level,
     searchParams.education_level,
     searchParams.remote_type,
-    searchParams.country // Track changes to country
+    searchParams.country
   ]);
+
+  const fetchFallbackJobs = useCallback(async () => {
+    try {
+      console.log("Using fallback mock data");
+      
+      const fallbackJobs = await searchMockJobs({
+        keywords: currentSearchParams.keywords ? [currentSearchParams.keywords] : [],
+        locations: currentSearchParams.location ? [currentSearchParams.location] : [],
+        radius: currentSearchParams.radius,
+        jobType: currentSearchParams.job_type,
+        industry: currentSearchParams.industry,
+        experienceLevel: currentSearchParams.experience_level,
+        educationLevel: currentSearchParams.education_level,
+        remote: currentSearchParams.remote_type === 'Full',
+        country: currentSearchParams.country as "us" | "canada",
+      });
+      
+      setJobs(fallbackJobs);
+      // Set some reasonable defaults for pagination with mock data
+      setTotalPages(1);
+      setTotalJobs(fallbackJobs.length);
+      
+      if (!usingFallbackData) {
+        setUsingFallbackData(true);
+      }
+    } catch (err) {
+      console.error('Error fetching fallback jobs:', err);
+      setJobs([]);
+      setError(new Error('Failed to load jobs. Please try again later.'));
+    }
+  }, [currentSearchParams, usingFallbackData]);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
@@ -69,67 +101,25 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
-      // If we're using fallback data, don't attempt API call
-      if (useFallbackData) {
-        console.log("Using fallback mock data");
-        const { searchJobs } = await import('@/data/jobs');
-        const result = await searchJobs({
-          keywords: params.keywords ? [params.keywords] : [],
-          locations: params.location ? [params.location] : [],
-          radius: params.radius,
-          jobType: params.job_type,
-          industry: params.industry,
-          experienceLevel: params.experience_level,
-          educationLevel: params.education_level,
-          remote: params.remote_type === 'Full',
-          country: params.country,
-        });
-        
-        setJobs(result);
-        // Set some reasonable defaults for pagination with mock data
-        setTotalPages(1);
-        setTotalJobs(result.length);
-        return;
-      }
-      
-      // Only try the API if we're not using fallback data
+      // First try the Lightcast API
       const result = await searchLightcastJobs(params);
       console.log("Received job results:", result);
       
       setJobs(result.jobs);
       setTotalPages(result.totalPages);
       setTotalJobs(result.totalJobs);
+      
+      // If we were using fallback data before but API now works, update state
+      if (usingFallbackData) {
+        setUsingFallbackData(false);
+      }
     } catch (err) {
       console.error('Error fetching jobs:', err);
       const errorObj = err instanceof Error ? err : new Error('Failed to fetch jobs');
       
-      // Don't show network errors to the user, just silently fall back to mock data
+      // For network/CORS errors, fall back to mock data without showing error to user
       if (errorObj.message.includes('NetworkError') || errorObj.message.includes('CORS')) {
-        console.log("Network/CORS error detected, silently switching to fallback data");
-        setUseFallbackData(true);
-        
-        // Fetch fallback data without showing error
-        try {
-          const { searchJobs } = await import('@/data/jobs');
-          const fallbackJobs = await searchJobs({
-            keywords: currentSearchParams.keywords ? [currentSearchParams.keywords] : [],
-            locations: currentSearchParams.location ? [currentSearchParams.location] : [],
-            radius: currentSearchParams.radius,
-            jobType: currentSearchParams.job_type,
-            industry: currentSearchParams.industry,
-            experienceLevel: currentSearchParams.experience_level,
-            educationLevel: currentSearchParams.education_level,
-            remote: currentSearchParams.remote_type === 'Full',
-            country: currentSearchParams.country,
-          });
-          
-          setJobs(fallbackJobs);
-          setTotalPages(1);
-          setTotalJobs(fallbackJobs.length);
-        } catch (fallbackErr) {
-          console.error('Error fetching fallback jobs:', fallbackErr);
-          setJobs([]);
-        }
+        await fetchFallbackJobs();
       } else {
         // For non-network errors, show the error
         setError(errorObj);
@@ -137,7 +127,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, currentSearchParams, useFallbackData]);
+  }, [currentPage, currentSearchParams, fetchFallbackJobs, usingFallbackData]);
 
   useEffect(() => {
     fetchJobs();
@@ -160,5 +150,6 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     totalJobs,
     setPage,
     refreshJobs,
+    usingFallbackData,
   };
 };
