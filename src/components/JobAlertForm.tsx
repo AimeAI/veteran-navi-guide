@@ -27,12 +27,12 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
   const [successMessage, setSuccessMessage] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
-  const [jobMatchPreview, setJobMatchPreview] = useState([]);
+  const [jobMatchPreview, setJobMatchPreview] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     title: "",
-    keywords: [],
-    locations: [],
+    keywords: [] as string[],
+    locations: [] as string[],
     jobType: "",
     frequency: "daily" as "daily" | "weekly" | "monthly"
   });
