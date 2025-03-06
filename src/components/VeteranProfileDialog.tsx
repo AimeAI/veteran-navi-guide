@@ -58,8 +58,8 @@ const VeteranProfileDialog: React.FC<VeteranProfileProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh] overflow-hidden">
-        <DialogHeader className="sticky top-0 z-20 bg-background pb-4 border-b border-gray-100">
+      <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh] overflow-hidden z-[100]">
+        <DialogHeader className="sticky top-0 z-[60] bg-background pb-4 border-b border-gray-100">
           <DialogTitle className="text-2xl font-bold flex items-center justify-between">
             {veteran.name}
             {veteran.available ? (

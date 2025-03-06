@@ -43,50 +43,52 @@ function App() {
       <LanguageProvider>
         <MessageProvider>
           <Router>
-            <Navbar />
-            <main className="min-h-screen pt-16">
-              <div className="container mx-auto px-4 pt-4">
-                <EmailVerificationBanner />
-              </div>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/job-search" element={<JobSearch />} />
-                <Route path="/saved" element={<SavedJobs />} />
-                <Route path="/job/:id" element={<JobDetailsPage />} />
-                <Route path="/profile" element={<UserProfile />} />
-                <Route path="/history" element={<ApplicationsPage />} />
-                <Route path="/recommendations" element={<RecommendedJobs />} />
-                <Route path="/messages" element={<MessagesPage />} />
-                <Route path="/resources/career-counseling" element={<CareerCounseling />} />
-                <Route path="/resources/resume-assistance" element={<ResumeAssistance />} />
-                <Route path="/resources/interview-prep" element={<InterviewPreparation />} />
-                <Route path="/resources/military-transition" element={<MilitaryTransitionResources />} />
-                <Route path="/events" element={<JobFairsEventsPage />} />
-                <Route path="/employer/post-job" element={<PostJobPage />} />
-                <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
-                <Route path="/employer/profile" element={<EmployerProfilePage />} />
-                <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
-                <Route path="/resources/forums" element={<CommunityForums />} />
-                <Route path="/topic/:topicId" element={<TopicDetail />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/verify-email" element={<VerifyEmailPage />} />
-                <Route path="/dashboard" element={<VeteranDashboardPage />} />
-                <Route path="/admin" element={<AdminDashboardPage />} />
-                <Route path="/employer-profile" element={
-                  <RequireAuth>
-                    <EmployerProfilePage />
-                  </RequireAuth>
-                } />
-                <Route path="/ab-testing" element={<AbTestingPage />} />
-                <Route path="/profile/settings" element={<UserProfile />} />
-                <Route path="/profile/resume" element={<UserProfile />} />
-                <Route path="/job-alerts" element={<UserProfile />} />
-                <Route path="/recommended" element={<RecommendedJobs />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Toaster position="top-right" />
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-grow pt-16">
+                <div className="container mx-auto px-4 pt-4">
+                  <EmailVerificationBanner />
+                </div>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/job-search" element={<JobSearch />} />
+                  <Route path="/saved" element={<SavedJobs />} />
+                  <Route path="/job/:id" element={<JobDetailsPage />} />
+                  <Route path="/profile" element={<UserProfile />} />
+                  <Route path="/history" element={<ApplicationsPage />} />
+                  <Route path="/recommendations" element={<RecommendedJobs />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+                  <Route path="/resources/career-counseling" element={<CareerCounseling />} />
+                  <Route path="/resources/resume-assistance" element={<ResumeAssistance />} />
+                  <Route path="/resources/interview-prep" element={<InterviewPreparation />} />
+                  <Route path="/resources/military-transition" element={<MilitaryTransitionResources />} />
+                  <Route path="/events" element={<JobFairsEventsPage />} />
+                  <Route path="/employer/post-job" element={<PostJobPage />} />
+                  <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
+                  <Route path="/employer/profile" element={<EmployerProfilePage />} />
+                  <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
+                  <Route path="/resources/forums" element={<CommunityForums />} />
+                  <Route path="/topic/:topicId" element={<TopicDetail />} />
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/verify-email" element={<VerifyEmailPage />} />
+                  <Route path="/dashboard" element={<VeteranDashboardPage />} />
+                  <Route path="/admin" element={<AdminDashboardPage />} />
+                  <Route path="/employer-profile" element={
+                    <RequireAuth>
+                      <EmployerProfilePage />
+                    </RequireAuth>
+                  } />
+                  <Route path="/ab-testing" element={<AbTestingPage />} />
+                  <Route path="/profile/settings" element={<UserProfile />} />
+                  <Route path="/profile/resume" element={<UserProfile />} />
+                  <Route path="/job-alerts" element={<UserProfile />} />
+                  <Route path="/recommended" element={<RecommendedJobs />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Toaster position="top-right" />
+            </div>
           </Router>
         </MessageProvider>
       </LanguageProvider>
