@@ -1,11 +1,14 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import FormErrorMessage from "@/components/ui/form-error-message";
+import { Search, X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { isEmptyOrWhitespace } from "@/utils/validation";
 
 // Mock forum topics data
 const forumTopics = [
@@ -16,7 +19,8 @@ const forumTopics = [
     lastPostDate: "2023-06-15T10:30:00",
     replies: 24,
     views: 342,
-    category: "career-transition"
+    category: "career-transition",
+    content: "I'm looking for advice on how to transition from a military career to the tech industry. Any tips?"
   },
   {
     id: 2,
@@ -25,7 +29,8 @@ const forumTopics = [
     lastPostDate: "2023-06-12T14:20:00",
     replies: 18,
     views: 278,
-    category: "resume-help"
+    category: "resume-help",
+    content: "I'm struggling with translating my military experience to my resume. Any advice?"
   },
   {
     id: 3,
@@ -79,9 +84,21 @@ const categories = [
 const CommunityForums = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newTopic, setNewTopic] = useState({
+    title: "",
+    content: "",
+    category: "career-transition"
+  });
+  const [topics, setTopics] = useState(forumTopics);
+  const [errors, setErrors] = useState({
+    title: "",
+    content: ""
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter topics based on active category and search query
-  const filteredTopics = forumTopics.filter(topic => {
+  const filteredTopics = topics.filter(topic => {
     const matchesCategory = activeCategory === "all" || topic.category === activeCategory;
     const matchesSearch = topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           topic.author.toLowerCase().includes(searchQuery.toLowerCase());
@@ -97,10 +114,110 @@ const CommunityForums = () => {
     });
   };
 
+  const validateForm = () => {
+    const newErrors = {
+      title: "",
+      content: ""
+    };
+    
+    if (isEmptyOrWhitespace(newTopic.title)) {
+      newErrors.title = "Topic title is required";
+    } else if (newTopic.title.length < 5) {
+      newErrors.title = "Title must be at least 5 characters";
+    }
+    
+    if (isEmptyOrWhitespace(newTopic.content)) {
+      newErrors.content = "Content is required";
+    } else if (newTopic.content.length < 10) {
+      newErrors.content = "Content must be at least 10 characters";
+    }
+    
+    setErrors(newErrors);
+    return !newErrors.title && !newErrors.content;
+  };
+
   const handleCreateTopic = () => {
-    toast.info("Create New Topic feature coming soon", {
-      description: "This functionality will be implemented in a future update."
+    setShowCreateForm(true);
+  };
+
+  const handleCancelCreate = () => {
+    setShowCreateForm(false);
+    setNewTopic({
+      title: "",
+      content: "",
+      category: "career-transition"
     });
+    setErrors({
+      title: "",
+      content: ""
+    });
+  };
+
+  const handleSubmitTopic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // This is where Supabase integration would go
+      console.log("New topic data to be sent to Supabase:", newTopic);
+      
+      // Simulate a delay for the API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // For now, we'll just add the topic to our local state
+      const currentDate = new Date().toISOString();
+      const newTopicEntry = {
+        id: topics.length + 1,
+        title: newTopic.title,
+        content: newTopic.content,
+        author: "CurrentUser", // This would be the authenticated user
+        lastPostDate: currentDate,
+        replies: 0,
+        views: 0,
+        category: newTopic.category
+      };
+      
+      setTopics([newTopicEntry, ...topics]);
+      setShowCreateForm(false);
+      setNewTopic({
+        title: "",
+        content: "",
+        category: "career-transition"
+      });
+      
+      toast.success("Topic created successfully", {
+        description: "Your topic has been posted to the forum",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error("Error creating topic:", error);
+      toast.error("Failed to create topic", {
+        description: "Please try again later",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewTopic(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error when user types
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
   };
 
   return (
@@ -112,13 +229,91 @@ const CommunityForums = () => {
             Connect with fellow veterans and share your experiences
           </p>
         </div>
-        <Button 
-          onClick={handleCreateTopic}
-          className="mt-4 md:mt-0"
-        >
-          Create New Topic
-        </Button>
+        {!showCreateForm && (
+          <Button 
+            onClick={handleCreateTopic}
+            className="mt-4 md:mt-0"
+          >
+            Create New Topic
+          </Button>
+        )}
       </header>
+
+      {showCreateForm && (
+        <Card className="mb-8 border-2 border-primary/20">
+          <CardHeader>
+            <h2 className="text-xl font-semibold">Create New Forum Topic</h2>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmitTopic} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="topic-title">Topic Title</Label>
+                <Input
+                  id="topic-title"
+                  name="title"
+                  placeholder="Enter a descriptive title"
+                  value={newTopic.title}
+                  onChange={handleInputChange}
+                  aria-invalid={!!errors.title}
+                  aria-describedby={errors.title ? "title-error" : undefined}
+                />
+                <FormErrorMessage message={errors.title} />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="topic-category">Category</Label>
+                <select
+                  id="topic-category"
+                  name="category"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={newTopic.category}
+                  onChange={handleInputChange}
+                >
+                  {categories.filter(cat => cat.value !== "all").map(category => (
+                    <option key={category.value} value={category.value}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="topic-content">Content</Label>
+                <Textarea
+                  id="topic-content"
+                  name="content"
+                  placeholder="Describe your topic or question in detail"
+                  rows={5}
+                  value={newTopic.content}
+                  onChange={handleInputChange}
+                  aria-invalid={!!errors.content}
+                  aria-describedby={errors.content ? "content-error" : undefined}
+                />
+                <FormErrorMessage message={errors.content} />
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-end space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={handleCancelCreate}
+              type="button"
+              className="flex items-center"
+            >
+              <X className="mr-2 h-4 w-4" /> Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmitTopic}
+              type="submit"
+              disabled={isSubmitting}
+              className="flex items-center"
+            >
+              <Check className="mr-2 h-4 w-4" /> 
+              {isSubmitting ? "Creating..." : "Create Topic"}
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
         {/* Sidebar with categories */}
