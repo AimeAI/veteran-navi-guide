@@ -6,7 +6,11 @@ import {
   Clock, 
   UserRound, 
   XCircle, 
-  User
+  User,
+  BarChart3,
+  Mail,
+  Eye,
+  Building
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +19,8 @@ import { format } from 'date-fns';
 import FilterBar from '@/components/FilterBar';
 import { Application, ApplicationStatus } from '@/types/application';
 import { useToast } from "@/hooks/use-toast";
+import StatsCard from '@/components/StatsCard';
+import { Card, CardContent } from '@/components/ui/card';
 
 const sampleApplications: Application[] = [
   {
@@ -71,6 +77,21 @@ const sampleApplications: Application[] = [
     matchScore: 72
   }
 ];
+
+const employerStats = {
+  activeJobs: 5,
+  totalApplications: 42,
+  newApplications: 8,
+  totalViews: 567,
+  jobViewsTrend: {
+    value: 12.5,
+    isPositive: true
+  },
+  applicationsTrend: {
+    value: 8.3,
+    isPositive: true
+  }
+};
 
 const EmployerDashboard: React.FC = () => {
   const [applications, setApplications] = useState<Application[]>(sampleApplications);
@@ -169,11 +190,102 @@ const EmployerDashboard: React.FC = () => {
     return "";
   };
 
+  const statusCounts = useMemo(() => {
+    return applications.reduce((counts, app) => {
+      counts[app.status] = (counts[app.status] || 0) + 1;
+      return counts;
+    }, {} as Record<ApplicationStatus, number>);
+  }, [applications]);
+
   return (
     <div className="w-full">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Employer Dashboard</h1>
-        <p className="text-gray-600">Manage applicants for your posted jobs</p>
+        <p className="text-gray-600">Manage your job postings and applicants</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatsCard 
+          title="Active Job Postings" 
+          value={employerStats.activeJobs} 
+          icon={Briefcase}
+          description="Currently active positions" 
+        />
+        <StatsCard 
+          title="Total Applications" 
+          value={employerStats.totalApplications} 
+          icon={Mail}
+          description="Across all positions"
+          trend={employerStats.applicationsTrend} 
+        />
+        <StatsCard 
+          title="New Applications" 
+          value={employerStats.newApplications} 
+          icon={Clock}
+          description="In the last 7 days" 
+        />
+        <StatsCard 
+          title="Total Views" 
+          value={employerStats.totalViews} 
+          icon={Eye}
+          description="On all job postings"
+          trend={employerStats.jobViewsTrend} 
+        />
+      </div>
+
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Status Overview</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="mb-2 text-blue-500">
+                <Clock className="h-6 w-6" />
+              </div>
+              <p className="text-xl font-bold">{statusCounts.pending || 0}</p>
+              <p className="text-sm text-gray-500">Pending</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="mb-2 text-yellow-500">
+                <Clock className="h-6 w-6" />
+              </div>
+              <p className="text-xl font-bold">{statusCounts.reviewing || 0}</p>
+              <p className="text-sm text-gray-500">Reviewing</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="mb-2 text-purple-500">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <p className="text-xl font-bold">{statusCounts.interviewing || 0}</p>
+              <p className="text-sm text-gray-500">Interviewing</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="mb-2 text-green-500">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <p className="text-xl font-bold">{statusCounts.hired || 0}</p>
+              <p className="text-sm text-gray-500">Hired</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <div className="mb-2 text-red-500">
+                <XCircle className="h-6 w-6" />
+              </div>
+              <p className="text-xl font-bold">{statusCounts.rejected || 0}</p>
+              <p className="text-sm text-gray-500">Rejected</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Applications</h2>
       </div>
 
       <FilterBar
@@ -186,7 +298,7 @@ const EmployerDashboard: React.FC = () => {
         resetFilters={resetFilters}
       />
 
-      <div className="space-y-4">
+      <div className="space-y-4 mt-6">
         {filteredApplications.length > 0 ? (
           filteredApplications.map((application) => (
             <div
