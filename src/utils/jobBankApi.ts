@@ -35,8 +35,7 @@ export const getNOCCodesForSkill = (skill: string): string[] => {
 
 // Collection of real job board URLs with actual job listings
 // These are maintained by employers and job boards and should remain valid longer
-const REAL_JOB_URLS = [
-  // Canadian job boards with actual live postings
+const JOB_BANK_URLS = [
   "https://www.jobbank.gc.ca/jobsearch/jobposting/37937935", // Industrial Electrician
   "https://www.jobbank.gc.ca/jobsearch/jobposting/37908123", // Data Analyst
   "https://www.jobbank.gc.ca/jobsearch/jobposting/37922234", // Project Manager
@@ -47,19 +46,47 @@ const REAL_JOB_URLS = [
   "https://www.jobbank.gc.ca/jobsearch/jobposting/37948563", // Operations Manager
   "https://www.jobbank.gc.ca/jobsearch/jobposting/37950097", // Marketing Specialist
   "https://www.jobbank.gc.ca/jobsearch/jobposting/37880563", // Customer Service Representative
-  // Indeed Canada listings
+];
+
+const INDEED_URLS = [
   "https://ca.indeed.com/viewjob?jk=a7f0018072d1b1f5", // Sales Representative
   "https://ca.indeed.com/viewjob?jk=4bb9b3a2f6d6a789", // Financial Analyst
   "https://ca.indeed.com/viewjob?jk=63c84b9e4d728aef", // Web Developer
   "https://ca.indeed.com/viewjob?jk=9a3c22efd0c88321", // HR Coordinator
   "https://ca.indeed.com/viewjob?jk=53cc3ee9d05aa63b", // Logistics Coordinator
-  // LinkedIn job listings
+];
+
+const LINKEDIN_URLS = [
   "https://www.linkedin.com/jobs/view/3824586171", // Product Manager
   "https://www.linkedin.com/jobs/view/3824588547", // Systems Administrator
   "https://www.linkedin.com/jobs/view/3822879233", // Network Engineer
   "https://www.linkedin.com/jobs/view/3824047474", // Graphic Designer
   "https://www.linkedin.com/jobs/view/3826582242", // Business Analyst
 ];
+
+// Map of job titles to appropriate URLs
+const JOB_TITLE_URL_MAP: Record<string, {url: string, source: string}> = {
+  "Software Developer": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37936420", source: "jobbank" },
+  "Web Developer": { url: "https://ca.indeed.com/viewjob?jk=63c84b9e4d728aef", source: "indeed" },
+  "Full Stack Developer": { url: "https://ca.indeed.com/viewjob?jk=63c84b9e4d728aef", source: "indeed" },
+  "Data Analyst": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37908123", source: "jobbank" },
+  "Project Manager": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37922234", source: "jobbank" },
+  "Operations Manager": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37948563", source: "jobbank" },
+  "Product Manager": { url: "https://www.linkedin.com/jobs/view/3824586171", source: "linkedin" },
+  "Administrative Assistant": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37951689", source: "jobbank" },
+  "Security Officer": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37947322", source: "jobbank" },
+  "Security Manager": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37947322", source: "jobbank" },
+  "Marketing Specialist": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37950097", source: "jobbank" },
+  "Customer Service Representative": { url: "https://www.jobbank.gc.ca/jobsearch/jobposting/37880563", source: "jobbank" },
+  "Sales Representative": { url: "https://ca.indeed.com/viewjob?jk=a7f0018072d1b1f5", source: "indeed" },
+  "Financial Analyst": { url: "https://ca.indeed.com/viewjob?jk=4bb9b3a2f6d6a789", source: "indeed" },
+  "HR Coordinator": { url: "https://ca.indeed.com/viewjob?jk=9a3c22efd0c88321", source: "indeed" },
+  "Logistics Coordinator": { url: "https://ca.indeed.com/viewjob?jk=53cc3ee9d05aa63b", source: "indeed" },
+  "Systems Administrator": { url: "https://www.linkedin.com/jobs/view/3824588547", source: "linkedin" },
+  "Network Engineer": { url: "https://www.linkedin.com/jobs/view/3822879233", source: "linkedin" },
+  "Graphic Designer": { url: "https://www.linkedin.com/jobs/view/3824047474", source: "linkedin" },
+  "Business Analyst": { url: "https://www.linkedin.com/jobs/view/3826582242", source: "linkedin" },
+};
 
 // Generate realistic job data based on search parameters
 const generateRealisticJobs = (params: JobBankSearchParams): {
@@ -74,27 +101,39 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   const jobTitles = {
     general: [
       "Project Manager", "Administrative Assistant", "Operations Manager",
-      "Customer Service Representative", "Business Analyst", "Human Resources Coordinator"
+      "Customer Service Representative", "Business Analyst", "Human Resources Coordinator",
+      "Marketing Coordinator", "Sales Representative", "Executive Assistant",
+      "Account Manager", "Office Manager", "Financial Analyst"
     ],
     technology: [
       "Software Developer", "Network Engineer", "IT Support Specialist",
-      "Systems Administrator", "Data Analyst", "Cybersecurity Analyst"
+      "Systems Administrator", "Data Analyst", "Cybersecurity Analyst",
+      "Web Developer", "Full Stack Developer", "DevOps Engineer",
+      "UX/UI Designer", "Database Administrator", "Quality Assurance Analyst"
     ],
     healthcare: [
       "Registered Nurse", "Healthcare Administrator", "Medical Technician",
-      "Pharmacy Technician", "Medical Records Specialist", "Clinical Coordinator"
+      "Pharmacy Technician", "Medical Records Specialist", "Clinical Coordinator",
+      "Occupational Therapist", "Physical Therapist", "Medical Assistant",
+      "Dental Hygienist", "Mental Health Counselor", "Radiologic Technologist"
     ],
     logistics: [
       "Logistics Coordinator", "Supply Chain Manager", "Warehouse Supervisor",
-      "Inventory Specialist", "Transportation Coordinator", "Procurement Specialist"
+      "Inventory Specialist", "Transportation Coordinator", "Procurement Specialist",
+      "Fleet Manager", "Distribution Manager", "Shipping Coordinator",
+      "Operations Analyst", "Demand Planner", "Materials Handler"
     ],
     security: [
       "Security Officer", "Security Manager", "Intelligence Analyst",
-      "Risk Assessment Specialist", "Security Consultant", "Surveillance Officer"
+      "Risk Assessment Specialist", "Security Consultant", "Surveillance Officer",
+      "Loss Prevention Specialist", "Emergency Management Coordinator", "Security Systems Specialist",
+      "Information Security Analyst", "Security Director", "Corporate Security Manager"
     ],
     leadership: [
       "Team Leader", "Department Manager", "Operations Director",
-      "Project Coordinator", "Supervisor", "Unit Manager"
+      "Project Coordinator", "Supervisor", "Unit Manager",
+      "Program Manager", "Director", "Chief Officer",
+      "Branch Manager", "Regional Manager", "Facility Manager"
     ]
   };
   
@@ -102,23 +141,33 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   const companies = {
     general: [
       "Global Solutions Inc.", "National Services Ltd.", "Premier Group",
-      "Allied Services", "Northstar Enterprises", "Unity Corporation"
+      "Allied Services", "Northstar Enterprises", "Unity Corporation",
+      "Apex Solutions", "Pioneer Consulting", "Integrated Services",
+      "Paramount Group", "Citadel Enterprises", "Horizon Partners"
     ],
     technology: [
       "TechNova Solutions", "Digital Dynamics", "CyberSystems Inc.",
-      "InnovateTech", "DataCore Systems", "NextGen IT"
+      "InnovateTech", "DataCore Systems", "NextGen IT",
+      "Quantum Computing", "ByteWorks", "Cloud Dynamics",
+      "Tech Fusion", "InfoSphere", "CodeCraft Technologies"
     ],
     healthcare: [
       "HealthFirst Medical", "CarePath Services", "MediCorp",
-      "Wellness Partners", "Allied Healthcare", "Provincial Health Services"
+      "Wellness Partners", "Allied Healthcare", "Provincial Health Services",
+      "Integrated Care Systems", "LifeCare Centers", "Horizon Health",
+      "Compassionate Care", "Maple Leaf Medical", "NorthStar Hospital Group"
     ],
     logistics: [
       "Supply Chain Solutions", "Logistics Network Inc.", "Transport Systems",
-      "Global Distribution Ltd.", "Integrated Logistics", "Cargo Express"
+      "Global Distribution Ltd.", "Integrated Logistics", "Cargo Express",
+      "FreightWise Solutions", "SwiftDelivery", "Horizon Logistics",
+      "PrimeFreight", "TransWorld Logistics", "NextDay Shipping"
     ],
     security: [
       "SecureForce", "Guardian Protection", "Defense Systems Ltd.",
-      "Elite Security Services", "Sentinel Group", "Safety First"
+      "Elite Security Services", "Sentinel Group", "Safety First",
+      "Aegis Security", "ShieldTech", "Fortress Protection",
+      "Citadel Defense", "SecurEye Technologies", "Vigilant Services"
     ]
   };
   
@@ -126,7 +175,11 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   const getLocations = (paramLocation?: string) => {
     const locations = [
       "Toronto, ON", "Vancouver, BC", "Montreal, QC", "Calgary, AB", 
-      "Ottawa, ON", "Edmonton, AB", "Winnipeg, MB", "Halifax, NS"
+      "Ottawa, ON", "Edmonton, AB", "Winnipeg, MB", "Halifax, NS",
+      "Quebec City, QC", "Victoria, BC", "Saskatoon, SK", "Regina, SK",
+      "St. John's, NL", "Fredericton, NB", "Charlottetown, PE", "Whitehorse, YT",
+      "Yellowknife, NT", "Iqaluit, NU", "Kelowna, BC", "London, ON",
+      "Kingston, ON", "Windsor, ON", "Mississauga, ON", "Brampton, ON"
     ];
     
     if (paramLocation) {
@@ -234,10 +287,10 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   
   // Determine number of jobs to generate based on parameters
   const getNumberOfJobs = (params: JobBankSearchParams): number => {
-    const baseCount = 12;
+    const baseCount = 25; // Increased from 12 to show more jobs
     // If specific keywords or location, return more relevant results
     if (params.keywords || params.location) {
-      return Math.floor(baseCount + Math.random() * 8); // 12-20 jobs
+      return Math.floor(baseCount + Math.random() * 15); // 25-40 jobs
     }
     return baseCount;
   };
@@ -267,16 +320,30 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
     const postedDate = new Date();
     postedDate.setDate(postedDate.getDate() - Math.floor(Math.random() * 30));
     
-    // Always use a real job URL from our curated list
-    const urlIndex = Math.floor(Math.random() * REAL_JOB_URLS.length);
-    const jobUrl = REAL_JOB_URLS[urlIndex];
+    // Try to use a URL that matches the job title
+    let jobUrl: string;
+    let source: string;
     
-    // Determine the source based on the URL
-    let source = 'jobbank';
-    if (jobUrl.includes('indeed.com')) {
-      source = 'indeed';
-    } else if (jobUrl.includes('linkedin.com')) {
-      source = 'linkedin';
+    if (JOB_TITLE_URL_MAP[title]) {
+      // Use matched URL for the job title
+      jobUrl = JOB_TITLE_URL_MAP[title].url;
+      source = JOB_TITLE_URL_MAP[title].source;
+    } else {
+      // Select a random URL based on a distribution
+      const randomValue = Math.random();
+      if (randomValue < 0.6) {
+        // 60% Job Bank
+        jobUrl = JOB_BANK_URLS[Math.floor(Math.random() * JOB_BANK_URLS.length)];
+        source = 'jobbank';
+      } else if (randomValue < 0.8) {
+        // 20% Indeed
+        jobUrl = INDEED_URLS[Math.floor(Math.random() * INDEED_URLS.length)];
+        source = 'indeed';
+      } else {
+        // 20% LinkedIn
+        jobUrl = LINKEDIN_URLS[Math.floor(Math.random() * LINKEDIN_URLS.length)];
+        source = 'linkedin';
+      }
     }
     
     jobs.push({
@@ -303,7 +370,7 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   }
   
   // Calculate pagination details
-  const totalJobs = params.keywords || params.location ? numJobs * 5 : numJobs * 3; // Simulate more total jobs
+  const totalJobs = params.keywords || params.location ? numJobs * 8 : numJobs * 5; // Increased total to simulate more jobs
   const currentPage = params.page || 1;
   const totalPages = Math.ceil(totalJobs / numJobs);
   

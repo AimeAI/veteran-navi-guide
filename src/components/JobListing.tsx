@@ -2,7 +2,7 @@
 import React from 'react';
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, ExternalLink } from "lucide-react";
+import { Briefcase, ExternalLink, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -75,25 +75,26 @@ const JobListing: React.FC<JobListingProps> = ({
     // Log application click for analytics
     console.log('User clicked Apply Now for job:', jobId, title, company);
     
-    // Determine job source from URL for better tracking
-    let detectedSource = source || 'job board';
-    if (url) {
-      if (url.includes('jobbank.gc.ca')) detectedSource = 'Job Bank Canada';
-      else if (url.includes('indeed.com')) detectedSource = 'Indeed';
-      else if (url.includes('linkedin.com')) detectedSource = 'LinkedIn';
-      else if (url.includes('workopolis.com')) detectedSource = 'Workopolis';
-      else if (url.includes('monster.ca')) detectedSource = 'Monster';
+    if (!url || !isValidUrl) {
+      e.preventDefault();
+      toast.error("This job listing doesn't have a valid application URL");
+      return;
     }
     
     // Show a toast notification
     toast.success(`Opening application for ${title} at ${company}`);
     
-    // Log click with more details for analytics
-    console.log(`User is applying via ${detectedSource}. URL: ${url}`);
+    // Log click with source details for analytics
+    console.log(`User is applying via ${getSourceLabel(source) || 'external site'}. URL: ${url}`);
   };
   
   // Determine if the URL is valid
   const isValidUrl = url && (url.startsWith('http://') || url.startsWith('https://'));
+  
+  // Format date properly
+  const formattedDate = date 
+    ? new Date(date).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })
+    : 'Recently posted';
   
   return (
     <div className={cn("bg-white rounded-md shadow-sm border border-gray-200 p-4", className)}>
@@ -119,8 +120,8 @@ const JobListing: React.FC<JobListingProps> = ({
       
       <div className="mt-3 flex justify-between items-center">
         <div className="flex items-center">
-          <Briefcase className="h-4 w-4 text-gray-400 mr-1" />
-          <span className="text-xs text-gray-500">Posted: {new Date(date || new Date()).toLocaleDateString()}</span>
+          <Calendar className="h-4 w-4 text-gray-400 mr-1" />
+          <span className="text-xs text-gray-500">Posted: {formattedDate}</span>
         </div>
         
         {isValidUrl ? (

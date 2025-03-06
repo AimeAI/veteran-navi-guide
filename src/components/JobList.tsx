@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -81,7 +82,9 @@ const JobList: React.FC<JobListProps> = ({
   }, {} as Record<string, Job[]>);
 
   const jobBankCount = jobsBySource['jobbank']?.length || 0;
-  const otherSourcesCount = totalJobs - jobBankCount;
+  const indeedCount = jobsBySource['indeed']?.length || 0;
+  const linkedinCount = jobsBySource['linkedin']?.length || 0;
+  const otherSourcesCount = totalJobs - jobBankCount - indeedCount - linkedinCount;
 
   return (
     <div className="space-y-6">
@@ -95,6 +98,16 @@ const JobList: React.FC<JobListProps> = ({
           {jobBankCount > 0 && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Job Bank: {jobBankCount}
+            </Badge>
+          )}
+          {indeedCount > 0 && (
+            <Badge variant="orange" className="flex items-center gap-1">
+              Indeed: {indeedCount}
+            </Badge>
+          )}
+          {linkedinCount > 0 && (
+            <Badge variant="indigo" className="flex items-center gap-1">
+              LinkedIn: {linkedinCount}
             </Badge>
           )}
           <span className="text-sm text-gray-500">{totalJobs} jobs found</span>
