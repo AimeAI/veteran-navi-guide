@@ -15,6 +15,7 @@ import CommunityForums from "./pages/CommunityForums";
 import RecommendedJobs from "./pages/RecommendedJobs";
 import CareerCounseling from "./pages/CareerCounseling";
 import ResumeAssistance from "./pages/ResumeAssistance";
+import InterviewPreparation from "./pages/InterviewPreparation";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/sonner";
@@ -37,6 +38,7 @@ function App() {
             <Route path="/recommendations" element={<RecommendedJobs />} />
             <Route path="/resources/career-counseling" element={<CareerCounseling />} />
             <Route path="/resources/resume-assistance" element={<ResumeAssistance />} />
+            <Route path="/resources/interview-prep" element={<InterviewPreparation />} />
             <Route path="/employer/post-job" element={<PostJobPage />} />
             <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
             <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
