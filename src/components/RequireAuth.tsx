@@ -35,10 +35,11 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
           You need to be logged in to access this page.
         </p>
         <Button asChild>
-          <Navigate to={`${redirectTo}?redirect=${window.location.pathname}`}>
+          {/* Fix Navigate usage - it doesn't accept children */}
+          <a href={`${redirectTo}?redirect=${window.location.pathname}`}>
             <LogIn className="mr-2 h-4 w-4" />
             Log In or Sign Up
-          </Navigate>
+          </a>
         </Button>
       </div>
     );

@@ -95,25 +95,137 @@ export interface UserProfile {
     duration: string;
     description: string;
   }[];
+  photo?: string; // Adding missing photo property
+  serviceYears?: number; // Adding this for consistency
+}
+
+export interface JobListing {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  requiredSkills: string[];
+  preferredSkills: string[];
+  requiredMosCodes?: string[];
+  securityClearanceRequired?: string;
+  remote: boolean;
+  jobType: string;
+}
+
+export interface RecommendationResult {
+  job: JobListing;
+  matchScore: number;
+  matchDetails: {
+    skillMatches: string[];
+    mosCodeMatches: string[];
+    locationMatch: boolean;
+    clearanceMatch: boolean;
+  };
+}
+
+export const currentUserProfile: UserProfile = {
+  id: "veteran-001",
+  name: "James Wilson",
+  email: "james.wilson@example.com",
+  skills: ["leadership", "communication", "technology", "logistics", "problem solving"],
+  experience: 5,
+  militaryBranch: "Canadian Armed Forces",
+  rank: "Master Corporal",
+  mosId: "00168", // Supply Technician
+  location: "Ottawa, ON",
+  jobPreferences: {
+    roles: ["logistics", "management", "technology"],
+    locations: ["Ottawa", "Toronto", "Remote"],
+    remote: true,
+    salary: [60000, 90000],
+    industries: ["technology", "defense", "logistics"]
+  },
+  education: {
+    level: "Bachelor's Degree",
+    field: "Business Administration",
+    institution: "Royal Military College"
+  },
+  certifications: ["Project Management Professional", "Supply Chain Management"],
+  availability: "immediate",
+  securityClearance: "Secret"
+};
+
+export function getRecommendedJobs(user: UserProfile, jobs: JobListing[]): RecommendationResult[] {
+  return jobs.map(job => {
+    let matchScore = 0;
+    const skillMatches: string[] = [];
+    const mosCodeMatches: string[] = [];
+    
+    user.skills.forEach(skill => {
+      const requiredMatch = job.requiredSkills.some(
+        reqSkill => reqSkill.toLowerCase() === skill.toLowerCase()
+      );
+      const preferredMatch = job.preferredSkills.some(
+        prefSkill => prefSkill.toLowerCase() === skill.toLowerCase()
+      );
+      
+      if (requiredMatch) {
+        skillMatches.push(skill);
+        matchScore += 15;
+      } else if (preferredMatch) {
+        skillMatches.push(skill);
+        matchScore += 8;
+      }
+    });
+    
+    const hasMosMatch = job.requiredMosCodes?.some(
+      code => code === user.mosId
+    );
+    
+    if (hasMosMatch) {
+      mosCodeMatches.push(user.mosId || "");
+      matchScore += 25;
+    }
+    
+    const locationMatch = user.location?.includes(job.location) || 
+                        job.location.includes(user.location || "") ||
+                        job.remote && user.jobPreferences.remote;
+    
+    if (locationMatch) {
+      matchScore += 20;
+    }
+    
+    const clearanceMatch = !job.securityClearanceRequired || 
+                         (user.securityClearance === job.securityClearanceRequired);
+    
+    if (clearanceMatch) {
+      matchScore += 15;
+    }
+    
+    matchScore = Math.min(100, matchScore);
+    
+    return {
+      job,
+      matchScore,
+      matchDetails: {
+        skillMatches,
+        mosCodeMatches,
+        locationMatch,
+        clearanceMatch
+      }
+    };
+  }).sort((a, b) => b.matchScore - a.matchScore);
 }
 
 export function calculateMatchScore(user: UserProfile, job: Job): number {
   let score = 0;
 
-  // Weight for each factor
   const skillWeight = 0.3;
   const experienceWeight = 0.25;
   const locationWeight = 0.15;
   const jobTypeWeight = 0.15;
   const salaryWeight = 0.15;
 
-  // Skill matching
   const commonSkills = user.skills.filter(skill => job.skills.includes(skill));
   score += skillWeight * (commonSkills.length / Math.max(user.skills.length, job.skills.length));
 
-  // Experience matching
   if (user.experience >= 0) {
-    // Normalize experience to a 0-1 scale based on job's experience level
     let experienceScore = 0;
     if (job.experienceLevel === "Entry-level" && user.experience <= 2) {
       experienceScore = 1;
@@ -122,12 +234,11 @@ export function calculateMatchScore(user: UserProfile, job: Job): number {
     } else if (job.experienceLevel === "Senior-level" && user.experience > 7) {
       experienceScore = 1;
     } else {
-      experienceScore = Math.max(0, 1 - Math.abs(user.experience - 5) / 10); // Adjust 5 and 10 as needed
+      experienceScore = Math.max(0, 1 - Math.abs(user.experience - 5) / 10);
     }
     score += experienceWeight * experienceScore;
   }
 
-  // Location matching
   if (user.location && job.location) {
     const locationMatch = user.location.toLowerCase().includes(job.location.toLowerCase()) || job.location.toLowerCase().includes(user.location.toLowerCase());
     if (locationMatch) {
@@ -135,7 +246,6 @@ export function calculateMatchScore(user: UserProfile, job: Job): number {
     }
   }
 
-  // Job type matching
   if (user.jobPreferences.roles.length > 0) {
     const jobTypeMatch = user.jobPreferences.roles.some(role => job.jobType.toLowerCase().includes(role.toLowerCase()));
     if (jobTypeMatch) {
@@ -143,7 +253,6 @@ export function calculateMatchScore(user: UserProfile, job: Job): number {
     }
   }
 
-  // Salary matching
   if (user.jobPreferences.salary) {
     const [minSalary, maxSalary] = user.jobPreferences.salary;
     if (job.salary[0] >= minSalary && job.salary[1] <= maxSalary) {
@@ -158,12 +267,10 @@ export const parseTextForMentions = (text: string, users: { id: string; name: st
   const segments: TextSegment[] = [];
   let lastIndex = 0;
 
-  // Regular expression to find @[name] mentions
   const mentionRegex = /@\[([^\]]+)\]/g;
   let match;
 
   while ((match = mentionRegex.exec(text)) !== null) {
-    // Text before the mention
     if (match.index > lastIndex) {
       segments.push({
         type: 'text',
@@ -181,7 +288,6 @@ export const parseTextForMentions = (text: string, users: { id: string; name: st
         mentionData: user,
       });
     } else {
-      // If user not found, treat as regular text
       segments.push({
         type: 'text',
         content: match[0],
@@ -191,7 +297,6 @@ export const parseTextForMentions = (text: string, users: { id: string; name: st
     lastIndex = mentionRegex.lastIndex;
   }
 
-  // Remaining text after last mention
   if (lastIndex < text.length) {
     segments.push({
       type: 'text',
