@@ -17,7 +17,13 @@ import {
   Save, 
   Trash, 
   AlertTriangle,
-  Flag 
+  Flag,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  MessageSquare,
+  Eye,
+  Clock
 } from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
@@ -40,6 +46,13 @@ import {
   DialogDescription,
   DialogClose
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const forumTopics = [
   {
@@ -110,6 +123,24 @@ const categories = [
   { name: "Health & Wellness", value: "health" }
 ];
 
+const sortingOptions = [
+  { label: "Latest Activity", value: "latestActivity" },
+  { label: "Oldest First", value: "oldestFirst" },
+  { label: "Most Replies", value: "mostReplies" },
+  { label: "Most Views", value: "mostViews" },
+  { label: "Alphabetical A-Z", value: "alphabetical" },
+  { label: "Alphabetical Z-A", value: "alphabeticalReverse" },
+];
+
+const sortIconMap = {
+  latestActivity: <Clock className="h-4 w-4" />,
+  oldestFirst: <Clock className="h-4 w-4" />,
+  mostReplies: <MessageSquare className="h-4 w-4" />,
+  mostViews: <Eye className="h-4 w-4" />,
+  alphabetical: <ArrowUp className="h-4 w-4" />,
+  alphabeticalReverse: <ArrowDown className="h-4 w-4" />,
+};
+
 const CommunityForums = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -151,15 +182,40 @@ const CommunityForums = () => {
   const [reportError, setReportError] = useState("");
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   
+  const [sortCriteria, setSortCriteria] = useState<string>("latestActivity");
+
   const { user } = useUser();
 
-  const filteredTopics = topics.filter(topic => {
-    const matchesCategory = activeCategory === "all" || topic.category === activeCategory;
-    const matchesSearch = topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          topic.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (topic.content && topic.content.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
+  const getFilteredAndSortedTopics = () => {
+    const filtered = topics.filter(topic => {
+      const matchesCategory = activeCategory === "all" || topic.category === activeCategory;
+      const matchesSearch = topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            topic.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (topic.content && topic.content.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesCategory && matchesSearch;
+    });
+    
+    return [...filtered].sort((a, b) => {
+      switch (sortCriteria) {
+        case "latestActivity":
+          return new Date(b.lastPostDate).getTime() - new Date(a.lastPostDate).getTime();
+        case "oldestFirst":
+          return new Date(a.lastPostDate).getTime() - new Date(b.lastPostDate).getTime();
+        case "mostReplies":
+          return b.replies - a.replies;
+        case "mostViews":
+          return b.views - a.views;
+        case "alphabetical":
+          return a.title.localeCompare(b.title);
+        case "alphabeticalReverse":
+          return b.title.localeCompare(a.title);
+        default:
+          return new Date(b.lastPostDate).getTime() - new Date(a.lastPostDate).getTime();
+      }
+    });
+  };
+
+  const filteredTopics = getFilteredAndSortedTopics();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -434,7 +490,7 @@ const CommunityForums = () => {
         topicId: reportingTopicId,
         reason: reportReason,
         timestamp: new Date().toISOString(),
-        reportedBy: user?.id || 'anonymous'
+        reportedBy: user?.name || 'anonymous'
       });
       
       setReportingTopicId(null);
@@ -537,6 +593,19 @@ const CommunityForums = () => {
       setDeleteConfirmOpen(false);
       setTopicToDelete(null);
     }
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortCriteria(value);
+    setCurrentPage(1);
+  };
+
+  const getCurrentSortLabel = () => {
+    return sortingOptions.find(option => option.value === sortCriteria)?.label || "Sort By";
+  };
+
+  const getCurrentSortIcon = () => {
+    return sortIconMap[sortCriteria as keyof typeof sortIconMap] || <ArrowUpDown className="h-4 w-4" />;
   };
 
   return (
@@ -663,17 +732,47 @@ const CommunityForums = () => {
         </aside>
 
         <main className="lg:col-span-3">
-          <div className="relative mb-6">
-            <label htmlFor="search-topics" className="sr-only">Search topics</label>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
-            <Input
-              id="search-topics"
-              placeholder="Search topics or authors..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search topics or authors"
-            />
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-grow">
+              <label htmlFor="search-topics" className="sr-only">Search topics</label>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" aria-hidden="true" />
+              <Input
+                id="search-topics"
+                placeholder="Search topics or authors..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search topics or authors"
+              />
+            </div>
+            
+            <div className="min-w-[180px]">
+              <Select
+                value={sortCriteria}
+                onValueChange={handleSortChange}
+              >
+                <SelectTrigger className="w-full" aria-label="Sort topics">
+                  <span className="flex items-center gap-2">
+                    {getCurrentSortIcon()}
+                    <SelectValue placeholder="Sort by" />
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  {sortingOptions.map((option) => (
+                    <SelectItem 
+                      key={option.value} 
+                      value={option.value}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="flex items-center gap-2">
+                        {sortIconMap[option.value as keyof typeof sortIconMap]}
+                        {option.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <section aria-label="Forum topics" aria-live="polite">
