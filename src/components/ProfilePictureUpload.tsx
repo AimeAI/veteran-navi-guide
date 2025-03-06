@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Upload, Camera, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { createClient } from "@supabase/supabase-js";
 
 interface ProfilePictureUploadProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
 }
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({ 
   className = "", 
@@ -46,10 +52,50 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     setIsUploading(true);
     
     try {
-      await uploadProfilePicture(file);
+      // Validate file
+      if (!validateFile(file)) {
+        return;
+      }
+      
+      // If Supabase is configured, upload to Supabase Storage
+      if (supabaseUrl && supabaseKey) {
+        const userId = user?.id || 'anonymous';
+        const filePath = `profile-pictures/${userId}/${Date.now()}-${file.name}`;
+        
+        const { data, error } = await supabase.storage
+          .from('profile-pictures')
+          .upload(filePath, file, {
+            upsert: true,
+            cacheControl: '3600',
+          });
+          
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        // Get the public URL for the uploaded file
+        const { data: urlData } = supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(filePath);
+          
+        await uploadProfilePicture(file, urlData.publicUrl);
+      } else {
+        // If Supabase is not configured, use the existing function
+        await uploadProfilePicture(file);
+      }
+      
+      toast.success("Profile picture updated successfully");
     } catch (error) {
-      // Error is already handled in the uploadProfilePicture function
-      console.error("Error in handleFileChange:", error);
+      console.error("Error uploading profile picture:", error);
+      if (error instanceof Error) {
+        toast.error("Upload failed", {
+          description: error.message
+        });
+      } else {
+        toast.error("Upload failed", {
+          description: "An unexpected error occurred"
+        });
+      }
     } finally {
       setIsUploading(false);
       // Reset the file input
@@ -59,26 +105,76 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     }
   };
 
+  const validateFile = (file: File): boolean => {
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Invalid file type", {
+        description: "Please upload a JPEG, PNG, or GIF image"
+      });
+      return false;
+    }
+    
+    // Check file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      toast.error("File too large", {
+        description: "Maximum file size is 5MB"
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  const handleRemoveProfilePicture = () => {
+  const handleRemoveProfilePicture = async () => {
     if (!user?.profilePicture) return;
     
-    // In a real app with Supabase, this would delete the file from storage
-    // For now, just update the user profile
-    if (user) {
-      const updatedUser = { ...user };
-      delete updatedUser.profilePicture;
+    try {
+      setIsUploading(true);
       
-      // This would call an API in a real app
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      window.location.reload(); // Simple way to refresh the state
+      // If using Supabase and we have the file path
+      if (supabaseUrl && supabaseKey && user.profilePictureFilePath) {
+        const { error } = await supabase.storage
+          .from('profile-pictures')
+          .remove([user.profilePictureFilePath]);
+          
+        if (error) {
+          throw new Error(error.message);
+        }
+      }
+      
+      // Update the user profile to remove the profile picture
+      if (user) {
+        const updatedUser = { ...user };
+        delete updatedUser.profilePicture;
+        delete updatedUser.profilePictureFilePath;
+        
+        // This would call an API in a real app
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          window.location.reload(); // Simple way to refresh the state
+        }
+      }
       
       toast.success("Profile picture removed");
+    } catch (error) {
+      console.error("Error removing profile picture:", error);
+      if (error instanceof Error) {
+        toast.error("Failed to remove profile picture", {
+          description: error.message
+        });
+      } else {
+        toast.error("Failed to remove profile picture");
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 

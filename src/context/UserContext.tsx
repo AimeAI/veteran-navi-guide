@@ -1,8 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client if environment variables are available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 // Define types for our user profile
 export interface UserProfile {
+  id?: string;
   name: string;
   email: string;
   phone: string;
@@ -14,6 +21,7 @@ export interface UserProfile {
   isAuthenticated: boolean;
   emailVerified: boolean;
   profilePicture?: string;
+  profilePictureFilePath?: string; // Store the file path for Supabase storage
 }
 
 // Interface for the context
@@ -25,7 +33,7 @@ interface UserContextType {
   logout: () => void;
   updateProfile: (updatedProfile: Partial<UserProfile>) => void;
   resendVerificationEmail: () => Promise<void>;
-  uploadProfilePicture: (file: File) => Promise<string>;
+  uploadProfilePicture: (file: File, publicUrl?: string) => Promise<string>;
 }
 
 // Create the context with initial values
@@ -33,6 +41,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Initial user profile data
 const initialUserProfile: UserProfile = {
+  id: "user-1",
   name: "James Wilson",
   email: "james.wilson@example.com",
   phone: "613-555-7890",
@@ -214,8 +223,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // New function to handle profile picture uploads
-  const uploadProfilePicture = async (file: File): Promise<string> => {
+  // New function to handle profile picture uploads with Supabase support
+  const uploadProfilePicture = async (file: File, publicUrl?: string): Promise<string> => {
     setIsLoading(true);
     
     try {
@@ -236,28 +245,35 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error("File is too large. Maximum size is 5MB.");
       }
       
-      // In a real app with Supabase, this would be:
-      // const filePath = `profile-pictures/${user?.id}/${file.name}`;
-      // const { data, error } = await supabase.storage
-      //   .from('profile-pictures')
-      //   .upload(filePath, file, {
-      //     upsert: true,
-      //   });
+      let fileUrl: string;
+      let filePath: string | undefined;
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Create a local URL for the uploaded file
-      const fileUrl = URL.createObjectURL(file);
-      console.log("Profile picture uploaded:", fileUrl);
+      // If we received a public URL from Supabase, use it
+      if (publicUrl) {
+        fileUrl = publicUrl;
+        // Extract the file path from the URL
+        const urlParts = publicUrl.split('/');
+        filePath = urlParts.slice(urlParts.indexOf('profile-pictures')).join('/');
+      } else {
+        // Fallback to creating a local object URL
+        fileUrl = URL.createObjectURL(file);
+        console.log("Profile picture uploaded (local):", fileUrl);
+      }
       
       // Update user profile with the new picture URL
       if (user) {
-        const updatedUser = { ...user, profilePicture: fileUrl };
+        const updatedUser: UserProfile = { 
+          ...user, 
+          profilePicture: fileUrl 
+        };
+        
+        if (filePath) {
+          updatedUser.profilePictureFilePath = filePath;
+        }
+        
         setUser(updatedUser);
       }
       
-      toast.success("Profile picture updated successfully!");
       return fileUrl;
     } catch (error) {
       console.error("Profile picture upload error:", error);

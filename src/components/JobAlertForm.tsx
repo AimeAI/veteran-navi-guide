@@ -34,7 +34,7 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
     keywords: [],
     locations: [],
     jobType: "",
-    frequency: "daily"
+    frequency: "daily" as "daily" | "weekly" | "monthly"
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
