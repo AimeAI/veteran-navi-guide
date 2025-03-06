@@ -1,69 +1,69 @@
-# Welcome to your Lovable project
 
-## Project info
+# Veteran Career Compass
 
-**URL**: https://lovable.dev/projects/b276ff71-cd0c-4214-9c6c-ce53c6fd6d2b
+A platform to help military veterans find employment opportunities and transition to civilian careers.
 
-## How can I edit this code?
+## Job Search API Integration
 
-There are several ways of editing your application.
+The job search functionality now uses a Supabase Edge Function to proxy requests to job search APIs. This helps avoid CORS issues and provides a more reliable experience.
 
-**Use Lovable**
+### Deploying the Job Search Proxy Function
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b276ff71-cd0c-4214-9c6c-ce53c6fd6d2b) and start prompting.
+To deploy the job search proxy function:
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Make sure you have the Supabase CLI installed:
+   ```bash
+   npm install -g supabase
+   ```
 
-**Use your preferred IDE**
+2. Login to your Supabase account:
+   ```bash
+   supabase login
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+3. Link your project:
+   ```bash
+   supabase link --project-ref your-project-ref
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+4. Deploy the function:
+   ```bash
+   supabase functions deploy job-search-proxy --no-verify-jwt
+   ```
 
-Follow these steps:
+### Accessing the Job Search API
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+The job search API can be accessed at:
+```
+https://[YOUR_SUPABASE_URL]/functions/v1/job-search-proxy
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Parameters:
+- `keywords`: Job search keywords
+- `location`: Job location
+- `distance`: Search radius in kilometers
+- `page`: Page number for pagination
+- `source`: Job source (default: 'jobbank')
 
-# Step 3: Install the necessary dependencies.
-npm i
+Example:
+```
+https://your-project.supabase.co/functions/v1/job-search-proxy?keywords=software&location=Toronto&distance=50&page=1
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## Local Development
+
+To run this project locally:
+
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Features
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- Military-to-civilian skill translation
+- Job search with military background matching
+- Resume builder with military experience highlighting
+- Career counseling resources
+- Interview preparation tools
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b276ff71-cd0c-4214-9c6c-ce53c6fd6d2b) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)

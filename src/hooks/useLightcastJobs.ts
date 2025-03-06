@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { searchLightcastJobs, LightcastSearchParams } from '@/utils/lightcastApi';
 import { toast } from 'sonner';
 import { searchJobs as searchMockJobs } from '@/data/jobs';
-import { militarySkillsToNOCMapping, getNOCCodesForSkill, searchJobBankJobs } from '@/utils/jobBankApi';
+import { searchJobBankJobs } from '@/utils/jobBankApi';
+import { JobCache } from '@/utils/jobCache';
 
 export type { LightcastSearchParams } from '@/utils/lightcastApi';
 
@@ -33,6 +33,11 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     country: searchParams.country || "canada" // Default to Canada for Job Bank API
   });
 
+  // Create a cache key based on search parameters
+  const getCacheKey = useCallback((params: LightcastSearchParams, page: number): string => {
+    return `${params.country || 'canada'}:${params.keywords || ''}:${params.location || ''}:${params.radius || 50}:${params.job_type || ''}:${params.industry || ''}:${page}`;
+  }, []);
+
   // Update searchParams when external params change
   useEffect(() => {
     setCurrentSearchParams(prevParams => ({
@@ -40,10 +45,10 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       keywords: searchParams.keywords,
       location: searchParams.location,
       radius: searchParams.radius,
-      job_type: searchParams.job_type,
+      job_type: searchParams.jobType,
       industry: searchParams.industry,
-      experience_level: searchParams.experience_level,
-      education_level: searchParams.education_level,
+      experience_level: searchParams.experienceLevel,
+      education_level: searchParams.educationLevel,
       remote_type: searchParams.remote_type,
       country: searchParams.country,
     }));
@@ -51,10 +56,10 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     searchParams.keywords, 
     searchParams.location, 
     searchParams.radius, 
-    searchParams.job_type,
+    searchParams.jobType,
     searchParams.industry,
-    searchParams.experience_level,
-    searchParams.education_level,
+    searchParams.experienceLevel,
+    searchParams.educationLevel,
     searchParams.remote_type,
     searchParams.country
   ]);
@@ -116,6 +121,15 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
         setUsingFallbackData(true);
       }
       
+      // Store fallback data in cache too
+      const cacheKey = getCacheKey(currentSearchParams, currentPage);
+      JobCache.saveSearchResults(cacheKey, {
+        jobs: fallbackJobs,
+        totalJobs: fallbackJobs.length,
+        totalPages: 1,
+        currentPage,
+      });
+    
       return fallbackJobs;
     } catch (err) {
       console.error('Error fetching fallback jobs:', err);
@@ -123,7 +137,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       setError(new Error('Failed to load jobs. Please try again later.'));
       return [];
     }
-  }, [currentSearchParams, usingFallbackData, convertMilitarySkillsToKeywords]);
+  }, [currentPage, currentSearchParams, usingFallbackData, convertMilitarySkillsToKeywords, getCacheKey]);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
@@ -154,6 +168,20 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
+      // Check cache first
+      const cacheKey = getCacheKey(params, currentPage);
+      const cachedResults = JobCache.getSearchResults(cacheKey);
+      
+      if (cachedResults) {
+        console.log("Using cached job results");
+        setJobs(cachedResults.jobs);
+        setTotalPages(cachedResults.totalPages);
+        setTotalJobs(cachedResults.totalJobs);
+        setUsingFallbackData(false);
+        setIsLoading(false);
+        return;
+      }
+      
       // Try Job Bank API first for Canadian jobs
       if (params.country === "canada" || !params.country) {
         try {
@@ -173,6 +201,9 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
             setJobs(jobBankResults.jobs);
             setTotalPages(jobBankResults.totalPages);
             setTotalJobs(jobBankResults.totalJobs);
+            
+            // Cache the results
+            JobCache.saveSearchResults(cacheKey, jobBankResults);
             
             // If we were using fallback data before but API now works, update state
             if (usingFallbackData) {
@@ -237,7 +268,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, currentSearchParams, fetchFallbackJobs, usingFallbackData, convertMilitarySkillsToKeywords]);
+  }, [currentPage, currentSearchParams, fetchFallbackJobs, usingFallbackData, convertMilitarySkillsToKeywords, getCacheKey]);
 
   useEffect(() => {
     fetchJobs();

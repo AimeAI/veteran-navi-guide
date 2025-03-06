@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import { useJobs, JobFilterState } from '@/context/JobContext';
 import JobList from '@/components/JobList';
@@ -10,6 +9,11 @@ import { useLightcastJobs } from '@/hooks/useLightcastJobs';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
+import { JobCache } from '@/utils/jobCache';
+import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const JobSearch: React.FC = () => {
   const { t } = useTranslation();
@@ -39,6 +43,7 @@ const JobSearch: React.FC = () => {
   
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showSkillsFilter, setShowSkillsFilter] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const {
     jobs,
@@ -130,6 +135,21 @@ const JobSearch: React.FC = () => {
     setShowSkillsFilter(false);
   };
   
+  const handleClearCacheAndRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      JobCache.clearCache();
+      toast.info("Cleared job search cache");
+      await refreshJobs();
+      toast.success("Job results refreshed");
+    } catch (error) {
+      console.error('Error refreshing jobs:', error);
+      toast.error("Failed to refresh job results");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refreshJobs]);
+  
   useEffect(() => {
     refreshJobs();
   }, [
@@ -150,7 +170,28 @@ const JobSearch: React.FC = () => {
         <title>{t('Job Search - Veteran Career Compass')}</title>
       </Helmet>
       
-      <h1 className="text-3xl font-bold mb-6">{t('Find Your Next Career')}</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">{t('Find Your Next Career')}</h1>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleClearCacheAndRefresh}
+          disabled={isRefreshing || isLoading}
+          className="flex items-center gap-1"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? t('Refreshing...') : t('Refresh Jobs')}
+        </Button>
+      </div>
+      
+      {error && !error.message.includes('NetworkError') && !error.message.includes('CORS') && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      )}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
         <TabsList className="grid w-full max-w-md grid-cols-2">
