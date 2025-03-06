@@ -22,7 +22,7 @@ export const mockJobs: JobListing[] = [
     description: 'Perfect for veterans with logistics MOSID. Coordinate shipments, manage inventory, and optimize supply chain processes. Competitive salary with benefits package.',
     requiredSkills: ['logistics', 'inventory management', 'supply chain'],
     preferredSkills: ['leadership', 'communication'],
-    requiredMosCodes: ['88N', 'QM'],
+    requiredMosCodes: ['00168', 'SUPPLY'],
     remote: false
   },
   {
@@ -43,7 +43,7 @@ export const mockJobs: JobListing[] = [
     description: 'Ideal for veterans with intelligence or cybersecurity background. Monitor network security and respond to incidents. Secret clearance required.',
     requiredSkills: ['cybersecurity', 'network security', 'incident response'],
     preferredSkills: ['communication', 'risk assessment'],
-    requiredMosCodes: ['17C', '25B'],
+    requiredMosCodes: ['00271', '00378'],
     securityClearanceRequired: 'Secret',
     remote: false
   },
@@ -62,10 +62,10 @@ export const mockJobs: JobListing[] = [
     title: 'Emergency Medical Technician',
     company: 'First Responders Alliance',
     location: 'Calgary, AB',
-    description: 'Former military medics encouraged to apply. Provide emergency medical care in civilian settings. Training assistance available.',
+    description: 'Former CAF medical technicians encouraged to apply. Provide emergency medical care in civilian settings. Training assistance available.',
     requiredSkills: ['emergency medicine', 'first aid', 'patient care'],
     preferredSkills: ['communication', 'stress management'],
-    requiredMosCodes: ['68W', 'Med Tech'],
+    requiredMosCodes: ['00334', 'Med Tech'],
     remote: false
   },
   {
@@ -73,10 +73,10 @@ export const mockJobs: JobListing[] = [
     title: 'Aviation Maintenance Technician',
     company: 'SkyWorks Aerospace',
     location: 'Vancouver, BC',
-    description: 'Perfect transition for military aircraft technicians. Maintain and repair commercial aircraft. Transport Canada certification assistance provided.',
+    description: 'Perfect transition for CAF aircraft technicians. Maintain and repair commercial aircraft. Transport Canada certification assistance provided.',
     requiredSkills: ['aircraft maintenance', 'mechanical repair', 'troubleshooting'],
     preferredSkills: ['leadership', 'communication'],
-    requiredMosCodes: ['15T', 'AMET'],
+    requiredMosCodes: ['00153', 'AERE'],
     remote: false
   },
   {
@@ -87,7 +87,7 @@ export const mockJobs: JobListing[] = [
     description: 'Provide technical support to clients across Canada. Perfect for veterans with IT background looking for flexible work arrangements.',
     requiredSkills: ['IT support', 'troubleshooting', 'customer service'],
     preferredSkills: ['communication', 'networking'],
-    requiredMosCodes: ['25B', 'IT Spec'],
+    requiredMosCodes: ['00369', 'CISTM'],
     remote: true
   }
 ];

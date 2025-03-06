@@ -24,17 +24,17 @@ import {
 const forumTopics = [
   {
     id: 1,
-    title: "Transitioning from Military to Tech Careers",
+    title: "Transitioning from CAF to Tech Careers",
     author: "JohnDoe",
     lastPostDate: "2023-06-15T10:30:00",
     replies: 24,
     views: 342,
     category: "career-transition",
-    content: "I'm looking for advice on how to transition from a military career to the tech industry. Any tips?"
+    content: "I'm looking for advice on how to transition from a Canadian Armed Forces career to the tech industry. Any tips?"
   },
   {
     id: 2,
-    title: "Resume Writing Tips for Veterans",
+    title: "Resume Writing Tips for CAF Veterans",
     author: "SarahMiller",
     lastPostDate: "2023-06-12T14:20:00",
     replies: 18,
@@ -44,7 +44,7 @@ const forumTopics = [
   },
   {
     id: 3,
-    title: "Using Your GI Bill for Education",
+    title: "Using Veterans Education and Training Benefit",
     author: "MikeJohnson",
     lastPostDate: "2023-06-10T09:45:00",
     replies: 32,
@@ -53,7 +53,7 @@ const forumTopics = [
   },
   {
     id: 4,
-    title: "Interview Strategies for Veterans",
+    title: "Interview Strategies for CAF Veterans",
     author: "EmilyWilliams",
     lastPostDate: "2023-06-08T16:15:00",
     replies: 15,
@@ -62,7 +62,7 @@ const forumTopics = [
   },
   {
     id: 5,
-    title: "Networking for Military Professionals",
+    title: "Networking for CAF Professionals",
     author: "DavidClark",
     lastPostDate: "2023-06-05T11:50:00",
     replies: 21,
@@ -71,7 +71,7 @@ const forumTopics = [
   },
   {
     id: 6,
-    title: "Mental Health Resources for Veterans",
+    title: "Mental Health Resources for CAF Veterans",
     author: "AmandaWilson",
     lastPostDate: "2023-06-03T13:25:00",
     replies: 29,
@@ -280,7 +280,7 @@ const CommunityForums = () => {
         <div>
           <h1 className="text-3xl font-bold text-primary mb-2">Community Forums</h1>
           <p className="text-muted-foreground">
-            Connect with fellow veterans and share your experiences
+            Connect with fellow CAF veterans and share your experiences
           </p>
         </div>
         {!showCreateForm && (

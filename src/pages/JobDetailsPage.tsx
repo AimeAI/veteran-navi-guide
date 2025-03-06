@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +21,7 @@ const jobData = {
     period: 'year'
   },
   description: `
-    <p>DefenceNet Systems is seeking a qualified Cybersecurity Analyst to join our growing team in Ottawa. This position is ideal for veterans with experience in military intelligence, signals, or cybersecurity operations.</p>
+    <p>DefenceNet Systems is seeking a qualified Cybersecurity Analyst to join our growing team in Ottawa. This position is ideal for veterans with experience in Canadian Armed Forces intelligence, signals, or cybersecurity operations.</p>
     
     <h4>Responsibilities:</h4>
     <ul>
@@ -342,7 +341,7 @@ const JobDetailsPage: React.FC = () => {
                   ))}
                 </div>
                 <div className="mt-4 text-xs text-gray-500">
-                  MOSID codes help match military occupations with civilian jobs
+                  MOSID codes help match CAF occupations with civilian jobs
                 </div>
               </div>
               
@@ -352,7 +351,7 @@ const JobDetailsPage: React.FC = () => {
                 <ul className="text-sm text-blue-800 space-y-2">
                   <li className="flex items-start">
                     <span className="inline-block h-5 w-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs mr-2 mt-0.5">1</span>
-                    <span>Highlight your military cybersecurity experience</span>
+                    <span>Highlight your CAF cybersecurity experience</span>
                   </li>
                   <li className="flex items-start">
                     <span className="inline-block h-5 w-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs mr-2 mt-0.5">2</span>

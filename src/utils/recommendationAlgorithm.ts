@@ -44,10 +44,10 @@ export const currentUserProfile: UserProfile = {
   name: "John Doe",
   skills: ["leadership", "communication", "project management", "security", "logistics"],
   militaryBackground: {
-    branch: "Army",
+    branch: "Canadian Army",
     rank: "Sergeant",
     yearsOfService: 8,
-    mosCodes: ["11B", "25B"],
+    mosCodes: ["00161", "00168"],
   },
   securityClearance: "Secret",
   preferredLocations: ["Ottawa, ON", "Toronto, ON", "Remote - Canada"]

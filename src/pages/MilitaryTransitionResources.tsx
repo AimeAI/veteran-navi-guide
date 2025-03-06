@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -257,7 +256,6 @@ const MilitaryTransitionResources: React.FC = () => {
                 ))}
               </div>
               
-              {/* Add separator after each category except the last one */}
               {resourceCategories.indexOf(category) < resourceCategories.length - 1 && (
                 <Separator className="mt-8" />
               )}
