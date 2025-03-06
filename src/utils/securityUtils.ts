@@ -5,6 +5,7 @@
 
 import { toast } from "sonner";
 import DOMPurify from 'dompurify';
+import { memoizeWithExpiry, measurePerformance } from './performanceUtils';
 
 // Regular expression for detecting potentially malicious scripts
 const SCRIPT_PATTERN = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
@@ -17,13 +18,16 @@ const SCRIPT_PATTERN = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
 export const sanitizeInput = (input: string): string => {
   if (!input) return '';
   
-  // Use DOMPurify to sanitize HTML
-  const sanitized = DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: [], // No HTML tags allowed for basic text inputs
-    ALLOWED_ATTR: [] // No attributes allowed
+  // Performance optimization: Measure sanitization time
+  return measurePerformance('Input sanitization', () => {
+    // Use DOMPurify to sanitize HTML
+    const sanitized = DOMPurify.sanitize(input, {
+      ALLOWED_TAGS: [], // No HTML tags allowed for basic text inputs
+      ALLOWED_ATTR: [] // No attributes allowed
+    });
+    
+    return sanitized;
   });
-  
-  return sanitized;
 };
 
 /**
@@ -34,13 +38,16 @@ export const sanitizeInput = (input: string): string => {
 export const sanitizeHtml = (html: string): string => {
   if (!html) return '';
   
-  // Use DOMPurify with allowed tags for rich text
-  const sanitized = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'br'],
-    ALLOWED_ATTR: ['href', 'target', 'rel']
+  // Performance optimization: Measure sanitization time
+  return measurePerformance('HTML sanitization', () => {
+    // Use DOMPurify with allowed tags for rich text
+    const sanitized = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'br'],
+      ALLOWED_ATTR: ['href', 'target', 'rel']
+    });
+    
+    return sanitized;
   });
-  
-  return sanitized;
 };
 
 // Track login attempts for rate limiting
@@ -97,32 +104,39 @@ export const checkPasswordStrength = (password: string): {
   score: number; 
   feedback: string;
 } => {
-  // Start with a base score
-  let score = 0;
-  const feedback = [];
-  
-  // Length check
-  if (password.length < 8) {
-    feedback.push("Password should be at least 8 characters");
-  } else {
-    score += 1;
-  }
-  
-  // Complexity checks
-  if (/[A-Z]/.test(password)) score += 1;
-  if (/[a-z]/.test(password)) score += 1;
-  if (/[0-9]/.test(password)) score += 1;
-  if (/[^A-Za-z0-9]/.test(password)) score += 1;
-  
-  // Provide feedback based on score
-  if (score < 3) {
-    feedback.push("Consider adding uppercase letters, numbers, and special characters");
-  }
-  
-  return {
-    score: score, // 0-5 scale
-    feedback: feedback.join(". ")
-  };
+  // Performance optimization: Memoize password strength checks
+  return memoizeWithExpiry(
+    (pwd: string) => {
+      // Start with a base score
+      let score = 0;
+      const feedback = [];
+      
+      // Length check
+      if (pwd.length < 8) {
+        feedback.push("Password should be at least 8 characters");
+      } else {
+        score += 1;
+      }
+      
+      // Complexity checks
+      if (/[A-Z]/.test(pwd)) score += 1;
+      if (/[a-z]/.test(pwd)) score += 1;
+      if (/[0-9]/.test(pwd)) score += 1;
+      if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+      
+      // Provide feedback based on score
+      if (score < 3) {
+        feedback.push("Consider adding uppercase letters, numbers, and special characters");
+      }
+      
+      return {
+        score: score, // 0-5 scale
+        feedback: feedback.join(". ")
+      };
+    },
+    (pwd: string) => `pwd_strength_${pwd.length}_${pwd.charAt(0)}${pwd.charAt(pwd.length-1)}`,
+    30 * 60 * 1000 // Cache for 30 minutes
+  )(password);
 };
 
 /**
@@ -130,9 +144,11 @@ export const checkPasswordStrength = (password: string): {
  * @returns Random token string
  */
 export const generateCSRFToken = (): string => {
-  const array = new Uint8Array(32);
-  window.crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  return measurePerformance('CSRF token generation', () => {
+    const array = new Uint8Array(32);
+    window.crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  });
 };
 
 /**
@@ -162,6 +178,9 @@ export const validateCSRFToken = (token: string): boolean => {
 export const preventReflectedXSS = (value: string): string => {
   if (!value) return '';
   
-  // Remove any script tags
-  return value.replace(SCRIPT_PATTERN, '');
+  // Performance optimization: Measure cleaning time
+  return measurePerformance('XSS prevention', () => {
+    // Remove any script tags
+    return value.replace(SCRIPT_PATTERN, '');
+  });
 };

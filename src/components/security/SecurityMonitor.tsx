@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert, AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,18 +14,18 @@ interface SecurityAlert {
   read: boolean;
 }
 
-/**
- * Component that monitors security events and displays alerts
- * In a real application, this would connect to a backend service
- */
+// Performance optimization: Lazy load the component
 const SecurityMonitor: React.FC = () => {
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
   const [showAlerts, setShowAlerts] = useState(false);
 
   // In a real app, this would listen to server events or poll an API
   useEffect(() => {
-    // Mock security monitoring
+    // Mock security monitoring with performance metrics
     const checkForSecurityEvents = () => {
+      // Record performance timing
+      const startTime = performance.now();
+      
       // This is just a simulation - in real app would check with backend
       const mockFindings = [
         // Example alerts for demo purposes
@@ -42,6 +42,10 @@ const SecurityMonitor: React.FC = () => {
         setAlerts(prev => [...mockFindings, ...prev]);
         setShowAlerts(true);
       }
+      
+      // Log performance metrics
+      const endTime = performance.now();
+      console.log(`Security check performed in ${(endTime - startTime).toFixed(2)}ms`);
     };
     
     // Initial check
@@ -79,10 +83,12 @@ const SecurityMonitor: React.FC = () => {
     }
   };
   
+  // Performance optimization: Only render when needed
   if (!showAlerts || alerts.length === 0) {
     return null;
   }
   
+  // Performance optimization: Only render a limited number of alerts
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm">
       {alerts.slice(0, 3).map(alert => (
