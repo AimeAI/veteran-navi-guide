@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Mail, AlertTriangle } from "lucide-react";
 import LoadingButton from "./ui/LoadingButton";
+import { useNavigate } from "react-router-dom";
 
 interface EmailVerificationBannerProps {
   className?: string;
@@ -12,6 +13,7 @@ interface EmailVerificationBannerProps {
 
 const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ className }) => {
   const { user, isLoading, resendVerificationEmail } = useUser();
+  const navigate = useNavigate();
 
   // Don't show if user is not logged in or email is already verified
   if (!user || !user.isAuthenticated || user.emailVerified) {
@@ -20,6 +22,10 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
 
   const handleResendVerification = async () => {
     await resendVerificationEmail();
+  };
+
+  const handleVerifyPage = () => {
+    navigate('/verify-email');
   };
 
   return (
@@ -32,7 +38,7 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
             We've sent a verification email to <span className="font-medium">{user.email}</span>. 
             Please verify your email to access all features.
           </p>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap gap-2">
             <LoadingButton 
               onClick={handleResendVerification} 
               size="sm" 
@@ -43,6 +49,14 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
               <Mail className="h-4 w-4 mr-1" />
               Resend verification email
             </LoadingButton>
+            <Button
+              onClick={handleVerifyPage}
+              size="sm"
+              variant="outline"
+              className="border-yellow-700 text-yellow-800 hover:bg-yellow-50"
+            >
+              Verification Instructions
+            </Button>
           </div>
         </AlertDescription>
       </div>

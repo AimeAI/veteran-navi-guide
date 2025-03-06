@@ -1,15 +1,63 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/context/UserContext';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Mail } from 'lucide-react';
 import LoadingButton from '@/components/ui/LoadingButton';
+import { createClient } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoading, resendVerificationEmail } = useUser();
+  const [searchParams] = useSearchParams();
+
+  // Check if this is a redirect from email verification
+  useEffect(() => {
+    const handleEmailVerification = async () => {
+      // Get Supabase URL and key from environment variables
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseKey) return;
+      
+      // Only process if we have email verification parameters
+      if (searchParams.has('type') && searchParams.get('type') === 'email_confirmation') {
+        try {
+          const supabase = createClient(supabaseUrl, supabaseKey);
+          
+          // Exchange the email verification token
+          const { error } = await supabase.auth.exchangeCodeForSession(
+            searchParams.toString()
+          );
+          
+          if (error) {
+            toast.error("Email verification failed", {
+              description: error.message
+            });
+          } else {
+            toast.success("Email verification successful!", {
+              description: "Your email has been verified. You now have full access to all features."
+            });
+            
+            // Force reload to update the session
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 2000);
+          }
+        } catch (error) {
+          console.error("Error verifying email:", error);
+          toast.error("Verification failed", {
+            description: "There was a problem verifying your email. Please try again."
+          });
+        }
+      }
+    };
+    
+    handleEmailVerification();
+  }, [searchParams]);
 
   // Redirect if not logged in
   if (!user?.isAuthenticated) {
@@ -64,8 +112,13 @@ const VerifyEmailPage: React.FC = () => {
     <div className="container mx-auto max-w-md py-10 px-4">
       <Card>
         <CardHeader>
-          <CardTitle>Verify Your Email</CardTitle>
-          <CardDescription>
+          <div className="flex justify-center mb-4">
+            <div className="rounded-full bg-yellow-100 p-3">
+              <Mail className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+          <CardTitle className="text-center">Verify Your Email</CardTitle>
+          <CardDescription className="text-center">
             We've sent a verification email to <span className="font-medium">{user.email}</span>
           </CardDescription>
         </CardHeader>
@@ -73,6 +126,14 @@ const VerifyEmailPage: React.FC = () => {
           <p className="mb-6">
             Please check your inbox and click the verification link to complete your registration.
           </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+            <h3 className="font-medium text-blue-800 mb-2">How to verify your email:</h3>
+            <ol className="list-decimal list-inside text-sm text-blue-700 space-y-1 text-left">
+              <li>Check your email inbox for a message from us</li>
+              <li>Open the email and click on the verification link</li>
+              <li>You'll be redirected back to our site with full access</li>
+            </ol>
+          </div>
           <p className="text-sm text-gray-500 mb-4">
             If you don't see the email, please check your spam folder.
           </p>
