@@ -42,6 +42,7 @@ const AbTestingPage = lazy(() => import("./pages/AbTestingPage"));
 const NotificationPreferences = lazy(() => import("./components/NotificationPreferences"));
 const FeedbackSupportPage = lazy(() => import("./pages/FeedbackSupportPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ReferralProgramPage = lazy(() => import("./pages/ReferralProgramPage"));
 
 // Loading component for suspense fallback
 const PageLoading = () => (
@@ -116,6 +117,14 @@ function App() {
                       element={
                         <RequireAuth>
                           <FeedbackSupportPage />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/referral-program"
+                      element={
+                        <RequireAuth>
+                          <ReferralProgramPage />
                         </RequireAuth>
                       }
                     />
