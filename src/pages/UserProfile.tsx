@@ -15,6 +15,8 @@ import { useJobs } from "@/context/JobContext";
 import FormErrorMessage from "@/components/ui/form-error-message";
 import { AlertCircle, Bell, BellOff, Mail, Lock, Save } from "lucide-react";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+import VeteranBadges from "@/components/VeteranBadges";
+import { determineEarnedBadges } from "@/utils/badgeUtils";
 
 const UserProfile = () => {
   const { user, updateProfile } = useUser();
@@ -61,6 +63,8 @@ const UserProfile = () => {
     confirmPassword: ""
   });
 
+  const [earnedBadges, setEarnedBadges] = useState([]);
+
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === "#create-alert") {
@@ -89,8 +93,19 @@ const UserProfile = () => {
         rank: user.rank,
         bio: user.bio
       });
+      
+      const badges = determineEarnedBadges(
+        user,
+        appliedJobs || [],
+        0, // forum posts count
+        false, // interview prep completed
+        Boolean(selectedFile), // resume uploaded
+        0, // connections count
+        false // verified skills
+      );
+      setEarnedBadges(badges);
     }
-  }, [user]);
+  }, [user, appliedJobs, selectedFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -390,6 +405,10 @@ const UserProfile = () => {
                 <div className="flex-1">
                   {isEditing ? renderProfileEditMode() : renderProfileViewMode()}
                 </div>
+              </div>
+              
+              <div className="mt-8">
+                <VeteranBadges earnedBadges={earnedBadges} />
               </div>
             </CardContent>
             {isEditing && (
