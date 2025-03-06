@@ -70,6 +70,24 @@ const filterMockJobs = (params: SearchParams): Job[] => {
 
   let filteredJobs = [...jobsWithRequiredProps];
 
+  // If a country is specified, filter by country-specific locations
+  // Apply the country filter first to prioritize location-based filtering
+  if (params.country) {
+    // This is a simple implementation - in a real app, we'd have proper country data
+    const canadianLocations = ['toronto', 'vancouver', 'montreal', 'calgary', 'ottawa', 'edmonton', 'winnipeg', 'canada'];
+    const usLocations = ['new york', 'los angeles', 'chicago', 'houston', 'phoenix', 'usa', 'united states'];
+    
+    filteredJobs = filteredJobs.filter(job => {
+      const jobLocationLower = job.location.toLowerCase();
+      if (params.country === 'canada') {
+        return canadianLocations.some(loc => jobLocationLower.includes(loc));
+      } else if (params.country === 'us') {
+        return usLocations.some(loc => jobLocationLower.includes(loc));
+      }
+      return true;
+    });
+  }
+
   // Filter by keywords
   if (params.keywords && params.keywords.length > 0) {
     const keywordsLower = params.keywords.map(k => k.toLowerCase());

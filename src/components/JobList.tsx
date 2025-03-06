@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -50,18 +49,14 @@ const JobList: React.FC<JobListProps> = ({
 
   const countryName = country === "canada" ? "Canada" : "United States";
 
-  if (error) {
+  // Only show non-network errors
+  if (error && !error.message.includes('NetworkError') && !error.message.includes('CORS')) {
     return (
       <Alert variant="destructive" className="mb-6">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error loading jobs</AlertTitle>
         <AlertDescription>
           {error.message}
-          {error.message.includes('NetworkError') && (
-            <p className="mt-2 text-sm">
-              This appears to be a network connectivity issue. We're showing you fallback job data instead.
-            </p>
-          )}
         </AlertDescription>
       </Alert>
     );

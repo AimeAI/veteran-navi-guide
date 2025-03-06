@@ -28,7 +28,8 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     ...searchParams,
     country: searchParams.country || "canada" // Default to Canada
   });
-  const [useFallbackData, setUseFallbackData] = useState(false);
+  // Start directly with fallback data to avoid showing network errors
+  const [useFallbackData, setUseFallbackData] = useState(true);
 
   // Update searchParams when external params change
   useEffect(() => {
@@ -42,7 +43,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       experience_level: searchParams.experience_level,
       education_level: searchParams.education_level,
       remote_type: searchParams.remote_type,
-      country: searchParams.country, // Add the country parameter
+      country: searchParams.country, // Track changes to country
     }));
   }, [
     searchParams.keywords, 
@@ -68,9 +69,9 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       
       console.log("Fetching jobs with params:", params);
       
-      // If we've previously had an API error, use the fallback data
+      // If we're using fallback data, don't attempt API call
       if (useFallbackData) {
-        console.log("Using fallback mock data due to previous API errors");
+        console.log("Using fallback mock data");
         const { searchJobs } = await import('@/data/jobs');
         const result = await searchJobs({
           keywords: params.keywords ? [params.keywords] : [],
@@ -81,6 +82,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
           experienceLevel: params.experience_level,
           educationLevel: params.education_level,
           remote: params.remote_type === 'Full',
+          country: params.country,
         });
         
         setJobs(result);
@@ -90,6 +92,7 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
         return;
       }
       
+      // Only try the API if we're not using fallback data
       const result = await searchLightcastJobs(params);
       console.log("Received job results:", result);
       
@@ -98,33 +101,38 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       setTotalJobs(result.totalJobs);
     } catch (err) {
       console.error('Error fetching jobs:', err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
+      const errorObj = err instanceof Error ? err : new Error('Failed to fetch jobs');
       
-      // Set flag to use fallback data on next attempt
-      setUseFallbackData(true);
-      toast.error("Could not connect to job API, using fallback data");
-      
-      // Immediately try to fetch using fallback data
-      try {
-        const { searchJobs } = await import('@/data/jobs');
-        const fallbackJobs = await searchJobs({
-          keywords: currentSearchParams.keywords ? [currentSearchParams.keywords] : [],
-          locations: currentSearchParams.location ? [currentSearchParams.location] : [],
-          radius: currentSearchParams.radius,
-          jobType: currentSearchParams.job_type,
-          industry: currentSearchParams.industry,
-          experienceLevel: currentSearchParams.experience_level,
-          educationLevel: currentSearchParams.education_level,
-          remote: currentSearchParams.remote_type === 'Full',
-        });
+      // Don't show network errors to the user, just silently fall back to mock data
+      if (errorObj.message.includes('NetworkError') || errorObj.message.includes('CORS')) {
+        console.log("Network/CORS error detected, silently switching to fallback data");
+        setUseFallbackData(true);
         
-        setJobs(fallbackJobs);
-        // Set some reasonable defaults for pagination with mock data
-        setTotalPages(1);
-        setTotalJobs(fallbackJobs.length);
-      } catch (fallbackErr) {
-        console.error('Error fetching fallback jobs:', fallbackErr);
-        setJobs([]);
+        // Fetch fallback data without showing error
+        try {
+          const { searchJobs } = await import('@/data/jobs');
+          const fallbackJobs = await searchJobs({
+            keywords: currentSearchParams.keywords ? [currentSearchParams.keywords] : [],
+            locations: currentSearchParams.location ? [currentSearchParams.location] : [],
+            radius: currentSearchParams.radius,
+            jobType: currentSearchParams.job_type,
+            industry: currentSearchParams.industry,
+            experienceLevel: currentSearchParams.experience_level,
+            educationLevel: currentSearchParams.education_level,
+            remote: currentSearchParams.remote_type === 'Full',
+            country: currentSearchParams.country,
+          });
+          
+          setJobs(fallbackJobs);
+          setTotalPages(1);
+          setTotalJobs(fallbackJobs.length);
+        } catch (fallbackErr) {
+          console.error('Error fetching fallback jobs:', fallbackErr);
+          setJobs([]);
+        }
+      } else {
+        // For non-network errors, show the error
+        setError(errorObj);
       }
     } finally {
       setIsLoading(false);

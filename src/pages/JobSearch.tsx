@@ -415,6 +415,7 @@ const JobSearch = () => {
               totalPages={totalPages}
               totalJobs={totalJobs}
               onPageChange={setPage}
+              country="canada"
             />
           </div>
         </div>
