@@ -13,6 +13,7 @@ import EmployerDashboardPage from "./pages/EmployerDashboardPage";
 import EmployerSearchVeteransPage from "./pages/EmployerSearchVeteransPage";
 import CommunityForums from "./pages/CommunityForums";
 import RecommendedJobs from "./pages/RecommendedJobs";
+import CareerCounseling from "./pages/CareerCounseling";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/sonner";
@@ -33,6 +34,7 @@ function App() {
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/history" element={<ApplicationsPage />} />
             <Route path="/recommendations" element={<RecommendedJobs />} />
+            <Route path="/resources/career-counseling" element={<CareerCounseling />} />
             <Route path="/employer/post-job" element={<PostJobPage />} />
             <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
             <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
