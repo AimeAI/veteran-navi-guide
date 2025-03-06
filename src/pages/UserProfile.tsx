@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import VeteranBadges from "@/components/VeteranBadges";
 import { determineEarnedBadges } from "@/utils/badgeUtils";
 import ResumeParser from "@/components/resume/ResumeParser";
+import ProfileCompletionProgress from "@/components/ProfileCompletionProgress";
 
 const UserProfile = () => {
   const { user, updateProfile } = useUser();
@@ -402,7 +404,10 @@ const UserProfile = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-8">
-                <ProfilePictureUpload size="lg" className="mx-auto md:mx-0" />
+                <div className="w-full md:w-1/3 space-y-6">
+                  <ProfilePictureUpload size="lg" className="mx-auto md:mx-0" />
+                  <ProfileCompletionProgress />
+                </div>
                 
                 <div className="flex-1">
                   {isEditing ? renderProfileEditMode() : renderProfileViewMode()}

@@ -11,6 +11,7 @@ import LoadingButton from '@/components/ui/LoadingButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { EmployerProfile } from '@/types/application';
+import ProfileCompletionProgress from '@/components/ProfileCompletionProgress';
 
 // Import new rating and review components
 import EmployerRating from '@/components/EmployerRating';
@@ -84,6 +85,14 @@ const EmployerProfilePage = () => {
         <Building className="mr-2 h-8 w-8" />
         Employer Profile
       </h1>
+      
+      <div className="mb-6">
+        <Card>
+          <CardContent className="pt-6">
+            <ProfileCompletionProgress />
+          </CardContent>
+        </Card>
+      </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
