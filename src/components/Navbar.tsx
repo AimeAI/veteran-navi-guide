@@ -4,18 +4,20 @@ import { Link } from 'react-router-dom';
 import { Briefcase, User, BookOpen, Building, ChevronDown } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { cn } from '@/lib/utils';
-import NavDropdown from './NavDropdown';
-import LanguageSelector from './LanguageSelector';
 import { useTranslation } from 'react-i18next';
+import LanguageSelector from './LanguageSelector';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUser } from '@/context/UserContext';
+import NavDropdown from './NavDropdown';
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useUser();
   
   // Navigation data
   const navSections = [
@@ -100,22 +102,28 @@ const Navbar: React.FC = () => {
             {/* Mobile Menu */}
             <MobileMenu sections={navSections} />
 
-            {/* Login/Register buttons for desktop */}
+            {/* Login/Register buttons for desktop or user dropdown if logged in */}
             <div className="hidden lg:flex lg:items-center lg:space-x-4">
-              <Link
-                to="/auth"
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                aria-label="Log in to your account"
-              >
-                {t('common.login')}
-              </Link>
-              <Link
-                to="/auth?tab=signup"
-                className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                aria-label="Create a new account"
-              >
-                {t('common.signup')}
-              </Link>
+              {user ? (
+                <NavDropdown />
+              ) : (
+                <>
+                  <Link
+                    to="/auth"
+                    className="px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                    aria-label="Log in to your account"
+                  >
+                    {t('common.login')}
+                  </Link>
+                  <Link
+                    to="/auth?tab=signup"
+                    className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                    aria-label="Create a new account"
+                  >
+                    {t('common.signup')}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

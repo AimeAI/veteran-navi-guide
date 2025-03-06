@@ -7,7 +7,11 @@
     "login": "Log in",
     "signup": "Sign up",
     "search": "Search",
-    "home": "Home"
+    "home": "Home",
+    "profile": "Profile",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "logout": "Log out"
   },
   "navigation": {
     "jobSearch": "Job Search",
@@ -45,5 +49,14 @@
     "militaryBranch": "Military Branch",
     "companyName": "Company Name",
     "passwordRequirements": "Password must be at least 8 characters with uppercase, lowercase, and numbers"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "mainNavigation": "Main Navigation",
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu",
+    "languageSelector": "Language selector",
+    "currentLanguage": "Current language",
+    "toggleSection": "Toggle section"
   }
 }

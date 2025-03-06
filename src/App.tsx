@@ -79,6 +79,10 @@ function App() {
                   </RequireAuth>
                 } />
                 <Route path="/ab-testing" element={<AbTestingPage />} />
+                <Route path="/profile/settings" element={<UserProfile />} />
+                <Route path="/profile/resume" element={<UserProfile />} />
+                <Route path="/job-alerts" element={<UserProfile />} />
+                <Route path="/recommended" element={<RecommendedJobs />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

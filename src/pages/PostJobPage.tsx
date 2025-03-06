@@ -4,7 +4,6 @@ import PostJobForm from '@/components/PostJobForm';
 import AbTestingDashboard from '@/components/abTesting/AbTestingDashboard';
 import { Briefcase, FlaskConical } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Navbar from '@/components/Navbar';
 
 const PostJobPage = () => {
   const [activeTab, setActiveTab] = useState('post');
@@ -12,8 +11,6 @@ const PostJobPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
-      
       <main className="flex-grow container mx-auto px-4 py-12 sm:px-6 lg:px-8" id="main-content">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center mb-8">
