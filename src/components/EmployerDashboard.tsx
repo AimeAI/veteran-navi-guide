@@ -299,7 +299,7 @@ const EmployerDashboard = () => {
                     <div key={application.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={candidateProfiles.find(c => c.id === application.candidateId)?.photo} />
+                          <AvatarImage src={application.candidatePhoto} />
                           <AvatarFallback>{application.candidateName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <div>

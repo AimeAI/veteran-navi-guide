@@ -1,10 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, User, BookOpen, Building } from 'lucide-react';
-import NavDropdown from './NavDropdown';
+import { Briefcase, User, BookOpen, Building, ChevronDown } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { cn } from '@/lib/utils';
+import NavDropdown from './NavDropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Navigation data
 const navSections = [
@@ -65,12 +71,21 @@ const Navbar: React.FC = () => {
             {/* Desktop Navigation */}
             <nav aria-label="Main Navigation" className="hidden lg:flex lg:items-center lg:space-x-4 xl:space-x-6">
               {navSections.map((section) => (
-                <div key={section.title}>
-                  {/* We'll implement this dropdown properly */}
-                  <Link to={section.items[0].href} className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200">
-                    {section.icon}
-                    <span className="ml-2">{section.title}</span>
-                  </Link>
+                <div key={section.title} className="relative">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200">
+                      {section.icon}
+                      <span className="ml-2">{section.title}</span>
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-48">
+                      {section.items.map((item) => (
+                        <DropdownMenuItem key={item.label} asChild>
+                          <Link to={item.href}>{item.label}</Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))}
             </nav>
