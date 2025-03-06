@@ -1,5 +1,6 @@
 
 import { mockJobs } from "./mockJobs";
+import { searchLightcastJobs } from "@/utils/lightcastApi";
 
 // Define the search parameters interface
 interface SearchParams {
@@ -17,10 +18,41 @@ interface SearchParams {
   companySize?: string; // Added company size parameter
   companyRating?: number; // Added company rating parameter
   benefits?: string[]; // Added benefits parameter
+  useLightcastApi?: boolean; // Flag to use Lightcast API instead of mock data
 }
 
 // Search function to filter jobs based on criteria
-export const searchJobs = (params: SearchParams) => {
+export const searchJobs = async (params: SearchParams) => {
+  // Check if we should use Lightcast API
+  if (params.useLightcastApi) {
+    try {
+      // Map our search params to Lightcast API params
+      const lightcastParams = {
+        keywords: params.keywords ? params.keywords.join(' ') : '',
+        location: params.locations ? params.locations[0] : '',
+        radius: params.radius,
+        job_type: params.jobType,
+        industry: params.industry,
+        experience_level: params.experienceLevel,
+        education_level: params.educationLevel,
+        remote_type: params.remote ? 'Full' : undefined,
+      };
+      
+      const result = await searchLightcastJobs(lightcastParams);
+      return result.jobs;
+    } catch (error) {
+      console.error('Error searching Lightcast jobs:', error);
+      // Fall back to mock data if API fails
+      return filterMockJobs(params);
+    }
+  }
+  
+  // Use mock data if not using Lightcast API
+  return filterMockJobs(params);
+};
+
+// Helper function to filter mock jobs based on search params
+const filterMockJobs = (params: SearchParams) => {
   let filteredJobs = [...mockJobs];
 
   // Filter by keywords

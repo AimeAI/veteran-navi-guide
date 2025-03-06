@@ -11,6 +11,7 @@ import { RequireAuth } from "./components/RequireAuth";
 import { LanguageProvider } from "./context/LanguageContext";
 import "./i18n";
 import SecurityMonitor from "./components/security/SecurityMonitor";
+import JobBoardPage from "./pages/JobBoardPage";
 
 // Performance optimization: Lazy load pages to reduce initial bundle size
 const Index = lazy(() => import("./pages/Index"));
