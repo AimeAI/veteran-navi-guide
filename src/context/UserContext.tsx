@@ -31,6 +31,7 @@ interface UserContextType {
   updateEmployerProfile: (updatedProfile: Partial<EmployerProfile>) => void;
   resendVerificationEmail: () => Promise<void>;
   uploadProfilePicture: (file: File) => Promise<string>;
+  socialLogin: (provider: string, isEmployer?: boolean) => Promise<void>; // Add new social login method
 }
 
 // Create the context with initial values
@@ -355,6 +356,60 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Implement the socialLogin method
+  const socialLogin = async (provider: string, isEmployer = false) => {
+    setIsLoading(true);
+    
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, this would be an API call to authenticate with the provider
+      console.log(`Social login request for provider: ${provider}, isEmployer: ${isEmployer}`);
+      
+      if (isEmployer) {
+        // Hardcoded employer authentication for demo purposes
+        setUser({ 
+          name: "TechVets Solutions Inc.", 
+          email: `demo_${provider}@example.com`, 
+          phone: "613-555-1234",
+          location: "Ottawa, ON",
+          militaryBranch: "",
+          yearsOfService: "",
+          rank: "",
+          bio: "A technology company dedicated to hiring and supporting veterans in the tech industry.",
+          isAuthenticated: true,
+          emailVerified: true,
+          role: "employer",
+          employerProfile: initialEmployerProfile,
+          authProvider: provider
+        });
+      } else {
+        // Hardcoded veteran authentication for demo purposes
+        setUser({ 
+          ...initialUserProfile, 
+          email: `demo_${provider}@example.com`, 
+          isAuthenticated: true, 
+          role: "veteran",
+          authProvider: provider
+        });
+      }
+      
+      toast.success(`${provider} login successful!`);
+    } catch (error) {
+      console.error(`Social login error with ${provider}:`, error);
+      
+      // Show appropriate error message
+      toast.error(`${provider} login failed`, {
+        description: "An unexpected error occurred. Please try again."
+      });
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <UserContext.Provider value={{ 
       user, 
@@ -365,7 +420,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       updateProfile, 
       updateEmployerProfile,
       resendVerificationEmail,
-      uploadProfilePicture 
+      uploadProfilePicture,
+      socialLogin // Add the new method to the context
     }}>
       {children}
     </UserContext.Provider>
