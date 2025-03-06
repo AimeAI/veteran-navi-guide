@@ -1,5 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
+import { UserRole, EmployerProfile } from "@/types/application";
 
 // Define types for our user profile
 export interface UserProfile {
@@ -14,16 +16,19 @@ export interface UserProfile {
   isAuthenticated: boolean;
   emailVerified: boolean;
   profilePicture?: string;
+  role: UserRole;
+  employerProfile?: EmployerProfile;
 }
 
 // Interface for the context
 interface UserContextType {
   user: UserProfile | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, militaryBranch: string) => Promise<void>;
+  login: (email: string, password: string, isEmployer?: boolean) => Promise<void>;
+  signup: (email: string, password: string, militaryBranch: string, isEmployer?: boolean, companyName?: string) => Promise<void>;
   logout: () => void;
   updateProfile: (updatedProfile: Partial<UserProfile>) => void;
+  updateEmployerProfile: (updatedProfile: Partial<EmployerProfile>) => void;
   resendVerificationEmail: () => Promise<void>;
   uploadProfilePicture: (file: File) => Promise<string>;
 }
@@ -43,7 +48,22 @@ const initialUserProfile: UserProfile = {
   bio: "Software Engineer with 4 years of experience. Former CAF member with background in communications and logistics. Skilled in team leadership and project management.",
   isAuthenticated: false,
   emailVerified: false,
-  profilePicture: undefined
+  profilePicture: undefined,
+  role: "veteran"
+};
+
+// Initial employer profile data
+const initialEmployerProfile: EmployerProfile = {
+  id: "emp1",
+  companyName: "TechVets Solutions Inc.",
+  industry: "Information Technology",
+  companySize: "50-100",
+  location: "Ottawa, ON",
+  website: "https://www.techvets-example.com",
+  description: "A technology company dedicated to hiring and supporting veterans in the tech industry. We provide software solutions for government and private sector clients.",
+  contactEmail: "hr@techvets-example.com",
+  contactPhone: "613-555-1234",
+  isVerified: true
 };
 
 // Provider component
@@ -70,7 +90,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [user]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, isEmployer = false) => {
     setIsLoading(true);
     
     try {
@@ -78,15 +98,34 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // In a real app, this would be an API call to verify credentials
-      console.log("Login request for:", email);
+      console.log("Login request for:", email, isEmployer ? "(employer)" : "(veteran)");
       
       // Simulate authentication failure (for demo purposes)
       if (password === "wrongpassword") {
         throw new Error("Invalid email or password");
       }
       
-      // Hardcoded authentication for demo purposes
-      setUser({ ...initialUserProfile, email, isAuthenticated: true });
+      if (isEmployer) {
+        // Hardcoded employer authentication for demo purposes
+        setUser({ 
+          name: "TechVets Solutions Inc.", 
+          email, 
+          phone: "613-555-1234",
+          location: "Ottawa, ON",
+          militaryBranch: "",
+          yearsOfService: "",
+          rank: "",
+          bio: "A technology company dedicated to hiring and supporting veterans in the tech industry.",
+          isAuthenticated: true,
+          emailVerified: true,
+          role: "employer",
+          employerProfile: initialEmployerProfile
+        });
+      } else {
+        // Hardcoded veteran authentication for demo purposes
+        setUser({ ...initialUserProfile, email, isAuthenticated: true, role: "veteran" });
+      }
+      
       toast.success("Login successful!");
     } catch (error) {
       console.error("Login error:", error);
@@ -108,37 +147,68 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const signup = async (email: string, password: string, militaryBranch: string) => {
+  const signup = async (
+    email: string, 
+    password: string, 
+    militaryBranch: string, 
+    isEmployer = false,
+    companyName?: string
+  ) => {
     setIsLoading(true);
     
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In a real app with Supabase, this would be:
-      // const { data, error } = await supabase.auth.signUp({
-      //   email,
-      //   password,
-      //   options: {
-      //     data: { militaryBranch }
-      //   }
-      // });
+      if (isEmployer && !companyName) {
+        throw new Error("Company name is required for employer accounts");
+      }
       
-      console.log("Signup request for:", { email, militaryBranch });
+      console.log("Signup request for:", { 
+        email, 
+        militaryBranch, 
+        isEmployer, 
+        companyName 
+      });
       
       // Simulate email already in use error (for demo purposes)
       if (email === "taken@example.com") {
         throw new Error("Email is already registered");
       }
       
-      // Create new user with provided data
-      setUser({
-        ...initialUserProfile,
-        email,
-        militaryBranch,
-        isAuthenticated: true,
-        emailVerified: false
-      });
+      if (isEmployer) {
+        // Create new employer user with provided data
+        setUser({
+          name: companyName || "",
+          email,
+          phone: "",
+          location: "",
+          militaryBranch: "",
+          yearsOfService: "",
+          rank: "",
+          bio: "",
+          isAuthenticated: true,
+          emailVerified: false,
+          role: "employer",
+          employerProfile: {
+            ...initialEmployerProfile,
+            companyName: companyName || "",
+            id: `emp-${Date.now()}`,
+            contactEmail: email,
+            isVerified: false
+          }
+        });
+      } else {
+        // Create new veteran user with provided data
+        setUser({
+          ...initialUserProfile,
+          email,
+          militaryBranch,
+          isAuthenticated: true,
+          emailVerified: false,
+          role: "veteran"
+        });
+      }
       
       toast.success("Account created successfully!", {
         description: "Please check your email for a verification link."
@@ -185,6 +255,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const updateEmployerProfile = (updatedProfile: Partial<EmployerProfile>) => {
+    if (user && user.role === "employer" && user.employerProfile) {
+      try {
+        // Simulate API call in a real app
+        const newEmployerProfile = { ...user.employerProfile, ...updatedProfile };
+        setUser({
+          ...user,
+          employerProfile: newEmployerProfile
+        });
+        toast.success("Company profile updated successfully!");
+      } catch (error) {
+        console.error("Employer profile update error:", error);
+        toast.error("Failed to update company profile", {
+          description: "Please try again later."
+        });
+      }
+    }
+  };
+
   const resendVerificationEmail = async () => {
     if (!user) return;
     
@@ -192,12 +281,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsLoading(true);
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In a real app with Supabase, this would be:
-      // const { error } = await supabase.auth.resend({
-      //   type: 'signup',
-      //   email: user.email,
-      // });
       
       console.log("Resending verification email to:", user.email);
       
@@ -235,14 +318,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (file.size > maxSize) {
         throw new Error("File is too large. Maximum size is 5MB.");
       }
-      
-      // In a real app with Supabase, this would be:
-      // const filePath = `profile-pictures/${user?.id}/${file.name}`;
-      // const { data, error } = await supabase.storage
-      //   .from('profile-pictures')
-      //   .upload(filePath, file, {
-      //     upsert: true,
-      //   });
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -287,6 +362,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       signup, 
       logout, 
       updateProfile, 
+      updateEmployerProfile,
       resendVerificationEmail,
       uploadProfilePicture 
     }}>

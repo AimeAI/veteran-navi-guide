@@ -1,8 +1,12 @@
 
 import React, { ReactNode } from "react";
-import { UserProvider } from "./UserContext";
 import { JobProvider } from "./JobContext";
+import { UserProvider } from "./UserContext";
 import { JobAlertProvider } from "./JobAlertContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Create a client
+const queryClient = new QueryClient();
 
 interface AppProviderProps {
   children: ReactNode;
@@ -10,12 +14,14 @@ interface AppProviderProps {
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   return (
-    <UserProvider>
-      <JobProvider>
-        <JobAlertProvider>
-          {children}
-        </JobAlertProvider>
-      </JobProvider>
-    </UserProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserProvider>
+        <JobProvider>
+          <JobAlertProvider>
+            {children}
+          </JobAlertProvider>
+        </JobProvider>
+      </UserProvider>
+    </QueryClientProvider>
   );
 };

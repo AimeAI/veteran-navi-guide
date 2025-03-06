@@ -10,6 +10,7 @@ import UserProfile from "./pages/UserProfile";
 import ApplicationsPage from "./pages/ApplicationsPage";
 import PostJobPage from "./pages/PostJobPage";
 import EmployerDashboardPage from "./pages/EmployerDashboardPage";
+import EmployerProfilePage from "./pages/EmployerProfilePage";
 import VeteranDashboardPage from "./pages/VeteranDashboardPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import EmployerSearchVeteransPage from "./pages/EmployerSearchVeteransPage";
@@ -52,6 +53,7 @@ function App() {
             <Route path="/resources/military-transition" element={<MilitaryTransitionResources />} />
             <Route path="/employer/post-job" element={<PostJobPage />} />
             <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
+            <Route path="/employer/profile" element={<EmployerProfilePage />} />
             <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
             <Route path="/resources/forums" element={<CommunityForums />} />
             <Route path="/topic/:topicId" element={<TopicDetail />} />

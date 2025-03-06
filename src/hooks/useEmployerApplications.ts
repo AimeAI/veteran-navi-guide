@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { JobApplication, ApplicationStatus } from '@/types/application';
+import { useState } from 'react';
+import { JobApplication, ApplicationStatus, MessageToApplicant } from '@/types/application';
+import { toast } from 'sonner';
+import { Job } from '@/context/JobContext';
 import { mockJobs } from '@/data/mockJobs';
 import { currentUserProfile } from '@/utils/recommendationAlgorithm';
 
@@ -10,240 +11,284 @@ const mockApplications: JobApplication[] = [
   {
     id: 'app-1',
     jobId: '1',
-    job: mockJobs[0],
-    applicantId: 'user2',
-    applicant: {
-      id: 'user2',
-      name: 'Sarah Thompson',
-      skills: ['security', 'risk management', 'leadership', 'project management'],
-      militaryBackground: {
-        branch: 'Canadian Army',
-        rank: 'Captain',
-        yearsOfService: 10,
-        mosCodes: ['00213', '00161'],
-      },
-      securityClearance: 'Secret',
-      preferredLocations: ['Ottawa, ON', 'Toronto, ON']
+    job: {
+      id: '1',
+      title: 'Security Operations Manager',
+      company: 'TechDefense Solutions',
+      location: 'Ottawa, ON',
+      description: 'Seeking a veteran with security background to lead our operations team.',
+      category: 'Security',
+      salaryRange: '$80,000 - $100,000',
+      clearanceLevel: 'Secret',
+      mosCode: ['00161'],
+      requiredSkills: ['leadership', 'security', 'risk assessment'],
+      preferredSkills: ['project management', 'communication'],
+      remote: false,
+      jobType: 'full-time',
     },
-    appliedDate: '2023-10-15T14:30:00Z',
+    applicantId: 'user1',
+    applicant: currentUserProfile,
+    appliedDate: '2023-05-15',
     status: 'reviewing',
-    resume: 'sarah-thompson-resume.pdf',
-    coverLetter: 'I believe my experience in military security operations makes me an ideal candidate...',
+    resume: 'resume-john-doe.pdf',
+    coverLetter: 'cover-letter-john-doe.pdf',
     matchScore: 92
   },
   {
     id: 'app-2',
-    jobId: '1',
-    job: mockJobs[0],
-    applicantId: 'user3',
-    applicant: {
-      id: 'user3',
-      name: 'Michael Chen',
-      skills: ['security', 'cybersecurity', 'leadership', 'risk assessment'],
-      militaryBackground: {
-        branch: 'Canadian Air Force',
-        rank: 'Lieutenant',
-        yearsOfService: 6,
-        mosCodes: ['00214', '00158'],
-      },
-      securityClearance: 'Top Secret',
-      preferredLocations: ['Ottawa, ON', 'Montreal, QC']
+    jobId: '2',
+    job: {
+      id: '2',
+      title: 'Logistics Coordinator',
+      company: 'Canadian Supply Chain Inc.',
+      location: 'Halifax, NS',
+      description: 'Perfect for veterans with logistics MOSID.',
+      category: 'Logistics',
+      salaryRange: '$65,000 - $80,000',
+      clearanceLevel: 'None',
+      mosCode: ['00168'],
+      requiredSkills: ['logistics', 'inventory management', 'supply chain'],
+      preferredSkills: ['leadership', 'communication'],
+      remote: false,
+      jobType: 'full-time'
     },
-    appliedDate: '2023-10-17T09:45:00Z',
+    applicantId: 'user2',
+    applicant: {
+      ...currentUserProfile,
+      id: 'user2',
+      name: 'Maria Rodriguez',
+      skills: ['logistics', 'inventory management', 'leadership'],
+    },
+    appliedDate: '2023-05-18',
     status: 'pending',
-    resume: 'michael-chen-resume.pdf',
+    resume: 'resume-maria-rodriguez.pdf',
     matchScore: 85
   },
   {
     id: 'app-3',
-    jobId: '2',
-    job: mockJobs[1],
-    applicantId: 'user4',
-    applicant: {
-      id: 'user4',
-      name: 'Jessica Rodriguez',
-      skills: ['logistics', 'supply chain', 'inventory management', 'leadership'],
-      militaryBackground: {
-        branch: 'Canadian Navy',
-        rank: 'Petty Officer',
-        yearsOfService: 8,
-        mosCodes: ['00168', 'SUPPLY'],
-      },
-      preferredLocations: ['Halifax, NS', 'Victoria, BC']
+    jobId: '3',
+    job: {
+      id: '3',
+      title: 'Healthcare Administrator',
+      company: 'Veterans Medical Centre',
+      location: 'Remote - Canada',
+      description: 'Join our team dedicated to improving healthcare for veterans.',
+      category: 'Healthcare',
+      salaryRange: '$70,000 - $90,000',
+      clearanceLevel: 'None',
+      mosCode: [],
+      requiredSkills: ['healthcare', 'administration', 'organization'],
+      preferredSkills: ['leadership', 'project management'],
+      remote: true,
+      jobType: 'full-time'
     },
-    appliedDate: '2023-10-14T11:20:00Z',
+    applicantId: 'user3',
+    applicant: {
+      ...currentUserProfile,
+      id: 'user3',
+      name: 'David Washington',
+      skills: ['healthcare', 'administration', 'project management'],
+    },
+    appliedDate: '2023-05-21',
     status: 'interviewing',
-    resume: 'jessica-rodriguez-resume.pdf',
-    coverLetter: 'With my experience in military logistics and supply chain management...',
+    resume: 'resume-david-washington.pdf',
+    coverLetter: 'cover-letter-david-washington.pdf',
     matchScore: 95
   },
   {
     id: 'app-4',
     jobId: '4',
-    job: mockJobs[3],
-    applicantId: 'user5',
-    applicant: {
-      id: 'user5',
-      name: 'David Wilson',
-      skills: ['cybersecurity', 'network security', 'threat analysis', 'risk assessment'],
-      militaryBackground: {
-        branch: 'Canadian Army',
-        rank: 'Warrant Officer',
-        yearsOfService: 12,
-        mosCodes: ['00271', '00378'],
-      },
-      securityClearance: 'Secret',
-      preferredLocations: ['Toronto, ON', 'Ottawa, ON']
+    job: {
+      id: '4',
+      title: 'Cybersecurity Analyst',
+      company: 'DefenceNet Systems',
+      location: 'Toronto, ON',
+      description: 'Ideal for veterans with intelligence or cybersecurity background.',
+      category: 'Information Technology',
+      salaryRange: '$75,000 - $95,000',
+      clearanceLevel: 'Secret',
+      mosCode: ['00271'],
+      requiredSkills: ['cybersecurity', 'network security', 'incident response'],
+      preferredSkills: ['communication', 'risk assessment'],
+      remote: false,
+      jobType: 'full-time'
     },
-    appliedDate: '2023-10-16T16:10:00Z',
-    status: 'offered',
-    resume: 'david-wilson-resume.pdf',
-    coverLetter: 'My background in military intelligence and cybersecurity operations...',
+    applicantId: 'user4',
+    applicant: {
+      ...currentUserProfile,
+      id: 'user4',
+      name: 'Sarah Johnson',
+      skills: ['cybersecurity', 'risk assessment', 'network security'],
+    },
+    appliedDate: '2023-05-25',
+    status: 'hired',
+    resume: 'resume-sarah-johnson.pdf',
+    coverLetter: 'cover-letter-sarah-johnson.pdf',
     matchScore: 98
   },
   {
     id: 'app-5',
     jobId: '5',
-    job: mockJobs[4],
-    applicantId: 'user6',
-    applicant: {
-      id: 'user6',
-      name: 'Emily Brown',
-      skills: ['project management', 'leadership', 'budgeting', 'scheduling'],
-      militaryBackground: {
-        branch: 'Canadian Army',
-        rank: 'Captain',
-        yearsOfService: 7,
-        mosCodes: ['00181', '00307'],
-      },
-      preferredLocations: ['Edmonton, AB', 'Calgary, AB']
+    job: {
+      id: '5',
+      title: 'Project Manager',
+      company: 'Veterans Construction Group',
+      location: 'Edmonton, AB',
+      description: 'Looking for veterans with leadership experience.',
+      category: 'Construction',
+      salaryRange: '$85,000 - $110,000',
+      clearanceLevel: 'None',
+      mosCode: [],
+      requiredSkills: ['project management', 'leadership', 'organization'],
+      preferredSkills: ['communication', 'budgeting'],
+      remote: false,
+      jobType: 'contract'
     },
-    appliedDate: '2023-10-12T10:05:00Z',
-    status: 'hired',
-    resume: 'emily-brown-resume.pdf',
-    matchScore: 90
-  },
-  {
-    id: 'app-6',
-    jobId: '5',
-    job: mockJobs[4],
-    applicantId: 'user7',
+    applicantId: 'user5',
     applicant: {
-      id: 'user7',
-      name: 'James Lee',
-      skills: ['project management', 'construction', 'leadership'],
-      militaryBackground: {
-        branch: 'Canadian Army Reserve',
-        rank: 'Sergeant',
-        yearsOfService: 5,
-        mosCodes: ['00171', '00306'],
-      },
-      preferredLocations: ['Calgary, AB', 'Edmonton, AB']
+      ...currentUserProfile,
+      id: 'user5',
+      name: 'Michael Chen',
+      skills: ['organization', 'communication', 'budgeting'],
     },
-    appliedDate: '2023-10-13T14:25:00Z',
+    appliedDate: '2023-05-28',
     status: 'rejected',
-    resume: 'james-lee-resume.pdf',
+    resume: 'resume-michael-chen.pdf',
     matchScore: 72
   }
 ];
 
+// Mock data for messages
+const mockMessages: MessageToApplicant[] = [
+  {
+    id: 'msg-1',
+    applicationId: 'app-3',
+    message: 'Thank you for your application. We would like to schedule an interview with you next week.',
+    sentDate: '2023-05-23',
+    read: true
+  },
+  {
+    id: 'msg-2',
+    applicationId: 'app-4',
+    message: 'Congratulations! We are pleased to offer you the position of Cybersecurity Analyst.',
+    sentDate: '2023-05-26',
+    read: false
+  }
+];
+
+export interface EmployerApplicationsFilters {
+  searchQuery: string;
+  statusFilter: ApplicationStatus | 'all';
+  jobTitleFilter: string;
+}
+
 export function useEmployerApplications() {
-  const [applications, setApplications] = useState<JobApplication[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [applications, setApplications] = useState<JobApplication[]>(mockApplications);
+  const [messages, setMessages] = useState<MessageToApplicant[]>(mockMessages);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  // Fetch all applications for the employer's jobs
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        setLoading(true);
+  
+  const fetchApplications = async (filters?: EmployerApplicationsFilters) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      let filtered = [...mockApplications];
+      
+      if (filters) {
+        const { searchQuery, statusFilter, jobTitleFilter } = filters;
         
-        // In a real app, this would be a Supabase query
-        // For now, we'll simulate a network request with setTimeout
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (searchQuery) {
+          filtered = filtered.filter(app => 
+            app.applicant.name.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
         
-        setApplications(mockApplications);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching applications:', err);
-        setError('Failed to load applications');
-        toast({
-          title: 'Error',
-          description: 'Failed to load applications',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
+        if (statusFilter !== 'all') {
+          filtered = filtered.filter(app => app.status === statusFilter);
+        }
+        
+        if (jobTitleFilter) {
+          filtered = filtered.filter(app => 
+            app.job.title.toLowerCase().includes(jobTitleFilter.toLowerCase())
+          );
+        }
       }
-    };
-
-    fetchApplications();
-  }, [toast]);
-
-  // Update application status
+      
+      setApplications(filtered);
+      return filtered;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred fetching applications';
+      setError(errorMessage);
+      console.error('Error fetching applications:', err);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const updateApplicationStatus = async (applicationId: string, newStatus: ApplicationStatus) => {
+    setIsLoading(true);
+    
     try {
-      // In a real app, this would be a Supabase update
-      // For now, we'll simulate a network request with setTimeout
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      setApplications(prevApplications => 
-        prevApplications.map(app => 
-          app.id === applicationId ? { ...app, status: newStatus } : app
-        )
-      );
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      ));
       
-      const application = applications.find(app => app.id === applicationId);
-      
-      toast({
-        title: 'Status Updated',
-        description: `${application?.applicant.name}'s application is now ${newStatus}`,
-        variant: newStatus === 'rejected' ? 'destructive' : 'default',
-      });
-      
+      toast.success(`Application status updated to ${newStatus}`);
       return true;
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred updating status';
+      setError(errorMessage);
       console.error('Error updating application status:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to update application status',
-        variant: 'destructive',
-      });
+      toast.error('Failed to update application status');
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  // Send message to applicant
+  
   const sendMessageToApplicant = async (applicationId: string, message: string) => {
+    setIsLoading(true);
+    
     try {
-      // In a real app, this would be a Supabase insert
-      // For now, we'll simulate a network request with setTimeout
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const application = applications.find(app => app.id === applicationId);
+      const newMessage: MessageToApplicant = {
+        id: `msg-${Date.now()}`,
+        applicationId,
+        message,
+        sentDate: new Date().toISOString(),
+        read: false
+      };
       
-      toast({
-        title: 'Message Sent',
-        description: `Your message to ${application?.applicant.name} has been sent`,
-      });
-      
+      setMessages(prev => [...prev, newMessage]);
+      toast.success('Message sent to applicant');
       return true;
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred sending message';
+      setError(errorMessage);
       console.error('Error sending message:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to send message',
-        variant: 'destructive',
-      });
+      toast.error('Failed to send message');
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
-
+  
   return {
     applications,
-    loading,
+    messages,
+    isLoading,
     error,
+    fetchApplications,
     updateApplicationStatus,
     sendMessageToApplicant
   };

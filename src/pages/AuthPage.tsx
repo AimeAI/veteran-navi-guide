@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,10 @@ import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Building, Briefcase, User } from "lucide-react";
 import { isValidEmail, isStrongPassword } from "@/utils/validation";
 import FormErrorMessage from "@/components/ui/form-error-message";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface FormError {
   [key: string]: string;
@@ -25,19 +27,26 @@ const AuthPage: React.FC = () => {
       if (!user.emailVerified) {
         navigate("/verify-email");
       } else {
-        navigate("/");
+        if (user.role === "employer") {
+          navigate("/employer/manage-applications");
+        } else {
+          navigate("/");
+        }
       }
     }
   }, [user, navigate]);
   
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [loginAsEmployer, setLoginAsEmployer] = useState(false);
   const [loginErrors, setLoginErrors] = useState<FormError>({});
   
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
   const [militaryBranch, setMilitaryBranch] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [userType, setUserType] = useState<"veteran" | "employer">("veteran");
   const [signupErrors, setSignupErrors] = useState<FormError>({});
   
   const validateLoginForm = (): boolean => {
@@ -76,8 +85,12 @@ const AuthPage: React.FC = () => {
       errors.confirmPassword = "Passwords do not match";
     }
     
-    if (!militaryBranch) {
+    if (userType === "veteran" && !militaryBranch) {
       errors.militaryBranch = "Military branch is required";
+    }
+    
+    if (userType === "employer" && !companyName) {
+      errors.companyName = "Company name is required";
     }
     
     setSignupErrors(errors);
@@ -92,8 +105,13 @@ const AuthPage: React.FC = () => {
     }
     
     try {
-      await login(loginEmail, loginPassword);
-      navigate("/");
+      await login(loginEmail, loginPassword, loginAsEmployer);
+      
+      if (loginAsEmployer) {
+        navigate("/employer/manage-applications");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login error:", error);
       // Error is handled by the UserContext with toast
@@ -108,23 +126,23 @@ const AuthPage: React.FC = () => {
     }
     
     try {
-      await signup(signupEmail, signupPassword, militaryBranch);
-      navigate("/");
+      await signup(
+        signupEmail, 
+        signupPassword, 
+        userType === "veteran" ? militaryBranch : "", 
+        userType === "employer",
+        userType === "employer" ? companyName : undefined
+      );
+      
+      if (userType === "employer") {
+        navigate("/employer/manage-applications");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Signup error:", error);
       // Error is handled by the UserContext with toast
     }
-  };
-
-  const renderFormError = (error: string | undefined) => {
-    if (!error) return null;
-    
-    return (
-      <div className="flex items-center mt-1 text-red-500 text-sm">
-        <AlertCircle className="h-4 w-4 mr-1" />
-        <span>{error}</span>
-      </div>
-    );
   };
 
   return (
@@ -194,6 +212,21 @@ const AuthPage: React.FC = () => {
                     />
                     <FormErrorMessage message={loginErrors.password} />
                   </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="login-as-employer"
+                        checked={loginAsEmployer}
+                        onChange={(e) => setLoginAsEmployer(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                      <Label htmlFor="login-as-employer" className="font-normal">
+                        <Building className="h-4 w-4 inline mr-1" />
+                        Login as an employer
+                      </Label>
+                    </div>
+                  </div>
                 </CardContent>
                 <CardFooter>
                   <LoadingButton 
@@ -214,11 +247,35 @@ const AuthPage: React.FC = () => {
               <CardHeader>
                 <CardTitle>Create an Account</CardTitle>
                 <CardDescription>
-                  Join our community of veterans and find your next opportunity
+                  Sign up to join our platform
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleSignup}>
                 <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="account-type">Account Type</Label>
+                    <RadioGroup 
+                      value={userType} 
+                      onValueChange={(value) => setUserType(value as "veteran" | "employer")}
+                      className="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="veteran" id="veteran" />
+                        <Label htmlFor="veteran" className="flex items-center cursor-pointer">
+                          <User className="h-4 w-4 mr-1" />
+                          Veteran
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="employer" id="employer" />
+                        <Label htmlFor="employer" className="flex items-center cursor-pointer">
+                          <Building className="h-4 w-4 mr-1" />
+                          Employer
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className={signupErrors.email ? "text-red-500" : ""}>
                       Email
@@ -239,26 +296,51 @@ const AuthPage: React.FC = () => {
                     />
                     <FormErrorMessage message={signupErrors.email} />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="military-branch" className={signupErrors.militaryBranch ? "text-red-500" : ""}>
-                      Military Branch
-                    </Label>
-                    <Input 
-                      id="military-branch" 
-                      type="text" 
-                      placeholder="e.g. Army, Navy, Air Force" 
-                      value={militaryBranch}
-                      onChange={(e) => {
-                        setMilitaryBranch(e.target.value);
-                        if (signupErrors.militaryBranch) {
-                          setSignupErrors({ ...signupErrors, militaryBranch: "" });
-                        }
-                      }}
-                      className={signupErrors.militaryBranch ? "border-red-500 focus-visible:ring-red-500" : ""}
-                      required
-                    />
-                    <FormErrorMessage message={signupErrors.militaryBranch} />
-                  </div>
+                  
+                  {userType === "veteran" ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="military-branch" className={signupErrors.militaryBranch ? "text-red-500" : ""}>
+                        Military Branch
+                      </Label>
+                      <Input 
+                        id="military-branch" 
+                        type="text" 
+                        placeholder="e.g. Army, Navy, Air Force" 
+                        value={militaryBranch}
+                        onChange={(e) => {
+                          setMilitaryBranch(e.target.value);
+                          if (signupErrors.militaryBranch) {
+                            setSignupErrors({ ...signupErrors, militaryBranch: "" });
+                          }
+                        }}
+                        className={signupErrors.militaryBranch ? "border-red-500 focus-visible:ring-red-500" : ""}
+                        required={userType === "veteran"}
+                      />
+                      <FormErrorMessage message={signupErrors.militaryBranch} />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="company-name" className={signupErrors.companyName ? "text-red-500" : ""}>
+                        Company Name
+                      </Label>
+                      <Input 
+                        id="company-name" 
+                        type="text" 
+                        placeholder="e.g. TechVets Solutions Inc." 
+                        value={companyName}
+                        onChange={(e) => {
+                          setCompanyName(e.target.value);
+                          if (signupErrors.companyName) {
+                            setSignupErrors({ ...signupErrors, companyName: "" });
+                          }
+                        }}
+                        className={signupErrors.companyName ? "border-red-500 focus-visible:ring-red-500" : ""}
+                        required={userType === "employer"}
+                      />
+                      <FormErrorMessage message={signupErrors.companyName} />
+                    </div>
+                  )}
+                  
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className={signupErrors.password ? "text-red-500" : ""}>
                       Password
