@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -16,17 +15,13 @@ const VeteranDashboard = () => {
   const { user } = useUser();
   const { savedJobs, jobs, appliedJobs } = useJobs();
   
-  // Fetch dashboard data
   const { data, isLoading } = useQuery({
     queryKey: ['veteranDashboard'],
     queryFn: async () => {
-      // This would be a Supabase query in a real implementation
       console.log('Fetching veteran dashboard data...');
       
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Mock data - would come from Supabase in a real implementation
       return {
         stats: {
           applications: appliedJobs.length,
@@ -74,7 +69,6 @@ const VeteranDashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Section */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{welcomeMessage}</h2>
         <p className="text-gray-600">
@@ -82,7 +76,6 @@ const VeteranDashboard = () => {
         </p>
       </div>
 
-      {/* Stats Overview */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -104,7 +97,6 @@ const VeteranDashboard = () => {
         <StatsCardGroup stats={data?.stats || { applications: 0, saved: 0, recommendations: 0, forumPosts: 0 }} />
       )}
 
-      {/* Recent Applications */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Recent Applications</h3>
@@ -122,7 +114,6 @@ const VeteranDashboard = () => {
                     <div>
                       <Skeleton className="h-5 w-40 mb-2" />
                       <Skeleton className="h-4 w-24 mb-1" />
-                      <Skeleton className="h-4 w-32" />
                     </div>
                     <Skeleton className="h-10 w-24" />
                   </div>
@@ -172,7 +163,6 @@ const VeteranDashboard = () => {
         )}
       </div>
 
-      {/* Job Recommendations */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Recommended For You</h3>
@@ -234,7 +224,6 @@ const VeteranDashboard = () => {
         )}
       </div>
 
-      {/* Forum Activity */}
       <div>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Community Activity</h3>

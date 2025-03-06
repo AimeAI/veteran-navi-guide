@@ -1,3 +1,4 @@
+
 // Types for our data
 export interface UserProfile {
   id: string;
@@ -71,7 +72,7 @@ export function getRecommendedJobs(
     
     // Check skill matches
     const skillMatches = userProfile.skills.filter(skill => 
-      job.requiredSkills.includes(skill) || 
+      job.requiredSkills?.includes(skill) || 
       (job.preferredSkills && job.preferredSkills.includes(skill))
     );
     matchDetails.skillMatches = skillMatches;
@@ -98,7 +99,7 @@ export function getRecommendedJobs(
     matchDetails.clearanceMatch = clearanceMatch;
     
     // Calculate overall match score (weighted)
-    const skillScore = (skillMatches.length / Math.max(job.requiredSkills.length, 1)) * 50;
+    const skillScore = (skillMatches.length / Math.max(job.requiredSkills?.length || 1, 1)) * 50;
     const mosScore = mosCodeMatches.length > 0 ? 20 : 0;
     const locationScore = locationMatch ? 15 : 0;
     const clearanceScore = clearanceMatch ? 15 : 0;

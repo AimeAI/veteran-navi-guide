@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -116,6 +117,7 @@ const RecommendedJobs = () => {
                   company={job.company}
                   location={job.location}
                   description={job.description}
+                  matchScore={matchScore}
                 />
               </div>
             ))}

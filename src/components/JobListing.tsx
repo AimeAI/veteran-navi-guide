@@ -13,6 +13,7 @@ interface JobListingProps {
   location: string;
   description: string;
   className?: string;
+  matchScore?: number; // Optional match score for recommendations
 }
 
 const JobListing: React.FC<JobListingProps> = ({
@@ -21,7 +22,8 @@ const JobListing: React.FC<JobListingProps> = ({
   company,
   location,
   description,
-  className
+  className,
+  matchScore
 }) => {
   const { getJobById } = useJobs();
   const job = getJobById(jobId);
@@ -41,7 +43,14 @@ const JobListing: React.FC<JobListingProps> = ({
       >
         <div className="sm:flex sm:items-start sm:justify-between">
           <div className="mb-4 sm:mb-0">
-            <h3 id={`job-title-${jobId}`} className="text-lg font-semibold text-gray-900">{title}</h3>
+            <div className="flex items-center gap-2">
+              <h3 id={`job-title-${jobId}`} className="text-lg font-semibold text-gray-900">{title}</h3>
+              {matchScore && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {Math.round(matchScore)}% Match
+                </span>
+              )}
+            </div>
             
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
               <div className="flex items-center">
