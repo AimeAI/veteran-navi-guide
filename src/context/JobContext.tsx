@@ -19,6 +19,13 @@ export interface Job {
   requiredMosCodes?: string[];
   date?: string;
   jobType?: string;
+  industry?: string; // Added industry field
+  experienceLevel?: string; // Added experience level field
+  educationLevel?: string; // Added education level field
+  companySize?: string; // Added company size field
+  companyRating?: number; // Added company rating field
+  benefits?: string[]; // Added benefits field
+  coordinates?: {lat: number, lng: number}; // Added for radius search
 }
 
 // Job context type
@@ -38,12 +45,20 @@ interface JobContextType {
 export interface JobFilterState {
   keywords: string;
   location: string;
+  radius?: number; // Added radius for location search
   category: string;
   salaryRange: string;
   mosCodes: string[];
   clearanceLevel: string[];
   remote: boolean;
   militarySkills?: string[];
+  industry?: string; // Added industry filter
+  jobType?: string; // Added specific job type filter
+  experienceLevel?: string; // Added experience level filter
+  educationLevel?: string; // Added education level filter
+  companySize?: string; // Added company size filter
+  companyRating?: number; // Added company rating filter
+  benefits?: string[]; // Added benefits filter
 }
 
 // Create the context
@@ -251,10 +266,24 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       results = results.filter(job => 
         job.location.toLowerCase().includes(location)
       );
+      
+      // If radius is provided, we would use geocoding and distance calculation
+      // This is a placeholder for actual radius search implementation
+      if (filters.radius && filters.radius > 0) {
+        // In a real implementation, we would use geocoding API and distance calculation
+        console.log(`Searching within ${filters.radius} km of ${filters.location}`);
+        // For now, we'll just use the existing location filter
+      }
     }
 
     if (filters.category) {
       results = results.filter(job => job.category === filters.category);
+    }
+
+    if (filters.industry) {
+      results = results.filter(job => 
+        job.industry?.toLowerCase().includes(filters.industry.toLowerCase())
+      );
     }
 
     if (filters.salaryRange && filters.salaryRange !== 'any') {
@@ -271,6 +300,38 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     if (filters.remote) {
       results = results.filter(job => job.remote === true);
+    }
+
+    // Filter by job type if provided
+    if (filters.jobType) {
+      results = results.filter(job => job.jobType === filters.jobType);
+    }
+
+    // Filter by experience level if provided
+    if (filters.experienceLevel) {
+      results = results.filter(job => job.experienceLevel === filters.experienceLevel);
+    }
+
+    // Filter by education level if provided
+    if (filters.educationLevel) {
+      results = results.filter(job => job.educationLevel === filters.educationLevel);
+    }
+
+    // Filter by company size if provided
+    if (filters.companySize) {
+      results = results.filter(job => job.companySize === filters.companySize);
+    }
+
+    // Filter by company rating if provided
+    if (filters.companyRating) {
+      results = results.filter(job => job.companyRating >= filters.companyRating);
+    }
+
+    // Filter by benefits if provided
+    if (filters.benefits && filters.benefits.length > 0) {
+      results = results.filter(job => 
+        job.benefits && filters.benefits.some(benefit => job.benefits.includes(benefit))
+      );
     }
 
     // Filter by military skills if provided

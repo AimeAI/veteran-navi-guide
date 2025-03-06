@@ -1,3 +1,4 @@
+
 import { mockJobs } from "./mockJobs";
 
 // Define the search parameters interface
@@ -9,6 +10,13 @@ interface SearchParams {
   clearanceLevel?: string[];
   remote?: boolean;
   militarySkills?: string[]; // Added military skills parameter
+  radius?: number; // Added radius parameter
+  industry?: string; // Added industry parameter
+  experienceLevel?: string; // Added experience level parameter
+  educationLevel?: string; // Added education level parameter
+  companySize?: string; // Added company size parameter
+  companyRating?: number; // Added company rating parameter
+  benefits?: string[]; // Added benefits parameter
 }
 
 // Search function to filter jobs based on criteria
@@ -47,10 +55,65 @@ export const searchJobs = (params: SearchParams) => {
     });
   }
 
+  // Filter by radius (if we had coordinates)
+  // This is a placeholder for actual radius search implementation
+  if (params.radius && params.radius > 0 && params.locations && params.locations.length > 0) {
+    // In a real implementation, we would:
+    // 1. Geocode the location to get lat/lng
+    // 2. Calculate distance between job location and search location
+    // 3. Filter jobs within the radius
+    console.log(`Searching within ${params.radius} km of ${params.locations[0]}`);
+    // For now, we'll just use the existing location filter
+  }
+
   // Filter by job type
   if (params.jobType && params.jobType.trim() !== '') {
     filteredJobs = filteredJobs.filter(job => 
       job.jobType && job.jobType.toLowerCase() === params.jobType?.toLowerCase()
+    );
+  }
+
+  // Filter by industry
+  if (params.industry && params.industry.trim() !== '') {
+    filteredJobs = filteredJobs.filter(job => 
+      job.industry && job.industry.toLowerCase().includes(params.industry.toLowerCase())
+    );
+  }
+
+  // Filter by experience level
+  if (params.experienceLevel && params.experienceLevel.trim() !== '') {
+    filteredJobs = filteredJobs.filter(job => 
+      job.experienceLevel && job.experienceLevel === params.experienceLevel
+    );
+  }
+
+  // Filter by education level
+  if (params.educationLevel && params.educationLevel.trim() !== '') {
+    filteredJobs = filteredJobs.filter(job => 
+      job.educationLevel && job.educationLevel === params.educationLevel
+    );
+  }
+
+  // Filter by company size
+  if (params.companySize && params.companySize.trim() !== '') {
+    filteredJobs = filteredJobs.filter(job => 
+      job.companySize && job.companySize === params.companySize
+    );
+  }
+
+  // Filter by company rating
+  if (params.companyRating) {
+    filteredJobs = filteredJobs.filter(job => 
+      job.companyRating && job.companyRating >= params.companyRating
+    );
+  }
+
+  // Filter by benefits
+  if (params.benefits && params.benefits.length > 0) {
+    filteredJobs = filteredJobs.filter(job => 
+      job.benefits && params.benefits.some(benefit => 
+        job.benefits.includes(benefit)
+      )
     );
   }
 

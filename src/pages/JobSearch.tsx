@@ -6,6 +6,7 @@ import JobListing from '@/components/JobListing';
 import { toast } from 'sonner';
 import JobAlertButton from '@/components/JobAlertButton';
 import MilitarySkillsFilter from '@/components/MilitarySkillsFilter';
+import AdvancedSearchFilters from '@/components/AdvancedSearchFilters';
 import { useJobs, JobFilterState } from '@/context/JobContext';
 
 const JobSearch = () => {
@@ -19,7 +20,15 @@ const JobSearch = () => {
     mosCodes: [],
     clearanceLevel: [],
     remote: false,
-    militarySkills: []
+    militarySkills: [],
+    radius: 0,
+    industry: '',
+    jobType: '',
+    experienceLevel: '',
+    educationLevel: '',
+    companySize: '',
+    companyRating: 0,
+    benefits: []
   });
 
   const jobCategories = [
@@ -73,6 +82,26 @@ const JobSearch = () => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFilterChange = (name: string, value: any) => {
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleArrayFilterChange = (name: string, value: string, checked: boolean) => {
+    setFilters(prev => {
+      if (checked) {
+        return {
+          ...prev,
+          [name]: [...(prev[name as keyof JobFilterState] as string[] || []), value]
+        };
+      } else {
+        return {
+          ...prev,
+          [name]: (prev[name as keyof JobFilterState] as string[] || []).filter(item => item !== value)
+        };
+      }
+    });
+  };
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, filterType: 'mosCodes' | 'clearanceLevel') => {
     const { value, checked } = e.target;
     
@@ -120,6 +149,38 @@ const JobSearch = () => {
     searchJobs(filters);
     toast.success("Search results updated");
   };
+
+  const clearFilters = () => {
+    setFilters({
+      keywords: '',
+      location: '',
+      category: '',
+      salaryRange: '',
+      mosCodes: [],
+      clearanceLevel: [],
+      remote: false,
+      militarySkills: [],
+      radius: 0,
+      industry: '',
+      jobType: '',
+      experienceLevel: '',
+      educationLevel: '',
+      companySize: '',
+      companyRating: 0,
+      benefits: []
+    });
+    toast.info("Filters cleared");
+  };
+
+  // Count active filters (excluding empty values)
+  const activeFilterCount = Object.entries(filters).reduce((count, [key, value]) => {
+    if (key === 'keywords' || key === 'location') return count; // Exclude basic search fields
+    if (Array.isArray(value) && value.length > 0) return count + 1;
+    if (typeof value === 'boolean' && value) return count + 1;
+    if (typeof value === 'number' && value > 0) return count + 1;
+    if (typeof value === 'string' && value) return count + 1;
+    return count;
+  }, 0);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -181,7 +242,7 @@ const JobSearch = () => {
                 </div>
               </div>
               
-              <div className="flex items-center pt-2">
+              <div className="flex items-center justify-between pt-2">
                 <button
                   type="button"
                   onClick={toggleFilter}
@@ -189,108 +250,121 @@ const JobSearch = () => {
                 >
                   <Filter className="h-4 w-4 mr-2" />
                   Advanced Filters
+                  {activeFilterCount > 0 && (
+                    <span className="ml-2 bg-primary text-white text-xs px-2 py-1 rounded-full">
+                      {activeFilterCount}
+                    </span>
+                  )}
                   <ChevronDown className={cn(
                     "ml-1 h-4 w-4 transition-transform duration-200",
                     isFiltersOpen ? "rotate-180" : ""
                   )} />
                 </button>
+                
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="text-sm text-primary hover:text-primary/80"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
               </div>
               
               {isFiltersOpen && (
                 <div className="bg-white p-6 rounded-md shadow-sm border border-gray-100 animate-fade-in">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                        <Banknote className="h-4 w-4 mr-2 text-primary" />
-                        Salary Range
-                      </label>
-                      <select
-                        name="salaryRange"
-                        value={filters.salaryRange}
-                        onChange={handleInputChange}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                      >
-                        {salaryRanges.map(salary => (
-                          <option key={salary.id} value={salary.id}>
-                            {salary.range}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                        <Medal className="h-4 w-4 mr-2 text-primary" />
-                        Military Occupation Specialty (MOS)
-                      </label>
-                      <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-200 rounded-md p-3">
-                        {mosCodes.map(mos => (
-                          <div key={mos.id} className="flex items-center">
-                            <input
-                              id={`mos-${mos.id}`}
-                              name={`mos-${mos.id}`}
-                              type="checkbox"
-                              value={mos.id}
-                              checked={filters.mosCodes.includes(mos.id)}
-                              onChange={(e) => handleCheckboxChange(e, 'mosCodes')}
-                              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                            />
-                            <label htmlFor={`mos-${mos.id}`} className="ml-2 block text-sm text-gray-700">
-                              {mos.code}
-                            </label>
-                          </div>
-                        ))}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-medium text-gray-900">Basic Filters</h3>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                          <Banknote className="h-4 w-4 mr-2 text-primary" />
+                          Salary Range
+                        </label>
+                        <select
+                          name="salaryRange"
+                          value={filters.salaryRange}
+                          onChange={handleInputChange}
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+                        >
+                          {salaryRanges.map(salary => (
+                            <option key={salary.id} value={salary.id}>
+                              {salary.range}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                          <Medal className="h-4 w-4 mr-2 text-primary" />
+                          Military Occupation Specialty (MOS)
+                        </label>
+                        <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-200 rounded-md p-3">
+                          {mosCodes.map(mos => (
+                            <div key={mos.id} className="flex items-center">
+                              <input
+                                id={`mos-${mos.id}`}
+                                name={`mos-${mos.id}`}
+                                type="checkbox"
+                                value={mos.id}
+                                checked={filters.mosCodes.includes(mos.id)}
+                                onChange={(e) => handleCheckboxChange(e, 'mosCodes')}
+                                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                              />
+                              <label htmlFor={`mos-${mos.id}`} className="ml-2 block text-sm text-gray-700">
+                                {mos.code}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                          <Shield className="h-4 w-4 mr-2 text-primary" />
+                          Security Clearance
+                        </label>
+                        <div className="space-y-2 border border-gray-200 rounded-md p-3">
+                          {clearanceLevels.map(clearance => (
+                            <div key={clearance.id} className="flex items-center">
+                              <input
+                                id={`clearance-${clearance.id}`}
+                                name={`clearance-${clearance.id}`}
+                                type="checkbox"
+                                value={clearance.id}
+                                checked={filters.clearanceLevel.includes(clearance.id)}
+                                onChange={(e) => handleCheckboxChange(e, 'clearanceLevel')}
+                                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                              />
+                              <label htmlFor={`clearance-${clearance.id}`} className="ml-2 block text-sm text-gray-700">
+                                {clearance.level}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Military Skills Filter */}
+                      <div>
+                        <MilitarySkillsFilter
+                          selectedSkills={filters.militarySkills || []}
+                          onSelectSkill={handleAddMilitarySkill}
+                          onRemoveSkill={handleRemoveMilitarySkill}
+                        />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                        <Shield className="h-4 w-4 mr-2 text-primary" />
-                        Security Clearance
-                      </label>
-                      <div className="space-y-2 border border-gray-200 rounded-md p-3">
-                        {clearanceLevels.map(clearance => (
-                          <div key={clearance.id} className="flex items-center">
-                            <input
-                              id={`clearance-${clearance.id}`}
-                              name={`clearance-${clearance.id}`}
-                              type="checkbox"
-                              value={clearance.id}
-                              checked={filters.clearanceLevel.includes(clearance.id)}
-                              onChange={(e) => handleCheckboxChange(e, 'clearanceLevel')}
-                              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                            />
-                            <label htmlFor={`clearance-${clearance.id}`} className="ml-2 block text-sm text-gray-700">
-                              {clearance.level}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Military Skills Filter */}
-                  <div className="mt-6">
-                    <MilitarySkillsFilter
-                      selectedSkills={filters.militarySkills || []}
-                      onSelectSkill={handleAddMilitarySkill}
-                      onRemoveSkill={handleRemoveMilitarySkill}
-                    />
-                  </div>
-                  
-                  <div className="mt-4">
-                    <div className="flex items-center">
-                      <input
-                        id="remote"
-                        name="remote"
-                        type="checkbox"
-                        checked={filters.remote}
-                        onChange={handleToggleRemote}
-                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                      <h3 className="text-lg font-medium text-gray-900 mb-6">Advanced Filters</h3>
+                      
+                      <AdvancedSearchFilters 
+                        filters={filters}
+                        onChange={handleFilterChange}
+                        onArrayChange={handleArrayFilterChange}
                       />
-                      <label htmlFor="remote" className="ml-2 block text-sm text-gray-700">
-                        Remote / Work from home
-                      </label>
                     </div>
                   </div>
                 </div>
