@@ -3,7 +3,7 @@ import { Job } from '@/context/JobContext';
 import { searchLightcastJobs, LightcastSearchParams } from '@/utils/lightcastApi';
 import { toast } from 'sonner';
 import { searchJobs as searchMockJobs } from '@/data/jobs';
-import { searchJobBankJobs } from '@/utils/jobBankApi';
+import { searchJobBankJobs, getNOCCodesForSkill } from '@/utils/jobBankApi';
 import { JobCache } from '@/utils/jobCache';
 
 export type { LightcastSearchParams } from '@/utils/lightcastApi';
@@ -45,10 +45,10 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
       keywords: searchParams.keywords,
       location: searchParams.location,
       radius: searchParams.radius,
-      job_type: searchParams.jobType,
+      job_type: searchParams.job_type,
       industry: searchParams.industry,
-      experience_level: searchParams.experienceLevel,
-      education_level: searchParams.educationLevel,
+      experience_level: searchParams.experience_level,
+      education_level: searchParams.education_level,
       remote_type: searchParams.remote_type,
       country: searchParams.country,
     }));
@@ -56,10 +56,10 @@ export const useLightcastJobs = (searchParams: LightcastSearchParams): JobSearch
     searchParams.keywords, 
     searchParams.location, 
     searchParams.radius, 
-    searchParams.jobType,
+    searchParams.job_type,
     searchParams.industry,
-    searchParams.experienceLevel,
-    searchParams.educationLevel,
+    searchParams.experience_level,
+    searchParams.education_level,
     searchParams.remote_type,
     searchParams.country
   ]);
