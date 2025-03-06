@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, User, BookOpen, Building, ChevronDown } from 'lucide-react';
@@ -29,6 +28,7 @@ const Navbar: React.FC = () => {
         { label: t('navigation.savedJobs'), href: '/saved' },
         { label: t('navigation.recommendedJobs'), href: '/recommended' },
         { label: t('navigation.jobAlerts'), href: '/job-alerts' },
+        { label: t('navigation.jobFairs'), href: '/events' },
       ],
     },
     {
