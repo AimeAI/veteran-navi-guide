@@ -22,7 +22,11 @@ const AuthPage: React.FC = () => {
   
   useEffect(() => {
     if (user?.isAuthenticated) {
-      navigate("/");
+      if (!user.emailVerified) {
+        navigate("/verify-email");
+      } else {
+        navigate("/");
+      }
     }
   }, [user, navigate]);
   

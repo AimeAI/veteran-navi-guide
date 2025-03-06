@@ -21,11 +21,13 @@ import InterviewPreparation from "./pages/InterviewPreparation";
 import MilitaryTransitionResources from "./pages/MilitaryTransitionResources";
 import AuthPage from "./pages/AuthPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/sonner";
 import { AppProvider } from "./context/AppContext";
 import "./App.css";
 import TopicDetail from "./pages/TopicDetail";
+import EmailVerificationBanner from "./components/EmailVerificationBanner";
 
 function App() {
   return (
@@ -33,6 +35,9 @@ function App() {
       <Router>
         <Navbar />
         <main className="min-h-screen pt-16">
+          <div className="container mx-auto px-4 pt-4">
+            <EmailVerificationBanner />
+          </div>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/job-search" element={<JobSearch />} />
@@ -52,6 +57,7 @@ function App() {
             <Route path="/topic/:topicId" element={<TopicDetail />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/dashboard" element={<VeteranDashboardPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="*" element={<NotFound />} />

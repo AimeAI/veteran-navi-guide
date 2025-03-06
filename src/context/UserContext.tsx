@@ -12,6 +12,7 @@ export interface UserProfile {
   rank: string;
   bio: string;
   isAuthenticated: boolean;
+  emailVerified: boolean;
 }
 
 // Interface for the context
@@ -22,6 +23,7 @@ interface UserContextType {
   signup: (email: string, password: string, militaryBranch: string) => Promise<void>;
   logout: () => void;
   updateProfile: (updatedProfile: Partial<UserProfile>) => void;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 // Create the context with initial values
@@ -38,6 +40,7 @@ const initialUserProfile: UserProfile = {
   rank: "Master Corporal",
   bio: "Software Engineer with 4 years of experience. Former CAF member with background in communications and logistics. Skilled in team leadership and project management.",
   isAuthenticated: false,
+  emailVerified: false,
 };
 
 // Provider component
@@ -109,7 +112,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In a real app, this would be an API call to create an account
+      // In a real app with Supabase, this would be:
+      // const { data, error } = await supabase.auth.signUp({
+      //   email,
+      //   password,
+      //   options: {
+      //     data: { militaryBranch }
+      //   }
+      // });
+      
       console.log("Signup request for:", { email, militaryBranch });
       
       // Simulate email already in use error (for demo purposes)
@@ -122,10 +133,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         ...initialUserProfile,
         email,
         militaryBranch,
-        isAuthenticated: true
+        isAuthenticated: true,
+        emailVerified: false
       });
       
-      toast.success("Account created successfully!");
+      toast.success("Account created successfully!", {
+        description: "Please check your email for a verification link."
+      });
     } catch (error) {
       console.error("Signup error:", error);
       
@@ -168,8 +182,37 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const resendVerificationEmail = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoading(true);
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app with Supabase, this would be:
+      // const { error } = await supabase.auth.resend({
+      //   type: 'signup',
+      //   email: user.email,
+      // });
+      
+      console.log("Resending verification email to:", user.email);
+      
+      toast.success("Verification email sent!", {
+        description: "Please check your inbox for the verification link."
+      });
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      toast.error("Failed to resend verification email", {
+        description: "Please try again later."
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, isLoading, login, signup, logout, updateProfile }}>
+    <UserContext.Provider value={{ user, isLoading, login, signup, logout, updateProfile, resendVerificationEmail }}>
       {children}
     </UserContext.Provider>
   );
