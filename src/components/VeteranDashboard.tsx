@@ -156,6 +156,14 @@ const VeteranDashboard: React.FC = () => {
     }
   };
   
+  // Stats for StatsCardGroup component
+  const dashboardStats = {
+    saved: statuses.saved,
+    applied: statuses.applied,
+    interviews: statuses.interviews,
+    offers: statuses.offers
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -168,34 +176,30 @@ const VeteranDashboard: React.FC = () => {
         </Button>
       </div>
       
-      <StatsCardGroup>
+      <StatsCardGroup stats={dashboardStats}>
         <StatsCard 
           title={t('Saved Jobs')} 
           value={statuses.saved.toString()} 
-          icon={<Bookmark className="h-4 w-4" />}
+          icon={Bookmark}
           description={t('Jobs you\'ve bookmarked')}
-          href="/jobs/saved"
         />
         <StatsCard 
           title={t('Applications')} 
           value={statuses.applied.toString()} 
-          icon={<ClipboardList className="h-4 w-4" />}
+          icon={ClipboardList}
           description={t('Jobs you\'ve applied to')}
-          href="/applications"
         />
         <StatsCard 
           title={t('Interviews')} 
           value={statuses.interviews.toString()} 
-          icon={<BookmarkCheck className="h-4 w-4" />}
+          icon={BookmarkCheck}
           description={t('Scheduled interviews')}
-          href="/applications?filter=interviewing"
         />
         <StatsCard 
           title={t('Offers')} 
           value={statuses.offers.toString()} 
-          icon={<CheckCircle2 className="h-4 w-4" />}
+          icon={CheckCircle2}
           description={t('Job offers received')}
-          href="/applications?filter=offered"
         />
       </StatsCardGroup>
       

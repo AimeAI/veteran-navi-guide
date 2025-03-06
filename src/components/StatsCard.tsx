@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
 
 interface StatsCardProps {
   title: string;
@@ -14,6 +15,7 @@ interface StatsCardProps {
     isPositive: boolean;
   };
   className?: string;
+  href?: string;
 }
 
 const StatsCard = ({ 
@@ -22,9 +24,10 @@ const StatsCard = ({
   icon: Icon, 
   description, 
   trend, 
-  className 
+  className,
+  href 
 }: StatsCardProps) => {
-  return (
+  const content = (
     <Card className={cn("overflow-hidden", className)}>
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
@@ -58,6 +61,12 @@ const StatsCard = ({
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return <Link to={href}>{content}</Link>;
+  }
+
+  return content;
 };
 
 export default StatsCard;

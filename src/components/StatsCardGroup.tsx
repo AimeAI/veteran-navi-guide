@@ -1,22 +1,31 @@
-
 import React from 'react';
-import StatsCard from './StatsCard';
 import { Users, Briefcase, FileCheck, MessageSquare } from 'lucide-react';
 
-interface StatsCardGroupProps {
-  stats: {
+export interface StatsCardGroupProps {
+  stats?: {
     users?: number;
     applications?: number;
     jobs?: number;
     forum?: number;
     saved?: number;
+    interviews?: number;
+    offers?: number;
     recommendations?: number;
     forumPosts?: number;
   };
   loading?: boolean;
+  children?: React.ReactNode;
 }
 
-const StatsCardGroup: React.FC<StatsCardGroupProps> = ({ stats, loading = false }) => {
+const StatsCardGroup: React.FC<StatsCardGroupProps> = ({ stats = {}, loading = false, children }) => {
+  if (children) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {/* Users card */}

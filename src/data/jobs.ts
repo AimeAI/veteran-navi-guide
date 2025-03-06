@@ -1,3 +1,4 @@
+
 import { mockJobs } from "./mockJobs";
 import { searchLightcastJobs } from "@/utils/lightcastApi";
 import { Job } from "@/context/JobContext";
@@ -273,7 +274,7 @@ function getSalaryRange(job: JobListing): string {
     return job.salaryRange;
   }
   
-  const salaryValue = typeof job.salary === 'string' ? parseInt(job.salary, 10) : job.salary;
+  const salaryValue = typeof job.salary === 'string' ? parseInt(job.salary, 10) : job.salary as number;
   
   if (!salaryValue || isNaN(salaryValue)) {
     return 'range2';
