@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import LoadingButton from '@/components/ui/LoadingButton';
+import VeteranProfileDialog from '@/components/VeteranProfileDialog';
 
 interface VeteranProfile {
   id: string;
@@ -28,6 +29,20 @@ interface VeteranProfile {
   location: string;
   summary: string;
   available: boolean;
+  email?: string;
+  phone?: string;
+  education?: {
+    institution: string;
+    degree: string;
+    dates: string;
+  }[];
+  experience?: {
+    role: string;
+    organization: string;
+    dates: string;
+    description: string;
+  }[];
+  achievements?: string[];
 }
 
 const canadianMOSCodes = [
@@ -63,8 +78,42 @@ const sampleVeterans: VeteranProfile[] = [
     skills: ['Leadership', 'Project Management', 'Team Building', 'Risk Assessment', 'Construction'],
     clearanceLevel: 'Secret',
     location: 'Toronto, ON',
-    summary: 'Experienced Combat Engineer with 8 years of service in the Canadian Army. Led teams of up to 20 personnel in construction, demolition, and tactical operations.',
-    available: true
+    summary: 'Experienced Combat Engineer with 8 years of service in the Canadian Army. Led teams of up to 20 personnel in construction, demolition, and tactical operations. Specialized in bridge construction, mine clearing operations, and defensive fortifications. Trained in explosives handling and disaster response.',
+    available: true,
+    email: 'james.wilson@example.com',
+    phone: '(416) 555-1234',
+    education: [
+      {
+        institution: 'Royal Military College of Canada',
+        degree: 'Bachelor of Engineering',
+        dates: '2008-2012'
+      },
+      {
+        institution: 'Canadian Forces School of Military Engineering',
+        degree: 'Combat Engineer Qualification',
+        dates: '2012'
+      }
+    ],
+    experience: [
+      {
+        role: 'Combat Engineer Section Commander',
+        organization: 'Canadian Armed Forces, 4 Engineer Support Regiment',
+        dates: '2016-2020',
+        description: 'Led a section of 8 combat engineers in construction, demolition, and tactical operations. Managed equipment worth over $2M. Deployed to Latvia as part of Operation REASSURANCE.'
+      },
+      {
+        role: 'Combat Engineer',
+        organization: 'Canadian Armed Forces, 2 Combat Engineer Regiment',
+        dates: '2012-2016',
+        description: 'Participated in construction of field defenses, mine clearing operations, and route reconnaissance. Assisted in disaster relief operations during Alberta floods.'
+      }
+    ],
+    achievements: [
+      'Canadian Forces Decoration (CD) for 8 years of service',
+      'Operation LENTUS Commendation for flood relief efforts',
+      'Completed Advanced IED Detection and Disposal course',
+      'Team leader for bridge construction competition, placed 1st nationally'
+    ]
   },
   {
     id: 'vet-2',
@@ -133,6 +182,8 @@ const EmployerSearchVeteransPage: React.FC = () => {
   const [veterans, setVeterans] = useState<VeteranProfile[]>(sampleVeterans);
   const [filteredVeterans, setFilteredVeterans] = useState<VeteranProfile[]>(veterans);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [selectedVeteran, setSelectedVeteran] = useState<VeteranProfile | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const allSkills = Array.from(
     new Set(veterans.flatMap(vet => vet.skills))
@@ -176,6 +227,15 @@ const EmployerSearchVeteransPage: React.FC = () => {
       setFilteredVeterans(filtered);
       setIsFiltering(false);
     }, 300);
+  };
+
+  const openVeteranProfile = (veteran: VeteranProfile) => {
+    setSelectedVeteran(veteran);
+    setIsProfileOpen(true);
+  };
+
+  const closeVeteranProfile = () => {
+    setIsProfileOpen(false);
   };
 
   useEffect(() => {
@@ -403,7 +463,10 @@ const EmployerSearchVeteransPage: React.FC = () => {
 
                       <div className="md:w-1/4 mt-4 md:mt-0 md:pl-6 md:border-l md:border-gray-200 flex flex-col justify-between">
                         <div className="flex flex-col space-y-3">
-                          <Button className="w-full">
+                          <Button 
+                            className="w-full"
+                            onClick={() => openVeteranProfile(veteran)}
+                          >
                             <User className="mr-2 h-4 w-4" aria-hidden="true" />
                             View Profile
                           </Button>
@@ -433,6 +496,14 @@ const EmployerSearchVeteransPage: React.FC = () => {
           </div>
         </div>
       </main>
+      
+      {selectedVeteran && (
+        <VeteranProfileDialog 
+          isOpen={isProfileOpen} 
+          onClose={closeVeteranProfile} 
+          veteran={selectedVeteran}
+        />
+      )}
       
       <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
         <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
