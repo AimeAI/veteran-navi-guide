@@ -10,6 +10,7 @@ export interface JobFormValidationErrors {
   salaryMin?: string;
   salaryMax?: string;
   mosCodes?: string;
+  skills?: string; // Added this property to fix the TypeScript error
 }
 
 export const validateJobForm = (formData: {
