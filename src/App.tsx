@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -36,6 +35,7 @@ import { RequireAuth } from "./components/RequireAuth";
 import AbTestingPage from "./pages/AbTestingPage";
 import { LanguageProvider } from "./context/LanguageContext";
 import "./i18n";
+import NotificationPreferences from "./components/NotificationPreferences";
 
 function App() {
   return (
@@ -84,6 +84,14 @@ function App() {
                   <Route path="/profile/resume" element={<UserProfile />} />
                   <Route path="/job-alerts" element={<UserProfile />} />
                   <Route path="/recommended" element={<RecommendedJobs />} />
+                  <Route
+                    path="/settings/notifications"
+                    element={
+                      <RequireAuth>
+                        <NotificationPreferences />
+                      </RequireAuth>
+                    }
+                  />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
