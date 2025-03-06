@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
+import MentionSuggestions from "@/components/ui/mention-suggestions";
+import TextWithMentions from "@/components/ui/text-with-mentions";
 import { 
   Search, 
   X, 
@@ -27,6 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
+import { filterUsersByQuery, mockUsers, insertMention, MentionedUser } from "@/utils/mentionUtils";
 import {
   Pagination,
   PaginationContent,
@@ -183,6 +186,12 @@ const CommunityForums = () => {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   
   const [sortCriteria, setSortCriteria] = useState<string>("latestActivity");
+
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionSuggestions, setMentionSuggestions] = useState<MentionedUser[]>([]);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { user } = useUser();
 
@@ -608,6 +617,232 @@ const CommunityForums = () => {
     return sortIconMap[sortCriteria as keyof typeof sortIconMap] || <ArrowUpDown className="h-4 w-4" />;
   };
 
+  const handleMentionInput = (query: string) => {
+    if (query) {
+      const filteredUsers = filterUsersByQuery(query, user?.name);
+      setMentionSuggestions(filteredUsers);
+      setShowMentionSuggestions(filteredUsers.length > 0);
+      setMentionQuery(query);
+      setActiveSuggestionIndex(0);
+    } else {
+      setShowMentionSuggestions(false);
+      setMentionSuggestions([]);
+    }
+  };
+
+  const handleSelectMention = (selectedUser: MentionedUser) => {
+    if (textareaRef.current) {
+      const cursorPosition = textareaRef.current.selectionStart;
+      const { newText, newCursorPosition } = insertMention(
+        newTopic.content,
+        cursorPosition,
+        selectedUser.username
+      );
+      
+      setNewTopic(prev => ({
+        ...prev,
+        content: newText
+      }));
+      
+      // Set the cursor position after the mention
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          textareaRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
+        }
+      }, 0);
+      
+      setShowMentionSuggestions(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (showMentionSuggestions) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActiveSuggestionIndex(prev => 
+          prev > 0 ? prev - 1 : mentionSuggestions.length - 1
+        );
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActiveSuggestionIndex(prev => 
+          prev < mentionSuggestions.length - 1 ? prev + 1 : 0
+        );
+      } else if (e.key === 'Enter' && mentionSuggestions.length > 0) {
+        e.preventDefault();
+        handleSelectMention(mentionSuggestions[activeSuggestionIndex]);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowMentionSuggestions(false);
+      }
+    }
+  };
+
+  const renderCreateTopicForm = () => {
+    return (
+      <Card className="mb-8 border-2 border-primary/20">
+        <CardHeader>
+          <h2 className="text-xl font-semibold">Create New Forum Topic</h2>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmitTopic} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="topic-title">Topic Title</Label>
+              <Input
+                id="topic-title"
+                name="title"
+                placeholder="Enter a descriptive title"
+                value={newTopic.title}
+                onChange={handleInputChange}
+                aria-invalid={!!errors.title}
+                aria-describedby={errors.title ? "title-error" : undefined}
+              />
+              <FormErrorMessage message={errors.title} />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="topic-category">Category</Label>
+              <select
+                id="topic-category"
+                name="category"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={newTopic.category}
+                onChange={handleInputChange}
+              >
+                {categories.filter(cat => cat.value !== "all").map(category => (
+                  <option key={category.value} value={category.value}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2 relative">
+              <Label htmlFor="topic-content">Content</Label>
+              <div className="relative">
+                <Textarea
+                  id="topic-content"
+                  name="content"
+                  placeholder="Describe your topic or question in detail. Use @username to mention other users."
+                  rows={5}
+                  value={newTopic.content}
+                  onChange={handleInputChange}
+                  onMention={handleMentionInput}
+                  showMentionSuggestions={showMentionSuggestions}
+                  onKeyDown={handleKeyDown}
+                  ref={textareaRef}
+                  aria-invalid={!!errors.content}
+                  aria-describedby={errors.content ? "content-error" : undefined}
+                />
+                <MentionSuggestions
+                  suggestions={mentionSuggestions}
+                  isVisible={showMentionSuggestions}
+                  onSelectUser={handleSelectMention}
+                  activeIndex={activeSuggestionIndex}
+                />
+              </div>
+              <FormErrorMessage message={errors.content} />
+              <div className="text-xs text-muted-foreground mt-1">
+                Tip: Use @username to mention other users
+              </div>
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-end space-x-4">
+          <Button 
+            variant="outline" 
+            onClick={handleCancelCreate}
+            type="button"
+            className="flex items-center"
+          >
+            <X className="mr-2 h-4 w-4" /> Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmitTopic}
+            type="submit"
+            disabled={isSubmitting}
+            className="flex items-center"
+          >
+            <Check className="mr-2 h-4 w-4" /> 
+            {isSubmitting ? "Creating..." : "Create Topic"}
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  };
+
+  const renderTopicCard = (topic: any) => {
+    return (
+      <article 
+        key={topic.id} 
+        className="overflow-hidden hover:shadow-md transition-shadow"
+      >
+        <Card>
+          <div className="p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
+                <Link to={`/topic/${topic.id}`} className="focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-sm">
+                  {topic.title}
+                </Link>
+              </h3>
+              <Badge variant="outline" className="mt-2 sm:mt-0 w-fit">
+                {categories.find(c => c.value === topic.category)?.name || topic.category}
+              </Badge>
+            </div>
+            
+            {topic.content && (
+              <div className="mb-3 text-muted-foreground line-clamp-2">
+                <TextWithMentions text={topic.content} users={mockUsers} />
+              </div>
+            )}
+            
+            <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-6 gap-y-2">
+              <span>Posted by <span className="font-medium">{topic.author}</span></span>
+              <span>Last post: <time dateTime={topic.lastPostDate}>{formatDate(topic.lastPostDate)}</time></span>
+              <span>{topic.replies} replies</span>
+              <span>{topic.views} views</span>
+            </div>
+            
+            <div className="mt-3 flex gap-2">
+              {isCurrentUserAuthor(topic.author) && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleEditTopic(topic)}
+                    className="flex items-center text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteConfirmation(topic.id)}
+                    className="flex items-center text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash className="h-3.5 w-3.5 mr-1" />
+                    Delete
+                  </Button>
+                </>
+              )}
+              
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={() => handleReportClick(topic.id)}
+                className="flex items-center text-muted-foreground hover:text-destructive"
+              >
+                <Flag className="h-3.5 w-3.5 mr-1" />
+                Report
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </article>
+    );
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -627,81 +862,7 @@ const CommunityForums = () => {
         )}
       </header>
 
-      {showCreateForm && (
-        <Card className="mb-8 border-2 border-primary/20">
-          <CardHeader>
-            <h2 className="text-xl font-semibold">Create New Forum Topic</h2>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmitTopic} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="topic-title">Topic Title</Label>
-                <Input
-                  id="topic-title"
-                  name="title"
-                  placeholder="Enter a descriptive title"
-                  value={newTopic.title}
-                  onChange={handleInputChange}
-                  aria-invalid={!!errors.title}
-                  aria-describedby={errors.title ? "title-error" : undefined}
-                />
-                <FormErrorMessage message={errors.title} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="topic-category">Category</Label>
-                <select
-                  id="topic-category"
-                  name="category"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={newTopic.category}
-                  onChange={handleInputChange}
-                >
-                  {categories.filter(cat => cat.value !== "all").map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="topic-content">Content</Label>
-                <Textarea
-                  id="topic-content"
-                  name="content"
-                  placeholder="Describe your topic or question in detail"
-                  rows={5}
-                  value={newTopic.content}
-                  onChange={handleInputChange}
-                  aria-invalid={!!errors.content}
-                  aria-describedby={errors.content ? "content-error" : undefined}
-                />
-                <FormErrorMessage message={errors.content} />
-              </div>
-            </form>
-          </CardContent>
-          <CardFooter className="flex justify-end space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={handleCancelCreate}
-              type="button"
-              className="flex items-center"
-            >
-              <X className="mr-2 h-4 w-4" /> Cancel
-            </Button>
-            <Button 
-              onClick={handleSubmitTopic}
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center"
-            >
-              <Check className="mr-2 h-4 w-4" /> 
-              {isSubmitting ? "Creating..." : "Create Topic"}
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
+      {showCreateForm && renderCreateTopicForm()}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
         <aside className="lg:col-span-1" aria-labelledby="categories-heading">
@@ -779,68 +940,7 @@ const CommunityForums = () => {
             <h2 id="topics-heading" className="sr-only">Forum Topics</h2>
             <div className="space-y-4">
               {currentTopics.length > 0 ? (
-                currentTopics.map(topic => (
-                  <article 
-                    key={topic.id} 
-                    className="overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    <Card>
-                      <div className="p-5">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3">
-                          <h3 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
-                            <Link to={`/topic/${topic.id}`} className="focus:outline-none focus:ring-2 focus:ring-primary focus:rounded-sm">
-                              {topic.title}
-                            </Link>
-                          </h3>
-                          <Badge variant="outline" className="mt-2 sm:mt-0 w-fit">
-                            {categories.find(c => c.value === topic.category)?.name || topic.category}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-6 gap-y-2">
-                          <span>Posted by <span className="font-medium">{topic.author}</span></span>
-                          <span>Last post: <time dateTime={topic.lastPostDate}>{formatDate(topic.lastPostDate)}</time></span>
-                          <span>{topic.replies} replies</span>
-                          <span>{topic.views} views</span>
-                        </div>
-                        
-                        <div className="mt-3 flex gap-2">
-                          {isCurrentUserAuthor(topic.author) && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleEditTopic(topic)}
-                                className="flex items-center text-muted-foreground hover:text-foreground"
-                              >
-                                <Pencil className="h-3.5 w-3.5 mr-1" />
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteConfirmation(topic.id)}
-                                className="flex items-center text-muted-foreground hover:text-destructive"
-                              >
-                                <Trash className="h-3.5 w-3.5 mr-1" />
-                                Delete
-                              </Button>
-                            </>
-                          )}
-                          
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            onClick={() => handleReportClick(topic.id)}
-                            className="flex items-center text-muted-foreground hover:text-destructive"
-                          >
-                            <Flag className="h-3.5 w-3.5 mr-1" />
-                            Report
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  </article>
-                ))
+                currentTopics.map(topic => renderTopicCard(topic))
               ) : (
                 <div className="text-center py-8" role="status">
                   <p className="text-muted-foreground">No topics found matching your criteria</p>

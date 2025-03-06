@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
+import MentionSuggestions from "@/components/ui/mention-suggestions";
+import TextWithMentions from "@/components/ui/text-with-mentions";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +28,12 @@ import {
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
 import { useUser } from "@/context/UserContext";
+import { 
+  filterUsersByQuery, 
+  mockUsers, 
+  insertMention, 
+  MentionedUser 
+} from "@/utils/mentionUtils";
 
 const forumTopics = [
   {
@@ -113,6 +121,13 @@ const TopicDetail = () => {
   const [reportReason, setReportReason] = useState("");
   const [reportError, setReportError] = useState("");
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionSuggestions, setMentionSuggestions] = useState<MentionedUser[]>([]);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -123,6 +138,67 @@ const TopicDetail = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleMentionInput = (query: string) => {
+    if (query) {
+      const filteredUsers = filterUsersByQuery(query, user?.name);
+      setMentionSuggestions(filteredUsers);
+      setShowMentionSuggestions(filteredUsers.length > 0);
+      setMentionQuery(query);
+      setActiveSuggestionIndex(0);
+    } else {
+      setShowMentionSuggestions(false);
+      setMentionSuggestions([]);
+    }
+  };
+
+  const handleSelectMention = (selectedUser: MentionedUser, isEditing: boolean = false) => {
+    const textareaRef = isEditing ? editTextareaRef : replyTextareaRef;
+    const currentText = isEditing ? editContent : replyContent;
+    const setTextFunction = isEditing ? setEditContent : setReplyContent;
+    
+    if (textareaRef.current) {
+      const cursorPosition = textareaRef.current.selectionStart;
+      const { newText, newCursorPosition } = insertMention(
+        currentText,
+        cursorPosition,
+        selectedUser.username
+      );
+      
+      setTextFunction(newText);
+      
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          textareaRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
+        }
+      }, 0);
+      
+      setShowMentionSuggestions(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, isEditing: boolean = false) => {
+    if (showMentionSuggestions) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActiveSuggestionIndex(prev => 
+          prev > 0 ? prev - 1 : mentionSuggestions.length - 1
+        );
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActiveSuggestionIndex(prev => 
+          prev < mentionSuggestions.length - 1 ? prev + 1 : 0
+        );
+      } else if (e.key === 'Enter' && mentionSuggestions.length > 0) {
+        e.preventDefault();
+        handleSelectMention(mentionSuggestions[activeSuggestionIndex], isEditing);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowMentionSuggestions(false);
+      }
+    }
   };
 
   const handleSubmitReply = async (e: React.FormEvent) => {
@@ -347,7 +423,9 @@ const TopicDetail = () => {
         </CardHeader>
         <CardContent>
           <div className="prose max-w-none dark:prose-invert">
-            <p>{currentTopic.content}</p>
+            {currentTopic.content && (
+              <TextWithMentions text={currentTopic.content} users={mockUsers} />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -373,18 +451,28 @@ const TopicDetail = () => {
                     
                     {editingPostId === post.id ? (
                       <div className="space-y-4">
-                        <div className="space-y-2">
+                        <div className="space-y-2 relative">
                           <Textarea
                             value={editContent}
                             onChange={(e) => {
                               setEditContent(e.target.value);
                               if (editError) setEditError("");
                             }}
+                            onMention={handleMentionInput}
+                            showMentionSuggestions={showMentionSuggestions}
+                            onKeyDown={(e) => handleKeyDown(e, true)}
+                            ref={editTextareaRef}
                             rows={4}
-                            placeholder="Edit your post..."
+                            placeholder="Edit your post... Use @username to mention users."
                             aria-label="Edit post content"
                             className="w-full"
                             aria-invalid={!!editError}
+                          />
+                          <MentionSuggestions
+                            suggestions={mentionSuggestions}
+                            isVisible={showMentionSuggestions}
+                            onSelectUser={(user) => handleSelectMention(user, true)}
+                            activeIndex={activeSuggestionIndex}
                           />
                           {editError && <FormErrorMessage message={editError} />}
                         </div>
@@ -421,7 +509,7 @@ const TopicDetail = () => {
                     ) : (
                       <div>
                         <div className="prose dark:prose-invert max-w-none">
-                          <p>{post.content}</p>
+                          <TextWithMentions text={post.content} users={mockUsers} />
                         </div>
                         
                         <div className="mt-3 flex gap-2">
@@ -467,21 +555,34 @@ const TopicDetail = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmitReply}>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Textarea
                 id="reply-content"
-                placeholder="Share your thoughts or expertise..."
+                placeholder="Share your thoughts or expertise... Use @username to mention other users."
                 rows={5}
                 value={replyContent}
                 onChange={(e) => {
                   setReplyContent(e.target.value);
                   if (error) setError("");
                 }}
+                onMention={handleMentionInput}
+                showMentionSuggestions={showMentionSuggestions}
+                onKeyDown={(e) => handleKeyDown(e, false)}
+                ref={replyTextareaRef}
                 aria-invalid={!!error}
                 aria-describedby={error ? "reply-error" : undefined}
                 className="resize-y"
               />
+              <MentionSuggestions
+                suggestions={mentionSuggestions}
+                isVisible={showMentionSuggestions}
+                onSelectUser={(user) => handleSelectMention(user, false)}
+                activeIndex={activeSuggestionIndex}
+              />
               <FormErrorMessage message={error} />
+              <div className="text-xs text-muted-foreground mt-1">
+                Tip: Use @username to mention other users
+              </div>
             </div>
           </form>
         </CardContent>
