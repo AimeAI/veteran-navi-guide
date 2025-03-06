@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Job interface with all required fields for type safety
@@ -226,7 +227,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 };
 
-// Hook to use the job context - export this as 'useJobs' for backward compatibility
+// Hook to use the job context
 export const useJobs = (): JobContextProps => {
   const context = useContext(JobContext);
   if (!context) {
@@ -235,5 +236,5 @@ export const useJobs = (): JobContextProps => {
   return context;
 };
 
-// Keep the original hook name for backward compatibility
+// For backward compatibility
 export const useJobContext = useJobs;

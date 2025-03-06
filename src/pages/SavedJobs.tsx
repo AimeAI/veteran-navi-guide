@@ -1,3 +1,4 @@
+
 import React from 'react';
 import JobListing from '@/components/JobListing';
 import { Bookmark, X, AlertCircle } from 'lucide-react';

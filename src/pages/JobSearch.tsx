@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useJobs, JobFilterState } from '@/context/JobContext';
@@ -15,7 +14,6 @@ const JobSearch: React.FC = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('search');
   
-  // Initialize filters with all required properties from JobFilterState
   const [filters, setFilters] = useState<JobFilterState>({
     keywords: '',
     location: '',
@@ -41,7 +39,6 @@ const JobSearch: React.FC = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showSkillsFilter, setShowSkillsFilter] = useState(false);
   
-  // Use the useLightcastJobs hook to fetch jobs
   const {
     jobs,
     isLoading,
@@ -65,13 +62,11 @@ const JobSearch: React.FC = () => {
     page: 1,
   });
   
-  // Function to handle page changes
   const handlePageChange = (page: number) => {
     setPage(page);
     window.scrollTo(0, 0);
   };
   
-  // Function to handle filter changes
   const handleFilterChange = (name: string, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -79,30 +74,24 @@ const JobSearch: React.FC = () => {
     }));
   };
   
-  // Function to handle keyword search
   const handleKeywordSearch = (keywords: string) => {
     handleFilterChange('keywords', keywords);
   };
   
-  // Function to handle location search
   const handleLocationSearch = (location: string) => {
     handleFilterChange('location', location);
   };
   
-  // Function to handle remote toggle
   const handleRemoteToggle = (remote: boolean) => {
     handleFilterChange('remote', remote);
   };
   
-  // Function to handle country change
   const handleCountryChange = (country: "us" | "canada") => {
     handleFilterChange('country', country);
   };
   
-  // Function to handle military skills selection
   const handleMilitarySkillsChange = (skills: string[]) => {
     const skillKeywords = skills.map(skill => `skill:${skill}`).join(',');
-    // If there are existing keywords, append the skills
     const updatedKeywords = filters.keywords 
       ? `${filters.keywords.replace(/skill:[a-z]+,?/g, '')} ${skillKeywords}`.trim()
       : skillKeywords;
@@ -114,7 +103,6 @@ const JobSearch: React.FC = () => {
     }));
   };
   
-  // Function to clear all filters
   const handleClearFilters = () => {
     setFilters({
       keywords: '',
@@ -141,7 +129,6 @@ const JobSearch: React.FC = () => {
     setShowSkillsFilter(false);
   };
   
-  // Use effect to refresh jobs when filters change
   useEffect(() => {
     refreshJobs();
   }, [
