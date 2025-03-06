@@ -19,6 +19,7 @@ interface JobSearchParams {
   category?: string;
   jobType?: string;
   limit?: number;
+  offset?: number; // Add this to fix useJobicyJobs.ts error
 }
 
 // Function to get jobs from Supabase
@@ -54,9 +55,14 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
       query = query.eq('job_type', params.jobType);
     }
     
-    // Set limit
-    if (params.limit) {
-      query = query.limit(params.limit);
+    // Apply offset
+    if (params.offset) {
+      query = query.range(params.offset, params.offset + (params.limit || 10) - 1);
+    } else {
+      // Set limit
+      if (params.limit) {
+        query = query.limit(params.limit);
+      }
     }
     
     // Execute query

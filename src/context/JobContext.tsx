@@ -49,6 +49,9 @@ export interface JobFilterState {
   benefits: string[];
   skills: string[];
   useJobicy: boolean;
+  // Add these to fix type errors in JobSearch component
+  category: string;
+  salaryRange: string;
 }
 
 // Update the SearchParams interface to include the correct country type
@@ -79,6 +82,7 @@ interface JobContextProps {
   error: string | null;
   filters: JobFilterState;
   savedJobs: Job[];
+  appliedJobs: string[]; // Added to match what components expect
   performSearch: (filters: JobFilterState) => Promise<void>;
   updateFilter: (name: string, value: any) => void;
   updateArrayFilter: (name: string, value: string, checked: boolean) => void;
@@ -107,7 +111,10 @@ const defaultFilters: JobFilterState = {
   companyRating: 0,
   benefits: [],
   skills: [],
-  useJobicy: false
+  useJobicy: false,
+  // Add the missing properties
+  category: '',
+  salaryRange: ''
 };
 
 // Create the provider component
@@ -117,6 +124,7 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<JobFilterState>(defaultFilters);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
+  const [appliedJobs, setAppliedJobs] = useState<string[]>([]); // Track applied jobs
 
   // Load saved jobs from local storage on initialization
   useEffect(() => {
@@ -142,6 +150,12 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const savedJobsJson = localStorage.getItem('savedJobs');
         if (savedJobsJson) {
           setSavedJobs(JSON.parse(savedJobsJson));
+        }
+
+        // Load applied jobs from localStorage
+        const appliedJobsJson = localStorage.getItem('appliedJobs');
+        if (appliedJobsJson) {
+          setAppliedJobs(JSON.parse(appliedJobsJson));
         }
       } catch (err) {
         console.error('Error loading saved jobs:', err);
@@ -290,6 +304,7 @@ export const JobProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     error,
     filters,
     savedJobs,
+    appliedJobs,
     performSearch,
     updateFilter,
     updateArrayFilter,
