@@ -1,4 +1,3 @@
-
 // Types for our data
 export interface UserProfile {
   id: string;
@@ -20,11 +19,12 @@ export interface JobListing {
   company: string;
   location: string;
   description: string;
-  requiredSkills: string[];
+  requiredSkills?: string[];
   preferredSkills?: string[];
   requiredMosCodes?: string[];
   securityClearanceRequired?: string;
   remote?: boolean;
+  jobType?: string;
 }
 
 export interface RecommendationResult {

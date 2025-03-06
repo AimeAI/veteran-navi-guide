@@ -12,7 +12,8 @@ export const mockJobs: JobListing[] = [
     requiredSkills: ['leadership', 'security', 'risk assessment'],
     preferredSkills: ['project management', 'communication'],
     securityClearanceRequired: 'Secret',
-    remote: false
+    remote: false,
+    jobType: 'full-time'
   },
   {
     id: '2',
@@ -23,7 +24,8 @@ export const mockJobs: JobListing[] = [
     requiredSkills: ['logistics', 'inventory management', 'supply chain'],
     preferredSkills: ['leadership', 'communication'],
     requiredMosCodes: ['00168', 'SUPPLY'],
-    remote: false
+    remote: false,
+    jobType: 'full-time'
   },
   {
     id: '3',
@@ -33,7 +35,8 @@ export const mockJobs: JobListing[] = [
     description: 'Join our team dedicated to improving healthcare for veterans. Looking for organized professionals with healthcare experience from military settings.',
     requiredSkills: ['healthcare', 'administration', 'organization'],
     preferredSkills: ['leadership', 'project management'],
-    remote: true
+    remote: true,
+    jobType: 'full-time'
   },
   {
     id: '4',
@@ -45,7 +48,8 @@ export const mockJobs: JobListing[] = [
     preferredSkills: ['communication', 'risk assessment'],
     requiredMosCodes: ['00271', '00378'],
     securityClearanceRequired: 'Secret',
-    remote: false
+    remote: false,
+    jobType: 'full-time'
   },
   {
     id: '5',
@@ -55,7 +59,8 @@ export const mockJobs: JobListing[] = [
     description: 'Looking for veterans with leadership experience to manage construction projects from planning to completion. Strong organizational skills required.',
     requiredSkills: ['project management', 'leadership', 'organization'],
     preferredSkills: ['communication', 'budgeting'],
-    remote: false
+    remote: false,
+    jobType: 'contract'
   },
   {
     id: '6',
@@ -66,7 +71,8 @@ export const mockJobs: JobListing[] = [
     requiredSkills: ['emergency medicine', 'first aid', 'patient care'],
     preferredSkills: ['communication', 'stress management'],
     requiredMosCodes: ['00334', 'Med Tech'],
-    remote: false
+    remote: false,
+    jobType: 'full-time'
   },
   {
     id: '7',
@@ -77,7 +83,8 @@ export const mockJobs: JobListing[] = [
     requiredSkills: ['aircraft maintenance', 'mechanical repair', 'troubleshooting'],
     preferredSkills: ['leadership', 'communication'],
     requiredMosCodes: ['00153', 'AERE'],
-    remote: false
+    remote: false,
+    jobType: 'full-time'
   },
   {
     id: '8',
@@ -88,6 +95,7 @@ export const mockJobs: JobListing[] = [
     requiredSkills: ['IT support', 'troubleshooting', 'customer service'],
     preferredSkills: ['communication', 'networking'],
     requiredMosCodes: ['00369', 'CISTM'],
-    remote: true
+    remote: true,
+    jobType: 'part-time'
   }
 ];

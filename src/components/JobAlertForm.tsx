@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,11 +10,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { useJobAlerts } from "@/context/JobAlertContext";
 import { searchJobs } from "@/data/jobs";
 
-interface JobAlertFormProps {
+export interface JobAlertFormProps {
   onSuccess?: () => void;
+  initialData?: {
+    keywords?: string;
+    location?: string;
+    category?: string;
+  };
 }
 
-const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
+const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) => {
   const { addJobAlert } = useJobAlerts();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,11 +31,30 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
   
   const [formData, setFormData] = useState({
     title: "",
-    keywords: [],
-    locations: [],
+    keywords: [] as string[],
+    locations: [] as string[],
     jobType: "",
     frequency: "daily"
   });
+
+  useEffect(() => {
+    if (initialData) {
+      const keywordArray = initialData.keywords 
+        ? initialData.keywords.split(',').map(k => k.trim()).filter(Boolean)
+        : [];
+
+      const locationArray = initialData.location
+        ? [initialData.location.trim()].filter(Boolean)
+        : [];
+        
+      setFormData(prev => ({
+        ...prev,
+        keywords: keywordArray,
+        locations: locationArray,
+        jobType: initialData.category || "",
+      }));
+    }
+  }, [initialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -80,7 +104,6 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
     setErrorMessage("");
     
     try {
-      // Validate form
       if (!formData.title.trim()) {
         throw new Error("Please provide a title for your job alert");
       }
@@ -89,10 +112,8 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
         throw new Error("Please provide at least one search criteria");
       }
       
-      // In a real app, this would save to a database via API
       console.log("Creating job alert:", formData);
       
-      // Simulate fetch matching jobs
       const matchingJobs = searchJobs({
         keywords: formData.keywords,
         locations: formData.locations,
@@ -111,10 +132,8 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
       }
       
       setTimeout(() => {
-        // Simulate API call
         console.log("Job alert created successfully");
         
-        // Update context with the new alert
         addJobAlert({
           id: `alert-${Date.now()}`,
           title: formData.title,
@@ -132,7 +151,6 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess }) => {
         if (onSuccess) {
           onSuccess();
         } else {
-          // Reset form
           setFormData({
             title: "",
             keywords: [],
