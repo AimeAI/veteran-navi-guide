@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Briefcase, Filter, ChevronDown, Banknote, Medal, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import JobListing from '@/components/JobListing';
 import { toast } from 'sonner';
 import JobAlertButton from '@/components/JobAlertButton';
 import MilitarySkillsFilter from '@/components/MilitarySkillsFilter';
 import AdvancedSearchFilters from '@/components/AdvancedSearchFilters';
-import { useJobs, JobFilterState } from '@/context/JobContext';
+import { JobFilterState } from '@/context/JobContext';
+import { useLightcastJobs, LightcastSearchParams } from '@/hooks/useLightcastJobs';
+import JobList from '@/components/JobList';
 
 const JobSearch = () => {
-  const { jobs, isLoading, searchJobs } = useJobs();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<JobFilterState>({
     keywords: '',
@@ -30,6 +29,32 @@ const JobSearch = () => {
     companyRating: 0,
     benefits: []
   });
+
+  const getLightcastParams = (): LightcastSearchParams => {
+    return {
+      keywords: filters.keywords,
+      location: filters.location,
+      radius: filters.radius,
+      job_type: filters.jobType,
+      industry: filters.industry,
+      experience_level: filters.experienceLevel,
+      education_level: filters.educationLevel,
+      remote_type: filters.remote ? 'Full' : undefined,
+      page: 1,
+      limit: 10
+    };
+  };
+
+  const { 
+    jobs, 
+    isLoading, 
+    error, 
+    currentPage, 
+    totalPages, 
+    totalJobs, 
+    setPage,
+    refreshJobs
+  } = useLightcastJobs(getLightcastParams());
 
   const jobCategories = [
     { id: 'tech', name: 'Technology' },
@@ -67,11 +92,6 @@ const JobSearch = () => {
     { id: 'topsecret', level: 'Top Secret' },
     { id: 'sci', level: 'TS/SCI' }
   ];
-
-  useEffect(() => {
-    // Initial search with empty filters
-    searchJobs(filters);
-  }, []);
 
   const toggleFilter = () => {
     setIsFiltersOpen(!isFiltersOpen);
@@ -143,11 +163,16 @@ const JobSearch = () => {
     }));
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search filters:', filters);
-    searchJobs(filters);
-    toast.success("Search results updated");
+    try {
+      await refreshJobs();
+      toast.success("Search results updated");
+    } catch (error) {
+      console.error("Search error:", error);
+      toast.error("Error updating search results");
+    }
   };
 
   const clearFilters = () => {
@@ -172,7 +197,6 @@ const JobSearch = () => {
     toast.info("Filters cleared");
   };
 
-  // Count active filters (excluding empty values)
   const activeFilterCount = Object.entries(filters).reduce((count, [key, value]) => {
     if (key === 'keywords' || key === 'location') return count; // Exclude basic search fields
     if (Array.isArray(value) && value.length > 0) return count + 1;
@@ -347,7 +371,6 @@ const JobSearch = () => {
                         </div>
                       </div>
                       
-                      {/* Military Skills Filter */}
                       <div>
                         <MilitarySkillsFilter
                           selectedSkills={filters.militarySkills || []}
@@ -383,39 +406,15 @@ const JobSearch = () => {
           </div>
           
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-medium text-gray-900">Search Results</h2>
-              <span className="text-sm text-gray-500">{jobs.length} jobs found</span>
-            </div>
-            
-            {isLoading ? (
-              <div className="py-12 space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse bg-gray-100 h-32 rounded-lg"></div>
-                ))}
-              </div>
-            ) : jobs.length > 0 ? (
-              <div className="space-y-4">
-                {jobs.map(job => (
-                  <JobListing
-                    key={job.id}
-                    jobId={job.id}
-                    title={job.title}
-                    company={job.company}
-                    location={job.location}
-                    description={job.description}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-lg font-medium text-gray-900">No jobs found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Try adjusting your search criteria or adding more filters.
-                </p>
-              </div>
-            )}
+            <JobList 
+              jobs={jobs}
+              isLoading={isLoading}
+              error={error}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalJobs={totalJobs}
+              onPageChange={setPage}
+            />
           </div>
         </div>
       </main>

@@ -129,7 +129,7 @@ const mapLightcastJobToJob = (job: LightcastJob): Job => {
     company: job.company.name,
     location: job.location.name,
     description: job.description,
-    category: job.job_function?.name.toLowerCase() || 'other',
+    category: job.job_function?.name?.toLowerCase() || 'other',
     salaryRange: job.max_salary ? (
       job.max_salary > 100000 ? 'range5' :
       job.max_salary > 75000 ? 'range3' :
@@ -181,6 +181,7 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     if (params.sort) queryParams.append('sort', params.sort);
     
     const url = `https://emsiservices.com/job-postings/us/jobs?${queryParams.toString()}`;
+    console.log("Lightcast API URL:", url);
     
     const response = await fetch(url, {
       method: 'GET',
@@ -191,10 +192,13 @@ export const searchLightcastJobs = async (params: LightcastSearchParams): Promis
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Lightcast API error response:", errorText);
       throw new Error(`Job search failed: ${response.status} ${response.statusText}`);
     }
     
     const data: LightcastJobsResponse = await response.json();
+    console.log("Lightcast API raw response:", data);
     
     return {
       jobs: data.data.map(mapLightcastJobToJob),
