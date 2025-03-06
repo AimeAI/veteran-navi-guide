@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { 
   Briefcase, 
@@ -73,7 +74,7 @@ const sampleApplications: Application[] = [
 ];
 
 const EmployerDashboard: React.FC = () => {
-  const [applications] = useState<Application[]>(sampleApplications);
+  const [applications, setApplications] = useState<Application[]>(sampleApplications);
   
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
