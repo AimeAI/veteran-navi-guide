@@ -1,15 +1,27 @@
 
-export type ApplicationStatus = 'pending' | 'reviewing' | 'interviewing' | 'hired' | 'rejected';
+import { Job } from "@/context/JobContext";
+import { UserProfile } from "@/utils/recommendationAlgorithm";
 
-export interface Application {
+export type ApplicationStatus = 'pending' | 'reviewing' | 'interviewing' | 'offered' | 'hired' | 'rejected';
+
+export interface JobApplication {
   id: string;
-  applicantName: string;
-  applicantPhoto?: string;
-  jobTitle: string;
-  company: string;
-  appliedDate: Date;
+  jobId: string;
+  job: Job;
+  applicantId: string;
+  applicant: UserProfile;
+  appliedDate: string;
   status: ApplicationStatus;
   resume?: string;
-  coverLetter?: boolean;
+  coverLetter?: string;
+  notes?: string;
   matchScore?: number;
+}
+
+export interface MessageToApplicant {
+  id: string;
+  applicationId: string;
+  message: string;
+  sentDate: string;
+  read: boolean;
 }

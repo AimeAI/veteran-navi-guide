@@ -11,6 +11,7 @@ export interface UserProfile {
   };
   securityClearance?: string;
   preferredLocations?: string[];
+  photo?: string;
 }
 
 export interface JobListing {
