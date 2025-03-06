@@ -3,59 +3,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Search, Filter } from 'lucide-react';
-import ApplicationCard from '@/components/employer/ApplicationCard';
+import ApplicationCard, { Application, ApplicationStatus } from '@/components/employer/ApplicationCard';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
 // Mock applications data
-const applications = [
+const applications: Application[] = [
   {
     id: "app-001",
-    jobId: "job-001",
-    candidateId: "veteran-001",
     candidateName: "James Wilson",
     candidatePhoto: "/assets/avatar-1.jpg",
     jobTitle: "Security Operations Manager",
     applicationDate: "2023-05-16",
     status: "pending",
-    resumeUrl: "/resumes/james-wilson.pdf",
-    coverLetterUrl: "/cover-letters/james-wilson.pdf",
-    notes: "Strong candidate with relevant experience.",
     skills: ["Leadership", "Security Operations", "Team Management"]
   },
   {
     id: "app-002",
-    jobId: "job-001",
-    candidateId: "veteran-002",
     candidateName: "Sarah Johnson",
     candidatePhoto: "/assets/avatar-2.jpg",
     jobTitle: "Security Operations Manager",
     applicationDate: "2023-05-17",
     status: "reviewed",
-    resumeUrl: "/resumes/sarah-johnson.pdf",
-    coverLetterUrl: "/cover-letters/sarah-johnson.pdf",
-    notes: "Excellent technical skills, schedule interview.",
     skills: ["Project Management", "Security Systems", "Communication"]
   },
   {
     id: "app-003",
-    jobId: "job-002",
-    candidateId: "veteran-003",
     candidateName: "Michael Rodriguez",
     candidatePhoto: "/assets/avatar-3.jpg",
     jobTitle: "Logistics Coordinator",
     applicationDate: "2023-05-12",
     status: "accepted",
-    resumeUrl: "/resumes/michael-rodriguez.pdf",
-    coverLetterUrl: "/cover-letters/michael-rodriguez.pdf",
-    notes: "Interview scheduled for May 25th at 2 PM.",
     skills: ["Logistics", "Inventory Management", "Operations"]
   }
 ];
 
 const EmployerApplicationManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Filter applications based on search query and status filter
   const filteredApplications = applications.filter(app => {

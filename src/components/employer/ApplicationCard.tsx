@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Card,
@@ -12,13 +13,18 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CheckCircle, XCircle, Clock } from 'lucide-react';
 
-interface Application {
+// Expanding status options to include both sets of values used in the application
+export type ApplicationStatus = 
+  'pending' | 'reviewed' | 'accepted' | 'rejected' | 
+  'Under Review' | 'Screening' | 'Interview Scheduled' | 'Offered' | 'Hired';
+
+export interface Application {
   id: string;
   candidateName: string;
   candidatePhoto?: string;
   jobTitle: string;
   applicationDate: string;
-  status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
+  status: ApplicationStatus;
   skills: string[];
 }
 
@@ -35,10 +41,15 @@ const ApplicationCard = ({ application, onUpdateStatus }: ApplicationCardProps) 
   const getStatusColor = () => {
     switch (application.status) {
       case 'pending':
+      case 'Under Review':
         return 'bg-gray-100 text-gray-700';
       case 'reviewed':
+      case 'Screening':
+      case 'Interview Scheduled':
         return 'bg-blue-100 text-blue-700';
       case 'accepted':
+      case 'Offered':
+      case 'Hired':
         return 'bg-green-100 text-green-700';
       case 'rejected':
         return 'bg-red-100 text-red-700';
@@ -50,10 +61,14 @@ const ApplicationCard = ({ application, onUpdateStatus }: ApplicationCardProps) 
   const getStatusIcon = () => {
     switch (application.status) {
       case 'pending':
-        return <Clock className="mr-2 h-4 w-4" />;
+      case 'Under Review':
       case 'reviewed':
+      case 'Screening':
+      case 'Interview Scheduled':
         return <Clock className="mr-2 h-4 w-4" />;
       case 'accepted':
+      case 'Offered':
+      case 'Hired':
         return <CheckCircle className="mr-2 h-4 w-4" />;
       case 'rejected':
         return <XCircle className="mr-2 h-4 w-4" />;

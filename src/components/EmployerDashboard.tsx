@@ -10,12 +10,11 @@ import { Separator } from '@/components/ui/separator';
 import { useUser } from '@/context/UserContext';
 import { Building, Briefcase, Users, Search, Filter, Download, Mail, Phone, MapPin } from 'lucide-react';
 import { UserProfile } from '@/utils/recommendationAlgorithm';
-import ApplicationCard from './employer/ApplicationCard';
+import ApplicationCard, { Application, ApplicationStatus } from './employer/ApplicationCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Link } from 'react-router-dom';
 
-// Mock data for the employer dashboard
 const candidateProfiles = [
   {
     id: "veteran-001",
@@ -100,7 +99,6 @@ const candidateProfiles = [
   }
 ];
 
-// Mock job postings data
 const jobPostings = [
   {
     id: "job-001",
@@ -134,45 +132,29 @@ const jobPostings = [
   }
 ];
 
-// Mock applications data
-const applications = [
+const applications: Application[] = [
   {
     id: "app-001",
-    jobId: "job-001",
-    candidateId: "veteran-001",
     candidateName: "James Wilson",
     jobTitle: "Security Operations Manager",
     applicationDate: "2023-05-16",
-    status: "pending" as const,
-    resumeUrl: "/resumes/james-wilson.pdf",
-    coverLetterUrl: "/cover-letters/james-wilson.pdf",
-    notes: "Strong candidate with relevant experience.",
+    status: "pending",
     skills: ["Leadership", "Security Operations", "Team Management"]
   },
   {
     id: "app-002",
-    jobId: "job-001",
-    candidateId: "veteran-002",
     candidateName: "Sarah Johnson",
     jobTitle: "Security Operations Manager",
     applicationDate: "2023-05-17",
-    status: "reviewed" as const,
-    resumeUrl: "/resumes/sarah-johnson.pdf",
-    coverLetterUrl: "/cover-letters/sarah-johnson.pdf",
-    notes: "Excellent technical skills, schedule interview.",
+    status: "reviewed",
     skills: ["Project Management", "Security Systems", "Communication"]
   },
   {
     id: "app-003",
-    jobId: "job-002",
-    candidateId: "veteran-003",
     candidateName: "Michael Rodriguez",
     jobTitle: "Logistics Coordinator",
     applicationDate: "2023-05-12",
-    status: "accepted" as const,
-    resumeUrl: "/resumes/michael-rodriguez.pdf",
-    coverLetterUrl: "/cover-letters/michael-rodriguez.pdf",
-    notes: "Interview scheduled for May 25th at 2 PM.",
+    status: "accepted",
     skills: ["Logistics", "Inventory Management", "Operations"]
   }
 ];
@@ -183,7 +165,6 @@ const EmployerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Filter applications based on search query and status filter
   const filteredApplications = applications.filter(app => {
     const matchesSearch = app.candidateName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase());
@@ -191,7 +172,6 @@ const EmployerDashboard = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Handle application status update
   const handleUpdateStatus = (applicationId: string, newStatus: string) => {
     console.log(`Updating application ${applicationId} to status: ${newStatus}`);
     // In a real app, this would update the database
@@ -328,9 +308,9 @@ const EmployerDashboard = () => {
                         </div>
                       </div>
                       <Badge variant={
-                        application.status === "Under Review" ? "outline" :
-                        application.status === "Screening" ? "secondary" :
-                        application.status === "Interview Scheduled" ? "default" :
+                        application.status === "pending" ? "outline" :
+                        application.status === "reviewed" ? "secondary" :
+                        application.status === "accepted" ? "default" :
                         "outline"
                       }>
                         {application.status}
