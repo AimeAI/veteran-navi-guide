@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -12,6 +13,7 @@ import EmployerDashboardPage from "./pages/EmployerDashboardPage";
 import EmployerProfilePage from "./pages/EmployerProfilePage";
 import VeteranDashboardPage from "./pages/VeteranDashboardPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminContentPage from "./pages/AdminContentPage";
 import EmployerSearchVeteransPage from "./pages/EmployerSearchVeteransPage";
 import CommunityForums from "./pages/CommunityForums";
 import RecommendedJobs from "./pages/RecommendedJobs";
@@ -74,6 +76,11 @@ function App() {
                   <Route path="/verify-email" element={<VerifyEmailPage />} />
                   <Route path="/dashboard" element={<VeteranDashboardPage />} />
                   <Route path="/admin" element={<AdminDashboardPage />} />
+                  <Route path="/admin/content" element={
+                    <RequireAuth>
+                      <AdminContentPage />
+                    </RequireAuth>
+                  } />
                   <Route path="/employer-profile" element={
                     <RequireAuth>
                       <EmployerProfilePage />
