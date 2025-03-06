@@ -18,6 +18,10 @@ export interface JobApplication {
   coverLetter?: string;
   notes?: string;
   matchScore?: number;
+  // For simpler mock data testing
+  applicantName?: string;
+  jobTitle?: string;
+  company?: string;
 }
 
 export interface MessageToApplicant {

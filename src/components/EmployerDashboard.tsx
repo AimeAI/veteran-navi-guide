@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import FilterBar from '@/components/FilterBar';
-import { Application, ApplicationStatus } from '@/types/application';
+import { JobApplication, ApplicationStatus } from '@/types/application';
 import { useToast } from "@/hooks/use-toast";
 import StatsCard from '@/components/StatsCard';
 import { Card, CardContent } from '@/components/ui/card';
@@ -98,7 +98,7 @@ const fetchApplications = async () => {
       resume: 'resume-michael-chen.pdf',
       matchScore: 72
     }
-  ] as Application[];
+  ] as JobApplication[];
 };
 
 const DashboardSkeleton = () => {

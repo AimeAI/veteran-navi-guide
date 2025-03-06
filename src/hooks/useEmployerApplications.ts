@@ -2,8 +2,6 @@
 import { useState } from 'react';
 import { JobApplication, ApplicationStatus, MessageToApplicant } from '@/types/application';
 import { toast } from 'sonner';
-import { Job } from '@/context/JobContext';
-import { mockJobs } from '@/data/mockJobs';
 import { currentUserProfile } from '@/utils/recommendationAlgorithm';
 
 // Mock data for job applications
@@ -20,7 +18,7 @@ const mockApplications: JobApplication[] = [
       category: 'Security',
       salaryRange: '$80,000 - $100,000',
       clearanceLevel: 'Secret',
-      mosCode: ['00161'],
+      mosCode: '00161', // Changed from array to string
       requiredSkills: ['leadership', 'security', 'risk assessment'],
       preferredSkills: ['project management', 'communication'],
       remote: false,
@@ -46,7 +44,7 @@ const mockApplications: JobApplication[] = [
       category: 'Logistics',
       salaryRange: '$65,000 - $80,000',
       clearanceLevel: 'None',
-      mosCode: ['00168'],
+      mosCode: '00168', // Changed from array to string
       requiredSkills: ['logistics', 'inventory management', 'supply chain'],
       preferredSkills: ['leadership', 'communication'],
       remote: false,
@@ -76,7 +74,7 @@ const mockApplications: JobApplication[] = [
       category: 'Healthcare',
       salaryRange: '$70,000 - $90,000',
       clearanceLevel: 'None',
-      mosCode: [],
+      mosCode: '', // Changed from empty array to empty string
       requiredSkills: ['healthcare', 'administration', 'organization'],
       preferredSkills: ['leadership', 'project management'],
       remote: true,
@@ -107,7 +105,7 @@ const mockApplications: JobApplication[] = [
       category: 'Information Technology',
       salaryRange: '$75,000 - $95,000',
       clearanceLevel: 'Secret',
-      mosCode: ['00271'],
+      mosCode: '00271', // Changed from array to string
       requiredSkills: ['cybersecurity', 'network security', 'incident response'],
       preferredSkills: ['communication', 'risk assessment'],
       remote: false,
@@ -138,7 +136,7 @@ const mockApplications: JobApplication[] = [
       category: 'Construction',
       salaryRange: '$85,000 - $110,000',
       clearanceLevel: 'None',
-      mosCode: [],
+      mosCode: '', // Changed from empty array to empty string
       requiredSkills: ['project management', 'leadership', 'organization'],
       preferredSkills: ['communication', 'budgeting'],
       remote: false,

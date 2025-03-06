@@ -36,7 +36,7 @@ function ApplicationsLoadingSkeleton() {
 }
 
 export default function EmployerApplicationManagement() {
-  const { applications, loading, updateApplicationStatus, sendMessageToApplicant } = useEmployerApplications();
+  const { applications, isLoading, updateApplicationStatus, sendMessageToApplicant } = useEmployerApplications();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'all'>('all');
   const [jobTitleFilter, setJobTitleFilter] = useState('');
@@ -139,7 +139,7 @@ export default function EmployerApplicationManagement() {
       </div>
 
       <div className="space-y-4">
-        {loading ? (
+        {isLoading ? (
           <ApplicationsLoadingSkeleton />
         ) : filteredApplications.length > 0 ? (
           filteredApplications.map((application: JobApplication) => (
