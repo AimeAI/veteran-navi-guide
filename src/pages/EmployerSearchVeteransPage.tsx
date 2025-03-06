@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Search, User, Shield, Medal, Briefcase, ChevronDown, Filter } from 'lucide-react';
@@ -254,9 +255,9 @@ const EmployerSearchVeteransPage: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
       <Navbar />
 
-      <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="sticky top-0 bg-gradient-to-b from-white to-gray-50 z-10 pb-4">
+      <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col">
+        <div className="max-w-7xl mx-auto w-full flex flex-col h-full">
+          <div className="bg-gradient-to-b from-white to-gray-50 z-10 pb-4">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Veteran Talent</h1>
             <p className="text-gray-600 mb-8">Search for qualified Canadian veterans based on skills, experience, and military background</p>
 
@@ -394,8 +395,8 @@ const EmployerSearchVeteransPage: React.FC = () => {
             </div>
           </div>
 
-          <ScrollArea className="h-full overflow-y-auto">
-            <div className="space-y-6">
+          <ScrollArea className="flex-grow overflow-y-auto pr-2">
+            <div className="space-y-6 pb-6">
               {filteredVeterans.length > 0 ? (
                 filteredVeterans.map(veteran => (
                   <div
@@ -510,7 +511,7 @@ const EmployerSearchVeteransPage: React.FC = () => {
         />
       )}
       
-      <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
+      <footer className="bg-gray-50 border-t border-gray-200">
         <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="text-center text-gray-500 text-sm">
             <p>© 2023 VeteranJobBoard. All rights reserved.</p>
