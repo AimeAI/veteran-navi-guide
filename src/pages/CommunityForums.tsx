@@ -437,11 +437,13 @@ const CommunityForums = () => {
     setReportingTopicId(null);
     setReportReason("");
     setIsReportDialogOpen(false);
-
+    
     toast.success("Report submitted", {
       description: "Thank you for helping keep our community safe",
       duration: 5000,
     });
+    
+    window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
   };
 
   const isCurrentUserAuthor = (authorName: string) => {

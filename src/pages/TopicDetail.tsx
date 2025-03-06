@@ -290,13 +290,13 @@ const TopicDetail = () => {
     setReportingPostId(null);
     setReportReason("");
     setIsReportDialogOpen(false);
-
-    window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-
+    
     toast.success("Report submitted", {
       description: "Thank you for helping keep our community safe",
       duration: 5000,
     });
+    
+    window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
   };
 
   const isCurrentUserAuthor = (authorName: string) => {
