@@ -7,7 +7,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import FormErrorMessage from "@/components/ui/form-error-message";
-import { Search, X, Check, ChevronLeft, ChevronRight, Pencil, Save, Trash, AlertTriangle } from "lucide-react";
+import { 
+  Search, 
+  X, 
+  Check, 
+  ChevronLeft, 
+  ChevronRight, 
+  Pencil, 
+  Save, 
+  Trash, 
+  AlertTriangle,
+  Flag 
+} from "lucide-react";
 import { toast } from "sonner";
 import { isEmptyOrWhitespace } from "@/utils/validation";
 import {
@@ -27,6 +38,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
+  DialogClose
 } from "@/components/ui/dialog";
 
 const forumTopics = [
@@ -133,6 +145,11 @@ const CommunityForums = () => {
   
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
+  
+  const [reportingTopicId, setReportingTopicId] = useState<number | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [reportError, setReportError] = useState("");
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   
   const { user } = useUser();
 
@@ -387,6 +404,46 @@ const CommunityForums = () => {
     }
   };
 
+  const handleReportClick = (topicId: number) => {
+    setReportingTopicId(topicId);
+    setReportReason("");
+    setReportError("");
+    setIsReportDialogOpen(true);
+  };
+
+  const handleCancelReport = () => {
+    setReportingTopicId(null);
+    setReportReason("");
+    setReportError("");
+    setIsReportDialogOpen(false);
+  };
+
+  const handleSubmitReport = () => {
+    if (isEmptyOrWhitespace(reportReason)) {
+      setReportError("Please provide a reason for reporting this topic");
+      return;
+    }
+
+    if (reportReason.length < 10) {
+      setReportError("Report reason must be at least 10 characters");
+      return;
+    }
+
+    console.log("Topic report submitted:", {
+      topicId: reportingTopicId,
+      reason: reportReason
+    });
+
+    setReportingTopicId(null);
+    setReportReason("");
+    setIsReportDialogOpen(false);
+
+    toast.success("Report submitted", {
+      description: "Thank you for helping keep our community safe",
+      duration: 5000,
+    });
+  };
+
   const isCurrentUserAuthor = (authorName: string) => {
     return user?.name === authorName || authorName === "CurrentUser";
   };
@@ -637,28 +694,40 @@ const CommunityForums = () => {
                           <span>{topic.views} views</span>
                         </div>
                         
-                        {isCurrentUserAuthor(topic.author) && (
-                          <div className="mt-3 flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEditTopic(topic)}
-                              className="flex items-center text-muted-foreground hover:text-foreground"
-                            >
-                              <Pencil className="h-3.5 w-3.5 mr-1" />
-                              Edit
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDeleteConfirmation(topic.id)}
-                              className="flex items-center text-muted-foreground hover:text-destructive"
-                            >
-                              <Trash className="h-3.5 w-3.5 mr-1" />
-                              Delete
-                            </Button>
-                          </div>
-                        )}
+                        <div className="mt-3 flex gap-2">
+                          {isCurrentUserAuthor(topic.author) && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleEditTopic(topic)}
+                                className="flex items-center text-muted-foreground hover:text-foreground"
+                              >
+                                <Pencil className="h-3.5 w-3.5 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteConfirmation(topic.id)}
+                                className="flex items-center text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash className="h-3.5 w-3.5 mr-1" />
+                                Delete
+                              </Button>
+                            </>
+                          )}
+                          
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleReportClick(topic.id)}
+                            className="flex items-center text-muted-foreground hover:text-destructive"
+                          >
+                            <Flag className="h-3.5 w-3.5 mr-1" />
+                            Report
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   </article>
@@ -822,6 +891,54 @@ const CommunityForums = () => {
             >
               <Trash className="h-4 w-4 mr-2" />
               Delete Topic
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Flag className="h-5 w-5" />
+              Report This Topic
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              Please provide details about why you're reporting this topic. Our moderators will review your report.
+            </p>
+            
+            <div className="space-y-2">
+              <Textarea
+                value={reportReason}
+                onChange={(e) => {
+                  setReportReason(e.target.value);
+                  if (reportError) setReportError("");
+                }}
+                placeholder="Explain why this topic violates our community guidelines..."
+                rows={4}
+                className="w-full resize-none"
+                aria-invalid={!!reportError}
+              />
+              {reportError && <FormErrorMessage message={reportError} />}
+            </div>
+          </div>
+          
+          <DialogFooter className="flex sm:justify-between">
+            <DialogClose asChild>
+              <Button variant="outline" onClick={handleCancelReport}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button 
+              variant="destructive" 
+              onClick={handleSubmitReport}
+              className="gap-2"
+            >
+              <Flag className="h-4 w-4" />
+              Submit Report
             </Button>
           </DialogFooter>
         </DialogContent>
