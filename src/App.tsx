@@ -47,7 +47,6 @@ const NotificationPreferences = lazy(() => import("./components/NotificationPref
 const FeedbackSupportPage = lazy(() => import("./pages/FeedbackSupportPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ReferralProgramPage = lazy(() => import("./pages/ReferralProgramPage"));
-const LeadsManagementPage = lazy(() => import("./pages/LeadsManagementPage"));
 
 // Loading component for suspense fallback
 const PageLoading = () => (
@@ -107,7 +106,6 @@ function App() {
                         <EmployerProfilePage />
                       </RequireAuth>
                     } />
-                    <Route path="/leads" element={<LeadsManagementPage />} />
                     <Route path="/ab-testing" element={<AbTestingPage />} />
                     <Route path="/profile/settings" element={<UserProfile />} />
                     <Route path="/profile/resume" element={<UserProfile />} />
