@@ -1,13 +1,11 @@
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
 import EmployerDashboard from '@/components/EmployerDashboard';
 import { Building } from 'lucide-react';
 
 const EmployerDashboardPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
       <main className="flex-grow container mx-auto px-4 py-12 sm:px-6 lg:px-8" id="main-content">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center mb-8">

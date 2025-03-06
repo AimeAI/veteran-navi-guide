@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
 import ApplicationHistory from '@/components/ApplicationHistory';
 import { FileText, AlertCircle } from 'lucide-react';
 
@@ -49,7 +48,6 @@ const applicationData = [
 const ApplicationsPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
       <main className="flex-grow container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center mb-8">
