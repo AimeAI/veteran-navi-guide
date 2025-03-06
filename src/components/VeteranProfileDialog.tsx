@@ -58,7 +58,7 @@ const VeteranProfileDialog: React.FC<VeteranProfileProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh]">
         <DialogHeader className="sticky top-0 z-10 bg-background pb-4">
           <DialogTitle className="text-2xl font-bold flex items-center justify-between">
             {veteran.name}
@@ -77,8 +77,8 @@ const VeteranProfileDialog: React.FC<VeteranProfileProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="h-[calc(90vh-12rem)]">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2 pr-4">
+        <ScrollArea className="flex-1 pr-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
             {/* Left column - Basic info */}
             <div className="md:col-span-1 space-y-4">
               <Card>
@@ -231,7 +231,7 @@ const VeteranProfileDialog: React.FC<VeteranProfileProps> = ({
           </div>
         </ScrollArea>
 
-        <DialogFooter className="sticky bottom-0 bg-background pt-4 sm:justify-between flex flex-col-reverse sm:flex-row gap-2">
+        <DialogFooter className="sticky bottom-0 bg-background pt-4 sm:justify-between flex flex-col-reverse sm:flex-row gap-2 mt-4 border-t border-gray-100">
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
