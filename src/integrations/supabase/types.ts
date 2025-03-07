@@ -86,43 +86,100 @@ export type Database = {
         }
         Relationships: []
       }
+      employers: {
+        Row: {
+          company_description: string | null
+          company_name: string
+          company_website: string
+          contact_email: string | null
+          contact_person: string | null
+          date_added: string
+          id: string
+          updated_at: string
+          user_id: string | null
+          vetting_status: Database["public"]["Enums"]["vetting_status"]
+        }
+        Insert: {
+          company_description?: string | null
+          company_name: string
+          company_website: string
+          contact_email?: string | null
+          contact_person?: string | null
+          date_added?: string
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+          vetting_status?: Database["public"]["Enums"]["vetting_status"]
+        }
+        Update: {
+          company_description?: string | null
+          company_name?: string
+          company_website?: string
+          contact_email?: string | null
+          contact_person?: string | null
+          date_added?: string
+          id?: string
+          updated_at?: string
+          user_id?: string | null
+          vetting_status?: Database["public"]["Enums"]["vetting_status"]
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
+          application_url: string | null
+          benefits: string | null
           company: string
           created_at: string | null
           description: string
           employer_id: string | null
           id: string
+          job_type: string
           location: string
+          military_skill_mapping: string[] | null
+          required_skills: string[] | null
           requirements: string[] | null
           salary: string | null
-          status: string | null
+          salary_range: string | null
+          status: string
           title: string
           updated_at: string | null
         }
         Insert: {
+          application_url?: string | null
+          benefits?: string | null
           company: string
           created_at?: string | null
           description: string
           employer_id?: string | null
           id?: string
+          job_type: string
           location: string
+          military_skill_mapping?: string[] | null
+          required_skills?: string[] | null
           requirements?: string[] | null
           salary?: string | null
-          status?: string | null
+          salary_range?: string | null
+          status?: string
           title: string
           updated_at?: string | null
         }
         Update: {
+          application_url?: string | null
+          benefits?: string | null
           company?: string
           created_at?: string | null
           description?: string
           employer_id?: string | null
           id?: string
+          job_type?: string
           location?: string
+          military_skill_mapping?: string[] | null
+          required_skills?: string[] | null
           requirements?: string[] | null
           salary?: string | null
-          status?: string | null
+          salary_range?: string | null
+          status?: string
           title?: string
           updated_at?: string | null
         }
@@ -189,7 +246,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      job_status: "Open" | "Closed" | "Pending"
+      job_type: "Full-time" | "Part-time" | "Contract" | "Internship"
+      vetting_status: "Pending" | "Approved" | "Rejected"
     }
     CompositeTypes: {
       [_ in never]: never

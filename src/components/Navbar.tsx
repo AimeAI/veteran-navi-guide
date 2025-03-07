@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, User, BookOpen, Building, ChevronDown } from 'lucide-react';
+import { Briefcase, User, BookOpen, Building, ChevronDown, Shield } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +29,7 @@ const Navbar: React.FC = () => {
         { label: t('navigation.recommendedJobs'), href: '/recommended' },
         { label: t('navigation.jobAlerts'), href: '/job-alerts' },
         { label: t('navigation.jobFairs'), href: '/events' },
+        { label: t('navigation.vettedJobs'), href: '/vetted-jobs', icon: <Shield className="h-3 w-3 ml-1 text-primary" /> },
       ],
     },
     {
@@ -74,7 +75,6 @@ const Navbar: React.FC = () => {
               </Link>
             </div>
             
-            {/* Desktop Navigation */}
             <nav aria-label="Main Navigation" className="hidden lg:flex lg:items-center lg:space-x-4 xl:space-x-6">
               {navSections.map((section) => (
                 <div key={section.title} className="relative">
@@ -87,7 +87,10 @@ const Navbar: React.FC = () => {
                     <DropdownMenuContent className="w-48">
                       {section.items.map((item) => (
                         <DropdownMenuItem key={item.label} asChild>
-                          <Link to={item.href}>{item.label}</Link>
+                          <Link to={item.href} className="flex items-center">
+                            {item.label}
+                            {item.icon && item.icon}
+                          </Link>
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
@@ -95,14 +98,11 @@ const Navbar: React.FC = () => {
                 </div>
               ))}
               
-              {/* Language selector */}
               <LanguageSelector />
             </nav>
 
-            {/* Mobile Menu */}
             <MobileMenu sections={navSections} />
 
-            {/* Login/Register buttons for desktop or user dropdown if logged in */}
             <div className="hidden lg:flex lg:items-center lg:space-x-4">
               {user ? (
                 <NavDropdown />

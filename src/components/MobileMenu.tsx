@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronRight, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
@@ -9,9 +9,11 @@ import { useUser } from '@/context/UserContext';
 
 interface MobileMenuSection {
   title: string;
+  icon?: React.ReactNode;
   items: {
     label: string;
     href: string;
+    icon?: React.ReactNode;
   }[];
 }
 
@@ -108,7 +110,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
                     aria-expanded={expandedSection === section.title}
                     aria-controls={`section-${section.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <span>{section.title}</span>
+                    <span className="flex items-center">
+                      {section.icon && <span className="mr-2">{section.icon}</span>}
+                      {section.title}
+                    </span>
                     <ChevronRight 
                       className={cn(
                         "h-4 w-4 transition-transform", 
@@ -127,10 +132,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
                         <Link
                           key={idx}
                           to={item.href}
-                          className="block py-2 text-sm text-nav-muted hover:text-primary transition-colors focus:outline-none focus:text-primary focus:underline"
+                          className="flex items-center py-2 text-sm text-nav-muted hover:text-primary transition-colors focus:outline-none focus:text-primary focus:underline"
                           onClick={toggleMenu}
                         >
                           {item.label}
+                          {item.icon && <span className="ml-1">{item.icon}</span>}
                         </Link>
                       ))}
                     </div>

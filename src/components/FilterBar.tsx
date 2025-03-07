@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Filter, Search, MapPin, Globe, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 interface FilterBarProps {
   keywords: string;
@@ -40,9 +40,36 @@ const FilterBar: React.FC<FilterBarProps> = ({
   onToggleAdvancedFilters,
   onClearFilters,
 }) => {
+  const [localKeywords, setLocalKeywords] = useState(keywords);
+  const [localLocation, setLocalLocation] = useState(location);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // The parent component should handle updates as values change
+    onKeywordChange(localKeywords);
+    onLocationChange(localLocation);
+  };
+
+  const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalKeywords(e.target.value);
+    // Only immediately update for empty field (clearing filter)
+    if (e.target.value === '') {
+      onKeywordChange('');
+    }
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalLocation(e.target.value);
+    // Only immediately update for empty field (clearing filter)
+    if (e.target.value === '') {
+      onLocationChange('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      onKeywordChange(localKeywords);
+      onLocationChange(localLocation);
+    }
   };
 
   const hasActiveFilters = keywords || location || remote || country !== "canada";
@@ -77,8 +104,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
               type="text"
               placeholder="Job title, keywords, or company"
               className="pl-9"
-              value={keywords}
-              onChange={(e) => onKeywordChange(e.target.value)}
+              value={localKeywords}
+              onChange={handleKeywordChange}
+              onKeyDown={handleKeyDown}
+              onBlur={() => onKeywordChange(localKeywords)}
             />
           </div>
         </div>
@@ -90,8 +119,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
               type="text"
               placeholder="City, province, or postal code"
               className="pl-9"
-              value={location}
-              onChange={(e) => onLocationChange(e.target.value)}
+              value={localLocation}
+              onChange={handleLocationChange}
+              onKeyDown={handleKeyDown}
+              onBlur={() => onLocationChange(localLocation)}
             />
           </div>
         </div>
@@ -126,6 +157,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </div>
         
         <div className="flex pt-2">
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            className="mr-2"
+          >
+            <Search className="h-4 w-4 mr-1" />
+            Search
+          </Button>
+          
           <Button
             type="button"
             variant="outline"

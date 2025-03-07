@@ -17,8 +17,6 @@ import JobSearch from "./pages/JobSearch";
 
 // Performance optimization: Lazy load pages to reduce initial bundle size
 const Index = lazy(() => import("./pages/Index"));
-// Changed from lazy loading to direct import to avoid dynamic import issues
-// const JobSearch = lazy(() => import("./pages/JobSearch"));
 const SavedJobs = lazy(() => import("./pages/SavedJobs"));
 const JobDetailsPage = lazy(() => import("./pages/JobDetailsPage"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
@@ -47,6 +45,8 @@ const NotificationPreferences = lazy(() => import("./components/NotificationPref
 const FeedbackSupportPage = lazy(() => import("./pages/FeedbackSupportPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ReferralProgramPage = lazy(() => import("./pages/ReferralProgramPage"));
+// Add new vetted jobs page
+const VettedJobsPage = lazy(() => import("./pages/VettedJobsPage"));
 
 // Loading component for suspense fallback
 const PageLoading = () => (
@@ -70,9 +70,7 @@ function App() {
                 <Suspense fallback={<PageLoading />}>
                   <Routes>
                     <Route path="/" element={<Index />} />
-                    {/* Using direct import instead of lazy loading */}
                     <Route path="/job-search" element={<JobSearch />} />
-                    {/* Add redirect from old path */}
                     <Route path="/jobs/search" element={<JobSearch />} />
                     <Route path="/saved" element={<SavedJobs />} />
                     <Route path="/job/:id" element={<JobDetailsPage />} />
@@ -111,6 +109,8 @@ function App() {
                     <Route path="/profile/resume" element={<UserProfile />} />
                     <Route path="/job-alerts" element={<UserProfile />} />
                     <Route path="/recommended" element={<RecommendedJobs />} />
+                    {/* Add the new vetted jobs route */}
+                    <Route path="/vetted-jobs" element={<VettedJobsPage />} />
                     <Route
                       path="/settings/notifications"
                       element={
