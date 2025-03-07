@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Filter, Search, MapPin, Globe, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -159,7 +158,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <div className="flex pt-2">
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             size="sm"
             className="mr-2"
           >
