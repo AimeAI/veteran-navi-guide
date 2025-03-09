@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { searchJobBankJobs, getNOCCodesForSkill } from '@/utils/jobBankApi';
@@ -16,6 +15,7 @@ export interface JobSearchParams {
   educationLevel?: string;
   country?: "us" | "canada";
   page?: number;
+  skills?: string[];
 }
 
 export interface JobSearchResults {
@@ -38,15 +38,18 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
   const [totalJobs, setTotalJobs] = useState(0);
   const [currentSearchParams, setCurrentSearchParams] = useState<JobSearchParams>({
     ...searchParams,
-    country: searchParams.country || "canada" // Default to Canada for consistency
+    country: searchParams.country || "canada",
+    skills: searchParams.skills || [],
   });
 
-  // Create a cache key based on search parameters
   const getCacheKey = useCallback((params: JobSearchParams, page: number): string => {
-    return `${params.country || 'canada'}:${params.keywords || ''}:${params.location || ''}:${params.radius || 50}:${params.jobType || ''}:${params.industry || ''}:${page}`;
+    const skillsKey = params.skills && params.skills.length > 0 
+      ? params.skills.sort().join(',') 
+      : '';
+    
+    return `${params.country || 'canada'}:${params.keywords || ''}:${params.location || ''}:${params.radius || 50}:${params.jobType || ''}:${params.industry || ''}:${skillsKey}:${page}`;
   }, []);
 
-  // Update searchParams when external params change
   useEffect(() => {
     setCurrentSearchParams(prevParams => ({
       ...prevParams,
@@ -59,6 +62,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       educationLevel: searchParams.educationLevel,
       remote: searchParams.remote,
       country: searchParams.country,
+      skills: searchParams.skills,
     }));
   }, [
     searchParams.keywords, 
@@ -69,21 +73,19 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     searchParams.experienceLevel,
     searchParams.educationLevel,
     searchParams.remote,
-    searchParams.country
+    searchParams.country,
+    searchParams.skills,
   ]);
 
-  // Enhanced function to handle military skills to NOC code conversion
   const convertMilitarySkillsToKeywords = useCallback((militarySkills?: string[]): string => {
     if (!militarySkills || militarySkills.length === 0) return '';
     
-    // Get all NOC codes for the selected military skills
     const nocCodes: string[] = [];
     militarySkills.forEach(skill => {
       const codes = getNOCCodesForSkill(skill);
       nocCodes.push(...codes);
     });
     
-    // Return as a comma-separated string
     return nocCodes.join(',');
   }, []);
 
@@ -97,26 +99,20 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
         page: currentPage,
       };
       
-      // Process military skills in keywords if present
       if (params.keywords && params.keywords.includes("skill:")) {
-        // Extract skill names from format "skill:leadership,skill:logistics"
         const skillMatches = params.keywords.match(/skill:([a-z]+)/g) || [];
         const skills = skillMatches.map(s => s.replace('skill:', ''));
         
-        // Convert to NOC codes
         const skillKeywords = convertMilitarySkillsToKeywords(skills);
         
-        // Remove skill: prefixes from keywords
         const cleanKeywords = params.keywords.replace(/skill:[a-z]+,?/g, '').trim();
         
-        // Use both the cleaned keywords and NOC codes
         params.keywords = cleanKeywords ? 
           `${cleanKeywords} ${skillKeywords}` : skillKeywords;
       }
       
       console.log("Fetching jobs with params:", params);
       
-      // Check cache first
       const cacheKey = getCacheKey(params, currentPage);
       const cachedResults = JobCache.getSearchResults(cacheKey);
       
@@ -129,7 +125,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
         return;
       }
       
-      // Clear any previous errors
       setError(null);
       
       try {
@@ -139,18 +134,38 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
           location: params.location,
           distance: params.radius,
           page: currentPage,
+          skills: params.skills,
         };
         
         const jobBankResults = await searchJobBankJobs(jobBankParams);
         
-        // If we got results, use them
         if (jobBankResults.jobs && jobBankResults.jobs.length > 0) {
           console.log(`Found ${jobBankResults.jobs.length} jobs`);
+          
+          if (params.skills && params.skills.length > 0) {
+            jobBankResults.jobs = jobBankResults.jobs.map(job => {
+              const skills = params.skills || [];
+              const matchingSkills = job.requiredSkills.filter(jobSkill =>
+                skills.some(searchSkill => 
+                  jobSkill.toLowerCase().includes(searchSkill.toLowerCase()) ||
+                  searchSkill.toLowerCase().includes(jobSkill.toLowerCase())
+                )
+              );
+              
+              if (matchingSkills.length > 0) {
+                return {
+                  ...job,
+                  matchingSkills
+                };
+              }
+              return job;
+            });
+          }
+          
           setJobs(jobBankResults.jobs);
           setTotalPages(jobBankResults.totalPages);
           setTotalJobs(jobBankResults.totalJobs);
           
-          // Cache the results
           JobCache.saveSearchResults(cacheKey, jobBankResults);
           
           setIsLoading(false);
@@ -177,11 +192,9 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
   };
 
   const refreshJobs = async (): Promise<void> => {
-    // Clear the cache for the current search
     const cacheKey = getCacheKey(currentSearchParams, currentPage);
     JobCache.clearSearchResult(cacheKey);
     
-    // Set forceRefresh to trigger a fresh fetch
     const refreshedParams = {
       ...currentSearchParams,
       refresh: true
@@ -189,7 +202,6 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     
     setCurrentSearchParams(refreshedParams);
     
-    // Re-fetch jobs
     setIsLoading(true);
     await fetchJobs();
   };

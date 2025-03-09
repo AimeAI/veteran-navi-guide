@@ -22,7 +22,7 @@ export function useJobSearchState(refreshJobs: () => Promise<void>) {
     benefits: [],
     country: 'canada',
     useJobicy: false,
-    skills: [],
+    skills: [], // Initialize skills array
     category: '',
     salaryRange: '',
   });
@@ -68,6 +68,14 @@ export function useJobSearchState(refreshJobs: () => Promise<void>) {
     }));
   };
   
+  // New handler for skills change
+  const handleSkillsChange = (skills: string[]) => {
+    setFilters(prev => ({
+      ...prev,
+      skills,
+    }));
+  };
+  
   const handleClearFilters = () => {
     setFilters({
       keywords: '',
@@ -86,7 +94,7 @@ export function useJobSearchState(refreshJobs: () => Promise<void>) {
       benefits: [],
       country: 'canada',
       useJobicy: false,
-      skills: [],
+      skills: [], // Clear skills too
       category: '',
       salaryRange: '',
     });
@@ -124,6 +132,7 @@ export function useJobSearchState(refreshJobs: () => Promise<void>) {
     handleRemoteToggle,
     handleCountryChange,
     handleMilitarySkillsChange,
+    handleSkillsChange, // Export this
     handleClearFilters,
     handleClearCacheAndRefresh,
   };

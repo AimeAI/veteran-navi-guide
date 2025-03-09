@@ -43,6 +43,7 @@ const JobSearch: React.FC = () => {
     handleRemoteToggle,
     handleCountryChange,
     handleMilitarySkillsChange,
+    handleSkillsChange, // New handler
     handleClearFilters,
     handleClearCacheAndRefresh,
   } = useJobSearchState(refreshJobs);
@@ -64,6 +65,7 @@ const JobSearch: React.FC = () => {
     filters.educationLevel,
     filters.jobType,
     filters.country,
+    filters.skills, // Add skills dependency
   ]);
   
   return (
@@ -89,6 +91,7 @@ const JobSearch: React.FC = () => {
         onClearFilters={handleClearFilters}
         onFilterChange={handleFilterChange}
         onMilitarySkillsChange={handleMilitarySkillsChange}
+        onSkillsChange={handleSkillsChange} // Add this prop
         jobs={jobs}
         isLoading={isLoading}
         error={error}

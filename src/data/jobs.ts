@@ -22,6 +22,7 @@ interface SearchParams {
   useLightcastApi?: boolean;
   country?: "us" | "canada";
   useJobicy?: boolean;
+  skills?: string[];
 }
 
 export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
@@ -57,6 +58,7 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
         location: params.locations?.[0] || '',
         distance: params.radius,
         page: 1,
+        skills: params.skills,
       };
       
       const jobBankResult = await searchJobBankJobs(jobBankParams);
@@ -94,7 +96,7 @@ const filterMockJobs = (params: SearchParams): JobListing[] => {
     experienceLevel: job.experienceLevel || '',
     educationLevel: job.educationLevel || '',
     date: job.postedDate || new Date().toISOString(),
-    remote: job.remote !== undefined ? job.remote : false, // Ensure remote is always defined
+    remote: job.remote !== undefined ? job.remote : false,
   }));
 
   let filteredJobs = [...jobsWithRequiredProps];
@@ -234,6 +236,66 @@ const filterMockJobs = (params: SearchParams): JobListing[] => {
 
   if (params.remote !== undefined) {
     filteredJobs = filteredJobs.filter(job => job.remote === params.remote);
+  }
+
+  if (params.skills && params.skills.length > 0) {
+    const skillsLower = params.skills.map(skill => skill.toLowerCase());
+    
+    filteredJobs = filteredJobs.map(job => {
+      const jobRequiredSkills = job.requiredSkills || [];
+      const jobPreferredSkills = job.preferredSkills || [];
+      const allJobSkills = [...jobRequiredSkills, ...jobPreferredSkills].map(skill => skill.toLowerCase());
+      
+      const matchingSkills: string[] = [];
+      
+      skillsLower.forEach(searchSkill => {
+        const exactMatch = allJobSkills.find(jobSkill => 
+          jobSkill === searchSkill || 
+          jobSkill.includes(searchSkill) || 
+          searchSkill.includes(jobSkill)
+        );
+        
+        if (exactMatch) {
+          const originalSkill = [...jobRequiredSkills, ...jobPreferredSkills].find(
+            s => s.toLowerCase() === exactMatch
+          );
+          if (originalSkill && !matchingSkills.includes(originalSkill)) {
+            matchingSkills.push(originalSkill);
+          }
+          return;
+        }
+        
+        const fuzzyMatch = allJobSkills.find(jobSkill => {
+          const jobSkillWords = jobSkill.split(/\s+/);
+          const searchSkillWords = searchSkill.split(/\s+/);
+          
+          return jobSkillWords.some(jsw => 
+            searchSkillWords.some(ssw => 
+              jsw.includes(ssw) || ssw.includes(jsw) || 
+              (jsw.length > 3 && ssw.length > 3 && 
+               (jsw.slice(0, 4) === ssw.slice(0, 4)))
+            )
+          );
+        });
+        
+        if (fuzzyMatch) {
+          const originalSkill = [...jobRequiredSkills, ...jobPreferredSkills].find(
+            s => s.toLowerCase() === fuzzyMatch
+          );
+          if (originalSkill && !matchingSkills.includes(originalSkill)) {
+            matchingSkills.push(originalSkill);
+          }
+        }
+      });
+      
+      if (matchingSkills.length > 0) {
+        return {
+          ...job,
+          matchingSkills
+        };
+      }
+      return null;
+    }).filter(job => job !== null) as JobListing[];
   }
 
   return filteredJobs;
