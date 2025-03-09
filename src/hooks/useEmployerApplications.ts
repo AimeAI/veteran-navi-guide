@@ -70,18 +70,23 @@ export function useEmployerApplications(jobId?: string) {
       const mappedApplications: JobApplicant[] = data.map(app => {
         // Handle the profile object safely, ensuring it exists and has the expected properties
         const profile = app.profiles || {};
-        const fullName = typeof profile === 'object' && profile !== null && 'full_name' in profile
-          ? profile.full_name
-          : 'Anonymous Applicant';
         
-        const avatarUrl = typeof profile === 'object' && profile !== null && 'avatar_url' in profile
-          ? profile.avatar_url
-          : undefined;
+        // Explicitly cast to string after type checking
+        let fullName = 'Anonymous Applicant';
+        if (typeof profile === 'object' && profile !== null && 'full_name' in profile) {
+          fullName = profile.full_name as string || 'Anonymous Applicant';
+        }
+        
+        // Handle avatar URL with explicit typing
+        let avatarUrl: string | undefined = undefined;
+        if (typeof profile === 'object' && profile !== null && 'avatar_url' in profile) {
+          avatarUrl = profile.avatar_url as string | undefined;
+        }
         
         return {
           id: app.applicant_id,
           applicationId: app.id,
-          fullName: fullName || 'Anonymous Applicant',
+          fullName: fullName,
           email: '', // We'll need to add email to profiles or fetch from auth
           avatarUrl: avatarUrl,
           resumeUrl: app.resume_url,
