@@ -159,7 +159,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <div className="flex pt-2">
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             size="sm"
             className="mr-2"
           >
