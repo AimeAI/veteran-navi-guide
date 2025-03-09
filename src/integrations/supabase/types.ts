@@ -9,13 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      application_notifications: {
+        Row: {
+          application_id: string
+          created_at: string | null
+          id: string
+          new_status: string
+          old_status: string | null
+          processed: boolean | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string | null
+          id?: string
+          new_status: string
+          old_status?: string | null
+          processed?: boolean | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          old_status?: string | null
+          processed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_notifications_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           applicant_id: string | null
           cover_letter: string | null
           created_at: string | null
+          date_applied: string | null
           id: string
           job_id: string | null
+          notes: string | null
           resume_url: string | null
           status: string | null
           updated_at: string | null
@@ -24,8 +61,10 @@ export type Database = {
           applicant_id?: string | null
           cover_letter?: string | null
           created_at?: string | null
+          date_applied?: string | null
           id?: string
           job_id?: string | null
+          notes?: string | null
           resume_url?: string | null
           status?: string | null
           updated_at?: string | null
@@ -34,8 +73,10 @@ export type Database = {
           applicant_id?: string | null
           cover_letter?: string | null
           created_at?: string | null
+          date_applied?: string | null
           id?: string
           job_id?: string | null
+          notes?: string | null
           resume_url?: string | null
           status?: string | null
           updated_at?: string | null

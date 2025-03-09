@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Navbar from '@/components/Navbar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Building, MapPin, DollarSign, Calendar, Clock, Shield, FileText, Upload, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import ApplicationButton from '@/components/ApplicationButton';
 
 const jobData = {
   id: 'job-123',
@@ -183,24 +184,14 @@ const JobDetailsPage: React.FC = () => {
               </div>
               
               <div className="mt-4 md:mt-0 md:ml-6 flex flex-col sm:flex-row md:flex-col gap-3">
-                {!showApplicationForm && (
-                  <>
-                    <Button 
-                      className="w-full sm:w-auto md:w-full" 
-                      size="lg"
-                      onClick={handleApply}
-                    >
-                      Apply Now
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full sm:w-auto md:w-full"
-                      size="lg"
-                    >
-                      Save Job
-                    </Button>
-                  </>
-                )}
+                <ApplicationButton jobId={jobData.id} jobTitle={jobData.title} />
+                <Button 
+                  variant="outline" 
+                  className="w-full sm:w-auto md:w-full"
+                  size="lg"
+                >
+                  Save Job
+                </Button>
               </div>
             </div>
           </div>
