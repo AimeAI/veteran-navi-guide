@@ -6,14 +6,26 @@ import JobListContent from './JobListContent';
 import JobListEmptyState from './JobListEmptyState';
 import JobListLoading from './JobListLoading';
 import JobListPagination from './JobListPagination';
+import { Job } from '@/context/JobContext';
 
 interface JobListProps {
-  searchParams: JobSearchParams;
+  searchParams?: JobSearchParams;
   showHeader?: boolean;
   showSearch?: boolean;
   showFilters?: boolean;
   emptyStateMessage?: string;
   className?: string;
+  
+  // Direct props (alternative to searchParams)
+  jobs?: Job[];
+  isLoading?: boolean;
+  error?: Error | null;
+  currentPage?: number;
+  totalPages?: number;
+  totalJobs?: number;
+  onPageChange?: (page: number) => void;
+  country?: "us" | "canada";
+  onRefresh?: () => Promise<void>;
 }
 
 const JobList: React.FC<JobListProps> = ({
@@ -23,17 +35,33 @@ const JobList: React.FC<JobListProps> = ({
   showFilters = true,
   emptyStateMessage = "No jobs found matching your search criteria.",
   className = "",
+  
+  // Direct props
+  jobs: propJobs,
+  isLoading: propIsLoading,
+  error: propError,
+  currentPage: propCurrentPage,
+  totalPages: propTotalPages,
+  totalJobs: propTotalJobs,
+  onPageChange: propOnPageChange,
+  country,
+  onRefresh: propOnRefresh
 }) => {
-  const {
-    jobs,
-    isLoading,
-    error,
-    currentPage,
-    totalPages,
-    totalJobs,
-    setPage,
-    refreshJobs
-  } = useJobSearch(searchParams);
+  // Use hook if searchParams is provided, otherwise use direct props
+  const hookResult = searchParams ? useJobSearch(searchParams) : null;
+  
+  // Determine which values to use (from hook or from props)
+  const jobs = hookResult ? hookResult.jobs : (propJobs || []);
+  const isLoading = hookResult ? hookResult.isLoading : (propIsLoading || false);
+  const error = hookResult ? hookResult.error : propError;
+  const currentPage = hookResult ? hookResult.currentPage : (propCurrentPage || 1);
+  const totalPages = hookResult ? hookResult.totalPages : (propTotalPages || 0);
+  const totalJobs = hookResult ? hookResult.totalJobs : (propTotalJobs || 0);
+  const setPage = hookResult ? hookResult.setPage : (propOnPageChange || (() => {}));
+  const refreshJobs = hookResult ? hookResult.refreshJobs : (propOnRefresh || (() => Promise.resolve()));
+  
+  // Determine country
+  const displayCountry = country || (searchParams?.country || "canada");
 
   return (
     <div className={`job-list-container space-y-4 ${className}`}>
@@ -43,7 +71,7 @@ const JobList: React.FC<JobListProps> = ({
           showSearch={showSearch} 
           showFilters={showFilters}
           onRefresh={refreshJobs}
-          country={searchParams.country}
+          country={displayCountry}
           isLoading={isLoading}
           isRefreshing={false}
           jobBankCount={jobs.filter(job => job.source === 'jobbank').length}
@@ -68,7 +96,7 @@ const JobList: React.FC<JobListProps> = ({
       ) : jobs.length === 0 ? (
         <JobListEmptyState 
           message={emptyStateMessage} 
-          country={searchParams.country}
+          country={displayCountry}
           onRetry={refreshJobs}
         />
       ) : (
