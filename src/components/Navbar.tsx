@@ -1,4 +1,4 @@
-<lov-codelov-code>
+
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -128,4 +128,3 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
-</lov-code>
