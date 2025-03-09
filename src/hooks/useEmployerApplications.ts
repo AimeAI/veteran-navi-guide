@@ -1,158 +1,148 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useUser } from '@/context/UserContext';
-import { ApplicationStatus } from '@/hooks/useApplications';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
 
-export interface JobApplicant {
-  id: string;
-  applicationId: string;
-  fullName: string;
-  email: string;
-  avatarUrl?: string;
-  resumeUrl?: string;
-  coverLetter?: string;
-  appliedDate: Date;
-  status: ApplicationStatus;
-  notes?: string;
-  jobId: string;
-  jobTitle: string;
-}
+// Import the Job interface from JobContext
+import { Job } from '@/context/JobContext';
 
-export function useEmployerApplications(jobId?: string) {
-  const [applications, setApplications] = useState<JobApplicant[]>([]);
+export const useEmployerApplications = () => {
+  const [applications, setApplications] = useState<{job: Job, applicants: any[]}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const { user } = useUser();
-
-  const fetchApplications = useCallback(async () => {
-    if (!user) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      let query = supabase
-        .from('applications')
-        .select(`
-          id,
-          job_id,
-          applicant_id,
-          status,
-          date_applied,
-          created_at,
-          resume_url,
-          cover_letter,
-          notes,
-          jobs!inner(
-            id,
-            title,
-            employer_id
-          ),
-          profiles!applications_applicant_id_fkey(
-            full_name,
-            avatar_url,
-            id
-          )
-        `)
-        .eq('jobs.employer_id', user.id);
-      
-      // Filter by job ID if provided
-      if (jobId) {
-        query = query.eq('job_id', jobId);
-      }
-      
-      const { data, error: fetchError } = await query;
-      
-      if (fetchError) throw fetchError;
-      
-      const mappedApplications: JobApplicant[] = data.map(app => {
-        // Safely handle profile data with proper type assertions
-        const profile = app.profiles || {};
-        
-        // Explicitly type and cast the profile properties
-        const fullName: string = typeof profile === 'object' && 
-          profile !== null && 
-          'full_name' in profile && 
-          typeof profile.full_name === 'string' 
-            ? profile.full_name 
-            : 'Anonymous Applicant';
-        
-        const avatarUrl: string | undefined = typeof profile === 'object' && 
-          profile !== null && 
-          'avatar_url' in profile && 
-          (typeof profile.avatar_url === 'string' || profile.avatar_url === null)
-            ? (profile.avatar_url as string) 
-            : undefined;
-        
-        return {
-          id: app.applicant_id,
-          applicationId: app.id,
-          fullName: fullName,
-          email: '', // We'll need to add email to profiles or fetch from auth
-          avatarUrl: avatarUrl,
-          resumeUrl: app.resume_url,
-          coverLetter: app.cover_letter,
-          appliedDate: new Date(app.date_applied || app.created_at || new Date()),
-          status: app.status as ApplicationStatus,
-          notes: app.notes,
-          jobId: app.job_id,
-          jobTitle: app.jobs?.title || 'Unknown Job'
-        };
-      });
-      
-      setApplications(mappedApplications);
-    } catch (err: any) {
-      console.error('Error fetching applications:', err);
-      setError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, jobId]);
-
-  const updateApplicationStatus = useCallback(async (
-    applicationId: string, 
-    newStatus: ApplicationStatus,
-    notes?: string
-  ) => {
-    if (!user) return false;
-    
-    try {
-      const updateData: { status: ApplicationStatus, notes?: string } = { status: newStatus };
-      if (notes) updateData.notes = notes;
-      
-      const { error } = await supabase
-        .from('applications')
-        .update(updateData)
-        .eq('id', applicationId);
-      
-      if (error) throw error;
-      
-      toast.success(`Application status updated to ${newStatus}`);
-      fetchApplications();
-      return true;
-    } catch (err: any) {
-      console.error('Error updating application status:', err);
-      toast.error(err.message || 'Failed to update application status');
-      return false;
-    }
-  }, [user, fetchApplications]);
 
   useEffect(() => {
-    if (user) {
-      fetchApplications();
-    } else {
-      setApplications([]);
+    // Simulate API call to get applications
+    setTimeout(() => {
+      const mockApplications = [
+        {
+          job: {
+            id: '1',
+            title: 'Software Engineer',
+            company: 'TechCorp',
+            location: 'Toronto, Canada',
+            description: 'Looking for an experienced software engineer...',
+            category: 'technology',
+            salaryRange: 'range4',
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['JavaScript', 'React', 'Node.js'],
+            preferredSkills: ['TypeScript', 'AWS'],
+            remote: false,
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            industry: 'technology',
+            experienceLevel: 'mid',
+            educationLevel: 'bachelors',
+          },
+          applicants: [
+            { id: '101', name: 'John Smith', experience: '5 years', status: 'pending' },
+            { id: '102', name: 'Sara Johnson', experience: '7 years', status: 'reviewed' }
+          ]
+        },
+        {
+          job: {
+            id: '2',
+            title: 'Project Manager',
+            company: 'Management Solutions',
+            location: 'Vancouver, Canada',
+            description: 'Seeking a project manager with experience in...',
+            category: 'management',
+            salaryRange: 'range4',
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['Project Management', 'Agile', 'Scrum'],
+            preferredSkills: ['PMP Certification', 'Jira'],
+            remote: false,
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            industry: 'management',
+            experienceLevel: 'senior',
+            educationLevel: 'masters',
+          },
+          applicants: [
+            { id: '103', name: 'Michael Brown', experience: '8 years', status: 'interviewed' },
+            { id: '104', name: 'Emily Davis', experience: '6 years', status: 'pending' },
+            { id: '105', name: 'David Wilson', experience: '4 years', status: 'rejected' }
+          ]
+        },
+        {
+          job: {
+            id: '3',
+            title: 'UX Designer',
+            company: 'Creative Designs',
+            location: 'Remote',
+            description: 'Join our team as a UX Designer...',
+            category: 'design',
+            salaryRange: 'range3',
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['Figma', 'UI/UX', 'User Research'],
+            preferredSkills: ['Adobe XD', 'Prototyping'],
+            remote: true,
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            industry: 'creative',
+            experienceLevel: 'mid',
+            educationLevel: 'bachelors',
+          },
+          applicants: [
+            { id: '106', name: 'Jessica Taylor', experience: '3 years', status: 'pending' }
+          ]
+        },
+        {
+          job: {
+            id: '4',
+            title: 'Marketing Specialist',
+            company: 'Global Marketing',
+            location: 'Montreal, Canada',
+            description: 'We are looking for a marketing specialist...',
+            category: 'marketing',
+            salaryRange: 'range3',
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['Digital Marketing', 'Social Media', 'Content Creation'],
+            preferredSkills: ['Google Analytics', 'SEO'],
+            remote: false,
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            industry: 'marketing',
+            experienceLevel: 'junior',
+            educationLevel: 'bachelors',
+          },
+          applicants: [
+            { id: '107', name: 'Andrew Clark', experience: '2 years', status: 'reviewed' },
+            { id: '108', name: 'Laura Walker', experience: '4 years', status: 'pending' }
+          ]
+        },
+        {
+          job: {
+            id: '5',
+            title: 'Data Analyst',
+            company: 'Data Insights',
+            location: 'Ottawa, Canada',
+            description: 'Data analyst position available...',
+            category: 'data',
+            salaryRange: 'range3',
+            clearanceLevel: 'none',
+            mosCode: '',
+            requiredSkills: ['SQL', 'Python', 'Data Visualization'],
+            preferredSkills: ['R', 'Tableau'],
+            remote: false,
+            jobType: 'fulltime',
+            date: new Date().toISOString(),
+            industry: 'technology',
+            experienceLevel: 'mid',
+            educationLevel: 'bachelors',
+          },
+          applicants: [
+            { id: '109', name: 'Daniel Lee', experience: '3 years', status: 'interviewed' },
+            { id: '110', name: 'Sophia Chen', experience: '5 years', status: 'pending' }
+          ]
+        }
+      ];
+      
+      setApplications(mockApplications);
       setIsLoading(false);
-    }
-  }, [user, fetchApplications]);
+    }, 1500);
+  }, []);
 
-  return {
-    applications,
-    isLoading,
-    error,
-    updateApplicationStatus,
-    refreshApplications: fetchApplications
-  };
-}
+  return { applications, isLoading };
+};

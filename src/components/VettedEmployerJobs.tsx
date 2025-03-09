@@ -48,18 +48,18 @@ const VettedEmployerJobs: React.FC = () => {
             company: job.company,
             location: job.location,
             description: job.description,
-            category: job.job_type || 'other', // Use job_type as category
+            category: job.category || 'other',
             salaryRange: job.salary_range || '',
-            remote: job.location?.toLowerCase().includes('remote') || false, // Infer remote status
-            clearanceLevel: 'none', // Default value
-            mosCode: '',  // Default value
+            remote: job.remote || false,
+            clearanceLevel: job.clearance_level || 'none',
+            mosCode: job.mos_code || '',
             requiredSkills: job.required_skills || [],
-            preferredSkills: [], // Default value
+            preferredSkills: job.preferred_skills || [],
             date: job.created_at,
             jobType: job.job_type || 'Full-time',
-            industry: '', // Default value
-            experienceLevel: '', // Default value
-            educationLevel: '', // Default value
+            industry: job.industry || '',
+            experienceLevel: job.experience_level || '',
+            educationLevel: job.education_level || '',
             source: 'vetted',
             url: job.application_url,
           }));

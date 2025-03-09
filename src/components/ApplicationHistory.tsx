@@ -1,187 +1,128 @@
 
 import React from 'react';
-import { useApplications, Application, ApplicationStatus } from '@/hooks/useApplications';
-import { Briefcase, Clock, Calendar, ArrowUpRight, CircleDot, MoreHorizontal } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, AlertCircle, XCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
-interface ApplicationHistoryProps {
-  applications?: Application[];
+// Define application status types
+type ApplicationStatus = 'pending' | 'reviewing' | 'interview' | 'offered' | 'rejected';
+
+// Define application data structure
+interface Application {
+  id: string;
+  jobTitle: string;
+  company: string;
+  appliedDate: Date;
+  status: ApplicationStatus;
+  notes?: string;
 }
 
-const ApplicationHistory: React.FC<ApplicationHistoryProps> = ({ applications: propApplications }) => {
-  const { applications: hookApplications, isLoading, error, withdrawApplication } = useApplications();
-  
-  // Use applications from props if provided, otherwise use from hook
-  const applications = propApplications || hookApplications;
+interface ApplicationHistoryProps {
+  applications: Application[];
+  className?: string;
+}
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {Array(3).fill(0).map((_, i) => (
-          <Card key={i} className="w-full">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between mb-2">
-                <Skeleton className="h-5 w-1/3" />
-                <Skeleton className="h-5 w-20" />
-              </div>
-              <Skeleton className="h-4 w-1/4 mt-1" />
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col space-y-2 mt-1">
-                <Skeleton className="h-4 w-2/3" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Skeleton className="h-10 w-24" />
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error Loading Applications</AlertTitle>
-        <AlertDescription>
-          {error.message || "There was an error loading your applications. Please try again later."}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (applications.length === 0) {
-    return (
-      <div className="text-center py-12 border rounded-lg">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
-        <p className="text-gray-500 mb-6">
-          You haven't applied to any jobs yet. Start exploring jobs that match your military experience.
-        </p>
-        <Button variant="outline" onClick={() => window.location.href = '/jobs'}>
-          <Briefcase className="h-4 w-4 mr-2" />
-          Browse Jobs
-        </Button>
-      </div>
-    );
-  }
-
-  const getStatusBadge = (status: ApplicationStatus) => {
-    let color;
-    let icon = <CircleDot className="h-3 w-3 mr-1" />;
-    
+const ApplicationHistory: React.FC<ApplicationHistoryProps> = ({
+  applications,
+  className,
+}) => {
+  // Function to render status badge with appropriate styling and icon
+  const renderStatusBadge = (status: ApplicationStatus) => {
     switch (status) {
       case 'pending':
-        color = "bg-blue-100 text-blue-800 border-blue-200";
-        break;
+        return (
+          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <Clock className="w-3 h-3 mr-1" />
+            Pending Review
+          </div>
+        );
       case 'reviewing':
-        color = "bg-yellow-100 text-yellow-800 border-yellow-200";
-        break;
-      case 'interviewing':
-        color = "bg-purple-100 text-purple-800 border-purple-200";
-        break;
+        return (
+          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            <Clock className="w-3 h-3 mr-1" />
+            Under Review
+          </div>
+        );
+      case 'interview':
+        return (
+          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <Calendar className="w-3 h-3 mr-1" />
+            Interview Stage
+          </div>
+        );
       case 'offered':
-        color = "bg-green-100 text-green-800 border-green-200";
-        break;
-      case 'hired':
-        color = "bg-emerald-100 text-emerald-800 border-emerald-200";
-        break;
+        return (
+          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Job Offered
+          </div>
+        );
       case 'rejected':
-        color = "bg-red-100 text-red-800 border-red-200";
-        break;
+        return (
+          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <XCircle className="w-3 h-3 mr-1" />
+            Not Selected
+          </div>
+        );
       default:
-        color = "bg-gray-100 text-gray-800 border-gray-200";
+        return null;
     }
-    
-    return (
-      <Badge variant="outline" className={color}>
-        {icon}
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
-
-  const handleWithdraw = async (applicationId: string) => {
-    if (window.confirm("Are you sure you want to withdraw this application?")) {
-      await withdrawApplication(applicationId);
-    }
-  };
-
-  const formatDate = (date: Date) => {
-    return format(date, 'MMM d, yyyy');
   };
 
   return (
-    <div className="space-y-4">
-      {applications.map((application) => (
-        <Card key={application.id} className="w-full hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
-            <div className="flex justify-between mb-1">
-              <CardTitle>{application.jobTitle}</CardTitle>
-              {getStatusBadge(application.status)}
-            </div>
-            <CardDescription>{application.company}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-gray-500 space-y-2">
-              <div className="flex items-center">
-                <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
-                <span>Job ID: {application.jobId.substring(0, 8)}</span>
-              </div>
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                <span>Applied: {formatDate(application.appliedDate)}</span>
-              </div>
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                <span>Last updated: {application.appliedDate ? formatDate(application.appliedDate) : 'N/A'}</span>
-              </div>
-            </div>
-            
-            {application.notes && (
-              <>
-                <Separator className="my-3" />
-                <div className="mt-2">
-                  <h4 className="text-sm font-medium">Notes:</h4>
-                  <p className="text-sm text-gray-600 mt-1">{application.notes}</p>
+    <div className={cn("w-full", className)}>
+      <div className="space-y-4">
+        {applications.length > 0 ? (
+          applications.map((application) => (
+            <div
+              key={application.id}
+              className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+            >
+              <div className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">{application.jobTitle}</h3>
+                    <p className="text-sm sm:text-base text-gray-700">{application.company}</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-start sm:items-end space-y-2">
+                    <div className="text-sm text-gray-500 flex items-center">
+                      <Calendar className="w-3.5 h-3.5 mr-1 inline" />
+                      Applied {format(application.appliedDate, 'MMM d, yyyy')}
+                    </div>
+                    {renderStatusBadge(application.status)}
+                  </div>
                 </div>
-              </>
-            )}
-          </CardContent>
-          <CardFooter className="pt-0 flex justify-between">
-            <Button variant="outline" size="sm">
-              <ArrowUpRight className="h-4 w-4 mr-2" />
-              View Job
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => window.open(`/jobs/${application.jobId}`, '_blank')}>
-                  View Job Details
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleWithdraw(application.id)}>
-                  Withdraw Application
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Contact Employer
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CardFooter>
-        </Card>
-      ))}
+                
+                {application.notes && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-sm text-gray-600">{application.notes}</p>
+                  </div>
+                )}
+                
+                <div className="mt-4 flex justify-end">
+                  <a 
+                    href={`/applications/${application.id}`}
+                    className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                  >
+                    View Details
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <AlertCircle className="h-12 w-12 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
+            <p className="text-gray-600">
+              When you apply for jobs, they will appear here so you can track your application progress.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,60 +1,53 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../i18n/i18nConfig';
 
 interface LanguageContextType {
-  currentLanguage: string;
-  language: string; // For backward compatibility
+  language: string;
   changeLanguage: (lang: string) => void;
-  saveLanguagePreference: (lang: string) => void; // For backward compatibility
+  saveLanguagePreference: (lang: string) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
-  currentLanguage: 'en',
-  language: 'en', // For backward compatibility
+  language: 'en',
   changeLanguage: () => {},
-  saveLanguagePreference: () => {}, // For backward compatibility
+  saveLanguagePreference: () => {}
 });
 
 export const useLanguage = () => useContext(LanguageContext);
 
-interface LanguageProviderProps {
-  children: React.ReactNode;
-}
-
-export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState<string>(localStorage.getItem('i18nextLng') || 'en');
-  const { t } = useTranslation();
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language || 'en');
 
   useEffect(() => {
-    // Set the initial language
-    if (i18n.changeLanguage) {
-      i18n.changeLanguage(currentLanguage);
+    // Get the stored language preference from localStorage on initial load
+    const storedLanguage = localStorage.getItem('language');
+    if (storedLanguage) {
+      changeLanguage(storedLanguage);
     }
-  }, [currentLanguage]);
+  }, []);
 
   const changeLanguage = (lang: string) => {
-    setCurrentLanguage(lang);
-    localStorage.setItem('i18nextLng', lang);
-    
-    if (i18n.changeLanguage) {
-      i18n.changeLanguage(lang);
-    }
+    i18n.changeLanguage(lang);
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
   };
 
-  // For backward compatibility
-  const saveLanguagePreference = (lang: string) => {
+  const saveLanguagePreference = async (lang: string) => {
+    // This function would be used to save the language preference to Supabase
+    // when the Supabase integration is set up
     changeLanguage(lang);
+    
+    // For now, we'll just save to localStorage
+    localStorage.setItem('language', lang);
+    
+    // Add Supabase integration code here when available
+    // Example: await supabase.from('user_preferences').upsert({ user_id: currentUser.id, language: lang })
   };
 
   return (
-    <LanguageContext.Provider value={{ 
-      currentLanguage, 
-      language: currentLanguage, // For backward compatibility
-      changeLanguage, 
-      saveLanguagePreference // For backward compatibility
-    }}>
+    <LanguageContext.Provider value={{ language, changeLanguage, saveLanguagePreference }}>
       {children}
     </LanguageContext.Provider>
   );
