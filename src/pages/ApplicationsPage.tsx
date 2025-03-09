@@ -1,15 +1,31 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import ApplicationHistory from '@/components/ApplicationHistory';
 import { FileText, AlertCircle, RefreshCw } from 'lucide-react';
-import { useApplications } from '@/hooks/useApplications';
+import { useApplications, ApplicationStatus } from '@/hooks/useApplications';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RequireAuth } from '@/components/RequireAuth';
 
 const ApplicationsPage = () => {
   const [activeTab, setActiveTab] = useState('all');
-  const { refreshApplications } = useApplications();
+  const { applications, refreshApplications } = useApplications();
+
+  // Create filtered applications based on the active tab
+  const filteredApplications = useMemo(() => {
+    if (activeTab === 'all') {
+      return applications;
+    } else if (activeTab === 'active') {
+      return applications.filter(app => 
+        ['pending', 'reviewing', 'interviewing'].includes(app.status)
+      );
+    } else if (activeTab === 'completed') {
+      return applications.filter(app => 
+        ['offered', 'hired', 'rejected'].includes(app.status)
+      );
+    }
+    return applications;
+  }, [applications, activeTab]);
 
   const handleRefresh = () => {
     refreshApplications();
@@ -55,21 +71,21 @@ const ApplicationsPage = () => {
                 </TabsList>
                 
                 <TabsContent value="all">
-                  <ApplicationHistory />
+                  <ApplicationHistory applications={applications} />
                 </TabsContent>
                 
                 <TabsContent value="active">
                   <p className="text-sm text-muted-foreground mb-4">
                     Applications that are pending, under review, or in the interview process
                   </p>
-                  <ApplicationHistory />
+                  <ApplicationHistory applications={filteredApplications} />
                 </TabsContent>
                 
                 <TabsContent value="completed">
                   <p className="text-sm text-muted-foreground mb-4">
                     Applications where you've been hired, received an offer, or were not selected
                   </p>
-                  <ApplicationHistory />
+                  <ApplicationHistory applications={filteredApplications} />
                 </TabsContent>
               </Tabs>
             </div>

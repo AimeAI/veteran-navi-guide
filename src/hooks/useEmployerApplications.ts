@@ -75,7 +75,7 @@ export function useEmployerApplications(jobId?: string) {
         avatarUrl: app.profiles?.avatar_url,
         resumeUrl: app.resume_url,
         coverLetter: app.cover_letter,
-        appliedDate: new Date(app.date_applied || app.created_at),
+        appliedDate: new Date(app.date_applied || app.created_at || new Date()),
         status: app.status as ApplicationStatus,
         notes: app.notes,
         jobId: app.job_id,

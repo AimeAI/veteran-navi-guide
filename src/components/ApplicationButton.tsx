@@ -19,11 +19,11 @@ const ApplicationButton: React.FC<ApplicationButtonProps> = ({ jobId, jobTitle }
   const [resumeUrl, setResumeUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { applyForJob } = useApplications();
-  const { user, isAuthenticated } = useUser();
+  const { user } = useUser();
   const navigate = useNavigate();
 
   const handleApply = async () => {
-    if (!isAuthenticated) {
+    if (!user) {
       navigate('/login?redirect=' + encodeURIComponent(window.location.pathname));
       return;
     }

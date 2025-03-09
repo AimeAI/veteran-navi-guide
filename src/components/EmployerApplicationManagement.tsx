@@ -286,7 +286,10 @@ const EmployerApplicationManagement = () => {
               
               <div className="grid gap-3">
                 <Label htmlFor="application-status">Application Status</Label>
-                <Select value={newStatus} onValueChange={setNewStatus}>
+                <Select 
+                  value={newStatus} 
+                  onValueChange={(value: ApplicationStatus | "") => setNewStatus(value)}
+                >
                   <SelectTrigger id="application-status">
                     <SelectValue placeholder="Select new status" />
                   </SelectTrigger>
