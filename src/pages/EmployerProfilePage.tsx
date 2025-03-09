@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,18 +12,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { EmployerProfile } from '@/types/application';
 import ProfileCompletionProgress from '@/components/ProfileCompletionProgress';
-
-// Import new rating and review components
 import EmployerRating from '@/components/EmployerRating';
-import EmployerReviewDialog from '@/components/EmployerReviewDialog';
-import EmployerReviewsList from '@/components/EmployerReviewsList';
-import EmployerRatingSummary from '@/components/EmployerRatingSummary';
-import { getEmployerRatingSummary, getEmployerReviews } from '@/data/employerReviews';
+import EmployerReviewDialog from '@/components/reviews/EmployerReviewDialog';
+import EmployerReviewsList from '@/components/reviews/EmployerReviewsList';
+import EmployerRatingSummary from '@/components/reviews/EmployerRatingSummary';
+import { getEmployerRatingSummary } from '@/services/reviewService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const EmployerProfilePage = () => {
   const { user, updateEmployerProfile, isLoading } = useUser();
   const [activeTab, setActiveTab] = useState('profile');
+  const [ratingSummary, setRatingSummary] = useState({
+    avgRating: 0,
+    totalReviews: 0,
+    ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  });
+  const [isLoadingRatings, setIsLoadingRatings] = useState(true);
   
   const [formData, setFormData] = useState<Partial<EmployerProfile>>(
     user?.employerProfile || {
@@ -38,10 +42,24 @@ const EmployerProfilePage = () => {
     }
   );
   
-  // Fetch employer rating and reviews
-  const employerId = user?.employerProfile?.id || 'emp1';
-  const ratingSummary = getEmployerRatingSummary(employerId);
-  const reviews = getEmployerReviews(employerId);
+  // Fetch employer rating
+  useEffect(() => {
+    const fetchRatingSummary = async () => {
+      if (user?.employerProfile?.id) {
+        setIsLoadingRatings(true);
+        try {
+          const summary = await getEmployerRatingSummary(user.employerProfile.id);
+          setRatingSummary(summary);
+        } catch (error) {
+          console.error('Error fetching rating summary:', error);
+        } finally {
+          setIsLoadingRatings(false);
+        }
+      }
+    };
+    
+    fetchRatingSummary();
+  }, [user?.employerProfile?.id]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -58,8 +76,12 @@ const EmployerProfilePage = () => {
   };
   
   const handleNewReview = () => {
-    // Refresh reviews list (in a real app, this would fetch from Supabase)
-    console.log('Review submitted, would refresh data here');
+    // Refresh rating summary
+    if (user?.employerProfile?.id) {
+      getEmployerRatingSummary(user.employerProfile.id)
+        .then(summary => setRatingSummary(summary))
+        .catch(err => console.error('Error refreshing rating summary:', err));
+    }
   };
   
   if (!user || user.role !== 'employer') {
@@ -78,6 +100,9 @@ const EmployerProfilePage = () => {
       </div>
     );
   }
+  
+  const employerId = user?.employerProfile?.id || '';
+  const companyName = formData.companyName || user?.employerProfile?.companyName || 'Your Company';
   
   return (
     <div className="container max-w-4xl py-12">
@@ -269,19 +294,38 @@ const EmployerProfilePage = () => {
                   <CardTitle>Ratings Overview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <EmployerRatingSummary summary={ratingSummary} />
+                  {isLoadingRatings ? (
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-10 bg-gray-200 rounded w-full"></div>
+                      <div className="space-y-2">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <div key={i} className="h-4 bg-gray-200 rounded w-full"></div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <EmployerRatingSummary summary={ratingSummary} />
+                  )}
                 </CardContent>
-                <CardFooter className="border-t pt-4">
+                <CardFooter className="border-t pt-4 flex-col">
                   <p className="text-sm text-gray-500 mb-4">
                     Veterans can write reviews about their experiences with your company.
                   </p>
+                  <EmployerReviewDialog 
+                    employerId={employerId} 
+                    employerName={companyName} 
+                    onReviewSubmitted={handleNewReview} 
+                  />
                 </CardFooter>
               </Card>
             </div>
             
             <div className="lg:col-span-2">
               <h3 className="text-xl font-semibold mb-4">Employee Reviews</h3>
-              <EmployerReviewsList reviews={reviews} />
+              <EmployerReviewsList 
+                employerId={employerId} 
+                isLoading={isLoadingRatings} 
+              />
             </div>
           </div>
         </TabsContent>

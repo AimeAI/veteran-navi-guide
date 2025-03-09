@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -24,100 +24,118 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { EmployerReview } from '@/types/review';
 import EmployerRating from '../EmployerRating';
 import { toast } from 'sonner';
-
-// Mock data for reviews pending moderation
-const MOCK_REVIEWS: EmployerReview[] = [
-  {
-    id: 'review1',
-    employerId: 'emp1',
-    reviewerId: 'user1',
-    reviewerName: 'John Doe',
-    rating: 4.5,
-    title: 'Great place to work for veterans',
-    comment: 'The company has a great culture and really values military experience. They provide good mentoring and growth opportunities.',
-    datePosted: '2023-10-15T14:30:00Z',
-    isVerified: true,
-    isHidden: false,
-    position: 'Security Specialist',
-    pros: 'Flexible hours, veteran-friendly policies, good benefits',
-    cons: 'Some processes are still developing as they grow',
-    status: 'pending'
-  },
-  {
-    id: 'review2',
-    employerId: 'emp2',
-    reviewerId: 'user2',
-    reviewerName: 'Jane Smith',
-    rating: 2,
-    title: 'Disappointing experience',
-    comment: 'Despite claiming to be veteran-friendly, there was little support for transitioning military personnel.',
-    datePosted: '2023-10-12T09:15:00Z',
-    isVerified: false,
-    isHidden: false,
-    position: 'Project Manager',
-    pros: 'Good salary',
-    cons: 'Poor management, high turnover, little support for veterans',
-    status: 'pending'
-  },
-  {
-    id: 'review3',
-    employerId: 'emp3',
-    reviewerId: 'user3',
-    reviewerName: 'Mike Johnson',
-    rating: 5,
-    title: 'Excellent transition support',
-    comment: 'This company truly understands the value of military experience. They provided excellent training and mentoring.',
-    datePosted: '2023-10-10T16:45:00Z',
-    isVerified: true,
-    isHidden: false,
-    position: 'Operations Lead',
-    pros: 'Military skills highly valued, great team environment, career growth',
-    cons: 'None to mention',
-    status: 'pending'
-  }
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const ReviewModeration: React.FC = () => {
-  const [reviews, setReviews] = useState<EmployerReview[]>(MOCK_REVIEWS);
+  const [reviews, setReviews] = useState<EmployerReview[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Filter reviews based on search term and status
+  useEffect(() => {
+    fetchReviews();
+  }, [statusFilter]);
+  
+  const fetchReviews = async () => {
+    setIsLoading(true);
+    
+    try {
+      let query = supabase.from('employer_reviews').select('*');
+      
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+      
+      const { data, error } = await query.order('date_posted', { ascending: false });
+      
+      if (error) {
+        throw error;
+      }
+      
+      setReviews(data as EmployerReview[]);
+    } catch (error) {
+      console.error('Error fetching reviews for moderation:', error);
+      toast.error('Failed to load reviews');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Filter reviews based on search term
   const filteredReviews = reviews.filter(review => {
     const matchesSearch = 
       review.reviewerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       review.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       review.comment.toLowerCase().includes(searchTerm.toLowerCase());
       
-    const matchesStatus = statusFilter === 'all' || review.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
   
   // Handle review approval
-  const handleApprove = (reviewId: string) => {
-    setReviews(reviews.map(review => 
-      review.id === reviewId ? { ...review, status: 'approved' as const } : review
-    ));
-    toast.success('Review approved and published');
+  const handleApprove = async (reviewId: string) => {
+    try {
+      const { error } = await supabase
+        .from('employer_reviews')
+        .update({ status: 'approved' })
+        .eq('id', reviewId);
+        
+      if (error) throw error;
+      
+      setReviews(reviews.map(review => 
+        review.id === reviewId ? { ...review, status: 'approved' } : review
+      ));
+      
+      toast.success('Review approved and published');
+    } catch (error) {
+      console.error('Error approving review:', error);
+      toast.error('Failed to approve review');
+    }
   };
   
   // Handle review rejection
-  const handleReject = (reviewId: string) => {
-    setReviews(reviews.map(review => 
-      review.id === reviewId ? { ...review, status: 'rejected' as const } : review
-    ));
-    toast.success('Review rejected');
+  const handleReject = async (reviewId: string) => {
+    try {
+      const { error } = await supabase
+        .from('employer_reviews')
+        .update({ status: 'rejected' })
+        .eq('id', reviewId);
+        
+      if (error) throw error;
+      
+      setReviews(reviews.map(review => 
+        review.id === reviewId ? { ...review, status: 'rejected' } : review
+      ));
+      
+      toast.success('Review rejected');
+    } catch (error) {
+      console.error('Error rejecting review:', error);
+      toast.error('Failed to reject review');
+    }
   };
   
   // Handle toggling review visibility
-  const handleToggleVisibility = (reviewId: string) => {
-    setReviews(reviews.map(review => 
-      review.id === reviewId ? { ...review, isHidden: !review.isHidden } : review
-    ));
-    
-    const review = reviews.find(r => r.id === reviewId);
-    toast.success(review?.isHidden ? 'Review is now visible' : 'Review is now hidden');
+  const handleToggleVisibility = async (reviewId: string) => {
+    try {
+      const review = reviews.find(r => r.id === reviewId);
+      
+      if (!review) return;
+      
+      const { error } = await supabase
+        .from('employer_reviews')
+        .update({ is_hidden: !review.isHidden })
+        .eq('id', reviewId);
+        
+      if (error) throw error;
+      
+      setReviews(reviews.map(r => 
+        r.id === reviewId ? { ...r, isHidden: !r.isHidden } : r
+      ));
+      
+      toast.success(review.isHidden ? 'Review is now visible' : 'Review is now hidden');
+    } catch (error) {
+      console.error('Error updating review visibility:', error);
+      toast.error('Failed to update review visibility');
+    }
   };
   
   // Get counts by status
@@ -127,6 +145,34 @@ const ReviewModeration: React.FC = () => {
     approved: reviews.filter(r => r.status === 'approved').length,
     rejected: reviews.filter(r => r.status === 'rejected').length
   };
+  
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Review Moderation</h2>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="pt-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  <div className="h-4 bg-gray-200 rounded w-40"></div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">

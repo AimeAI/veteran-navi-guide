@@ -127,6 +127,60 @@ export type Database = {
         }
         Relationships: []
       }
+      employer_reviews: {
+        Row: {
+          comment: string
+          cons: string | null
+          date_posted: string
+          employer_id: string
+          helpful_count: number | null
+          id: string
+          is_hidden: boolean
+          is_verified: boolean
+          position: string | null
+          pros: string | null
+          rating: number
+          reviewer_id: string
+          reviewer_name: string
+          status: string
+          title: string
+        }
+        Insert: {
+          comment: string
+          cons?: string | null
+          date_posted?: string
+          employer_id: string
+          helpful_count?: number | null
+          id?: string
+          is_hidden?: boolean
+          is_verified?: boolean
+          position?: string | null
+          pros?: string | null
+          rating: number
+          reviewer_id: string
+          reviewer_name: string
+          status?: string
+          title: string
+        }
+        Update: {
+          comment?: string
+          cons?: string | null
+          date_posted?: string
+          employer_id?: string
+          helpful_count?: number | null
+          id?: string
+          is_hidden?: boolean
+          is_verified?: boolean
+          position?: string | null
+          pros?: string | null
+          rating?: number
+          reviewer_id?: string
+          reviewer_name?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       employers: {
         Row: {
           company_description: string | null
@@ -428,6 +482,12 @@ export type Database = {
           match_count: number
           match_percentage: number
         }[]
+      }
+      get_user_role: {
+        Args: {
+          user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
