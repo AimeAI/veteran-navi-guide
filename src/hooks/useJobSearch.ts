@@ -57,7 +57,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       experienceLevel: searchParams.experienceLevel,
       educationLevel: searchParams.educationLevel,
       remote: searchParams.remote,
-      country: searchParams.country,
+      country: searchParams.country || "canada",
     }));
   }, [
     searchParams.keywords, 
@@ -72,15 +72,21 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
   ]);
 
   const fetchJobs = useCallback(async () => {
-    await performJobSearch(
-      currentSearchParams,
-      currentPage,
-      setIsLoading,
-      setError,
-      setJobs,
-      setTotalPages,
-      setTotalJobs
-    );
+    try {
+      await performJobSearch(
+        currentSearchParams,
+        currentPage,
+        setIsLoading,
+        setError,
+        setJobs,
+        setTotalPages,
+        setTotalJobs
+      );
+    } catch (err) {
+      console.error('Error in job search:', err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
+      setIsLoading(false);
+    }
   }, [currentPage, currentSearchParams]);
 
   useEffect(() => {

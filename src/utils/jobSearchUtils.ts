@@ -3,6 +3,7 @@ import { Job } from '@/context/JobContext';
 import { JobCache } from '@/utils/jobCache';
 import { JobSearchParams } from '@/hooks/useJobSearch';
 import { getNOCCodesForSkill, searchJobBankJobs } from '@/utils/jobBankApi';
+import { toast } from 'sonner';
 
 /**
  * Creates a cache key based on search parameters
@@ -114,17 +115,19 @@ export const performJobSearch = async (
     
     console.log("Fetching jobs with params:", processedParams);
     
-    // Check cache first
-    const cacheKey = createCacheKey(processedParams, currentPage);
-    const cachedResults = JobCache.getSearchResults(cacheKey);
-    
-    if (cachedResults) {
-      console.log("Using cached job results");
-      setJobs(cachedResults.jobs);
-      setTotalPages(cachedResults.totalPages);
-      setTotalJobs(cachedResults.totalJobs);
-      setIsLoading(false);
-      return;
+    // Check cache first (unless refresh is requested)
+    if (!params.refresh) {
+      const cacheKey = createCacheKey(processedParams, currentPage);
+      const cachedResults = JobCache.getSearchResults(cacheKey);
+      
+      if (cachedResults) {
+        console.log("Using cached job results");
+        setJobs(cachedResults.jobs);
+        setTotalPages(cachedResults.totalPages);
+        setTotalJobs(cachedResults.totalJobs);
+        setIsLoading(false);
+        return;
+      }
     }
     
     // Clear any previous errors
@@ -140,6 +143,7 @@ export const performJobSearch = async (
       setTotalJobs(jobResults.totalJobs);
       
       // Cache the results
+      const cacheKey = createCacheKey(processedParams, currentPage);
       JobCache.saveSearchResults(cacheKey, {
         jobs: jobResults.jobs,
         totalPages: jobResults.totalPages,
@@ -150,10 +154,12 @@ export const performJobSearch = async (
       setJobs([]);
       setTotalPages(0);
       setTotalJobs(0);
+      toast.info("No jobs found matching your search criteria.");
     }
   } catch (err) {
     console.error('Error in job fetch flow:', err);
     setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
+    toast.error("Error fetching jobs. Please try again later.");
   } finally {
     setIsLoading(false);
   }
