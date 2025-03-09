@@ -54,7 +54,7 @@ export function useApplications() {
         jobId: app.job_id,
         jobTitle: app.jobs?.title || 'Unknown Job',
         company: app.jobs?.company || 'Unknown Company',
-        appliedDate: new Date(app.date_applied || app.created_at || new Date()),
+        appliedDate: new Date(app.date_applied || new Date()),
         status: app.status as ApplicationStatus,
         notes: app.notes,
         resumeUrl: app.resume_url,

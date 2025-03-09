@@ -50,7 +50,7 @@ export function useEmployerApplications(jobId?: string) {
             title,
             employer_id
           ),
-          profiles:applicant_id(
+          profiles!applications_applicant_id_fkey(
             full_name,
             avatar_url,
             id
@@ -67,20 +67,23 @@ export function useEmployerApplications(jobId?: string) {
       
       if (fetchError) throw fetchError;
       
-      const mappedApplications: JobApplicant[] = data.map(app => ({
-        id: app.applicant_id,
-        applicationId: app.id,
-        fullName: app.profiles?.full_name || 'Anonymous Applicant',
-        email: '', // We'll need to add email to profiles or fetch from auth
-        avatarUrl: app.profiles?.avatar_url,
-        resumeUrl: app.resume_url,
-        coverLetter: app.cover_letter,
-        appliedDate: new Date(app.date_applied || app.created_at || new Date()),
-        status: app.status as ApplicationStatus,
-        notes: app.notes,
-        jobId: app.job_id,
-        jobTitle: app.jobs?.title || 'Unknown Job'
-      }));
+      const mappedApplications: JobApplicant[] = data.map(app => {
+        const profile = app.profiles || {};
+        return {
+          id: app.applicant_id,
+          applicationId: app.id,
+          fullName: profile.full_name || 'Anonymous Applicant',
+          email: '', // We'll need to add email to profiles or fetch from auth
+          avatarUrl: profile.avatar_url,
+          resumeUrl: app.resume_url,
+          coverLetter: app.cover_letter,
+          appliedDate: new Date(app.date_applied || app.created_at || new Date()),
+          status: app.status as ApplicationStatus,
+          notes: app.notes,
+          jobId: app.job_id,
+          jobTitle: app.jobs?.title || 'Unknown Job'
+        };
+      });
       
       setApplications(mappedApplications);
     } catch (err: any) {
