@@ -1,15 +1,14 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/UserContext";
-import { JobContextProvider } from "./context/JobContext";
+import { useJobs as JobContextProvider } from "./context/JobContext";
 import { JobAlertProvider } from "./context/JobAlertContext";
 import { MessageProvider } from "./context/MessageContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import Navbar from "./components/Navbar";
-import RequireAuth from "./components/RequireAuth";
+import { RequireAuth } from "./components/RequireAuth";
 import RequireVerifiedEmail from "./components/RequireVerifiedEmail";
 
 // Pages
@@ -78,7 +77,7 @@ function App() {
                         <Route path="/job-search" element={<JobSearch />} />
                         <Route path="/jobs/:id" element={<JobDetailsPage />} />
                         <Route path="/login" element={<AuthPage />} />
-                        <Route path="/signup" element={<AuthPage mode="signup" />} />
+                        <Route path="/signup" element={<AuthPage mode="signup" as="signup" />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/verify-email" element={<VerifyEmailPage />} />
                         

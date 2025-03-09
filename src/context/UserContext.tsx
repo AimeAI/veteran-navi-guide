@@ -4,6 +4,7 @@ import { UserRole, EmployerProfile } from "@/types/application";
 
 // Define types for our user profile
 export interface UserProfile {
+  id: string; // Added missing id property
   name: string;
   email: string;
   phone: string;
@@ -39,6 +40,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Initial user profile data
 const initialUserProfile: UserProfile = {
+  id: "user-1", // Added id value
   name: "James Wilson",
   email: "james.wilson@example.com",
   phone: "613-555-7890",
@@ -110,6 +112,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (isEmployer) {
         // Hardcoded employer authentication for demo purposes
         setUser({ 
+          id: `emp-${Date.now()}`, // Add id for employer
           name: "TechVets Solutions Inc.", 
           email, 
           phone: "613-555-1234",
@@ -125,7 +128,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
       } else {
         // Hardcoded veteran authentication for demo purposes
-        setUser({ ...initialUserProfile, email, isAuthenticated: true, role: "veteran" });
+        setUser({ ...initialUserProfile, email, isAuthenticated: true, role: "veteran", id: `vet-${Date.now()}` });
       }
       
       toast.success("Login successful!");
@@ -181,6 +184,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (isEmployer) {
         // Create new employer user with provided data
         setUser({
+          id: `emp-${Date.now()}`, // Add id for employer
           name: companyName || "",
           email,
           phone: "",
@@ -204,6 +208,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Create new veteran user with provided data
         setUser({
           ...initialUserProfile,
+          id: `vet-${Date.now()}`, // Add id for veteran
           email,
           militaryBranch,
           isAuthenticated: true,
@@ -370,6 +375,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (isEmployer) {
         // Hardcoded employer authentication for demo purposes
         setUser({ 
+          id: `emp-${Date.now()}`, // Add id for employer
           name: "TechVets Solutions Inc.", 
           email: `demo_${provider}@example.com`, 
           phone: "613-555-1234",
@@ -387,6 +393,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         // Hardcoded veteran authentication for demo purposes
         setUser({ 
+          id: `vet-${Date.now()}`, // Add id for veteran
           ...initialUserProfile, 
           email: `demo_${provider}@example.com`, 
           isAuthenticated: true, 

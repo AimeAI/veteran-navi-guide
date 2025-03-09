@@ -36,20 +36,28 @@ const EmployerDirectoryPage: React.FC = () => {
       // Fetch job counts for each employer
       const employerIds = (data || []).map(emp => emp.id);
       if (employerIds.length > 0) {
-        // Fetch jobs for these employers
+        // Count jobs per employer manually instead of using group()
         const { data: jobsData, error: jobsError } = await supabase
           .from('jobs')
-          .select('employer_id, count')
+          .select('employer_id')
           .eq('status', 'Open')
-          .in('employer_id', employerIds)
-          .group('employer_id');
+          .in('employer_id', employerIds);
           
         if (jobsError) throw jobsError;
         
         // Create a map of employer_id to job count
         const jobCountMap: Record<string, number> = {};
-        jobsData?.forEach((item: any) => {
-          jobCountMap[item.employer_id] = item.count;
+        
+        // Initialize counts
+        employerIds.forEach(id => {
+          jobCountMap[id] = 0;
+        });
+        
+        // Count jobs
+        jobsData?.forEach((job: any) => {
+          if (job.employer_id) {
+            jobCountMap[job.employer_id] = (jobCountMap[job.employer_id] || 0) + 1;
+          }
         });
         
         setJobCounts(jobCountMap);

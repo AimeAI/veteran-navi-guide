@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Job interface with all required fields for type safety
@@ -235,6 +234,9 @@ export const useJobs = (): JobContextProps => {
   }
   return context;
 };
+
+// Export JobProvider as JobContextProvider for backward compatibility
+export { JobProvider as JobContextProvider };
 
 // For backward compatibility
 export const useJobContext = useJobs;
