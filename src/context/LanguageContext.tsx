@@ -5,12 +5,16 @@ import i18n from '../i18n/i18nConfig';
 
 interface LanguageContextType {
   currentLanguage: string;
+  language: string; // For backward compatibility
   changeLanguage: (lang: string) => void;
+  saveLanguagePreference: (lang: string) => void; // For backward compatibility
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   currentLanguage: 'en',
+  language: 'en', // For backward compatibility
   changeLanguage: () => {},
+  saveLanguagePreference: () => {}, // For backward compatibility
 });
 
 export const useLanguage = () => useContext(LanguageContext);
@@ -39,8 +43,18 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     }
   };
 
+  // For backward compatibility
+  const saveLanguagePreference = (lang: string) => {
+    changeLanguage(lang);
+  };
+
   return (
-    <LanguageContext.Provider value={{ currentLanguage, changeLanguage }}>
+    <LanguageContext.Provider value={{ 
+      currentLanguage, 
+      language: currentLanguage, // For backward compatibility
+      changeLanguage, 
+      saveLanguagePreference // For backward compatibility
+    }}>
       {children}
     </LanguageContext.Provider>
   );

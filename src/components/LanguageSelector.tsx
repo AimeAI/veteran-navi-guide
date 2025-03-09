@@ -1,52 +1,46 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/context/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from '@/lib/utils';
 
-interface LanguageOption {
+interface Language {
   code: string;
   name: string;
 }
 
-const languages: LanguageOption[] = [
+const languages: Language[] = [
   { code: 'en', name: 'English' },
-  { code: 'fr', name: 'Français' }
+  { code: 'fr', name: 'Français' },
 ];
 
 const LanguageSelector: React.FC = () => {
-  const { t } = useTranslation();
   const { language, saveLanguagePreference } = useLanguage();
+
+  const handleLanguageChange = (languageCode: string) => {
+    saveLanguagePreference(languageCode);
+  };
+
+  // Find current language name
+  const currentLanguage = languages.find(lang => lang.code === language)?.name || 'English';
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200">
-        <Globe className="h-4 w-4 mr-2" />
-        <span>{t('common.language')}</span>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="p-1 h-8 gap-1 text-sm">
+          <Globe className="h-4 w-4" />
+          <span className="hidden sm:inline">{currentLanguage}</span>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-40">
+      <DropdownMenuContent align="end" className="bg-white">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            className={cn(
-              "flex items-center cursor-pointer",
-              language === lang.code ? "bg-accent" : ""
-            )}
-            onClick={() => saveLanguagePreference(lang.code)}
+            onClick={() => handleLanguageChange(lang.code)}
+            className={language === lang.code ? "bg-accent text-accent-foreground" : ""}
           >
-            <div className="w-4 h-4 flex items-center justify-center mr-2">
-              {language === lang.code && (
-                <div className="w-2 h-2 bg-primary rounded-full" />
-              )}
-            </div>
-            {t(`common.${lang.code === 'en' ? 'english' : 'french'}`)}
+            {lang.name}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -23,8 +23,8 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Link to="/" className="mr-4 flex items-center font-semibold">
-              <img src="/logo.svg" alt="Veteran Career Compass" className="h-8 w-8 mr-2" />
-              <span className="text-xl">Veteran Career Compass</span>
+              <img src="/logo.svg" alt="VetJobBoard" className="h-8 w-8 mr-2" />
+              <span className="text-xl">VetJobBoard</span>
             </Link>
           </div>
         
