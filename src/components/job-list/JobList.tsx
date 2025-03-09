@@ -43,6 +43,12 @@ const JobList: React.FC<JobListProps> = ({
           showSearch={showSearch} 
           showFilters={showFilters}
           onRefresh={refreshJobs}
+          country={searchParams.country}
+          isLoading={isLoading}
+          isRefreshing={false}
+          jobBankCount={jobs.filter(job => job.source === 'jobbank').length}
+          indeedCount={jobs.filter(job => job.source === 'indeed').length}
+          linkedinCount={jobs.filter(job => job.source === 'linkedin').length}
         />
       )}
 
@@ -60,7 +66,11 @@ const JobList: React.FC<JobListProps> = ({
           </button>
         </div>
       ) : jobs.length === 0 ? (
-        <JobListEmptyState message={emptyStateMessage} />
+        <JobListEmptyState 
+          message={emptyStateMessage} 
+          country={searchParams.country}
+          onRetry={refreshJobs}
+        />
       ) : (
         <>
           <JobListContent jobs={jobs} />

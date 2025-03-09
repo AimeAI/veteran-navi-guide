@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { JobCache } from '@/utils/jobCache';
@@ -20,6 +19,7 @@ export interface JobSearchParams {
   educationLevel?: string;
   country?: "us" | "canada";
   page?: number;
+  refresh?: boolean;
 }
 
 export interface JobSearchResults {

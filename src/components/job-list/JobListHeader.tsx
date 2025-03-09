@@ -4,25 +4,29 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Globe, RefreshCw } from 'lucide-react';
 
-interface JobListHeaderProps {
+export interface JobListHeaderProps {
   totalJobs: number;
-  country: "us" | "canada";
-  isRefreshing: boolean;
-  isLoading: boolean;
-  jobBankCount: number;
-  indeedCount: number;
-  linkedinCount: number;
+  showSearch?: boolean;
+  showFilters?: boolean;
+  country?: "us" | "canada";
+  isRefreshing?: boolean;
+  isLoading?: boolean;
+  jobBankCount?: number;
+  indeedCount?: number;
+  linkedinCount?: number;
   onRefresh?: () => Promise<void>;
 }
 
 const JobListHeader: React.FC<JobListHeaderProps> = ({
   totalJobs,
-  country,
-  isRefreshing,
-  isLoading,
-  jobBankCount,
-  indeedCount,
-  linkedinCount,
+  showSearch = true,
+  showFilters = true,
+  country = "canada",
+  isRefreshing = false,
+  isLoading = false,
+  jobBankCount = 0,
+  indeedCount = 0,
+  linkedinCount = 0,
   onRefresh,
 }) => {
   const countryName = country === "canada" ? "Canada" : "United States";
