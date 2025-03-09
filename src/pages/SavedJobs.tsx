@@ -26,6 +26,7 @@ const SavedJobs = () => {
                     company={job.company}
                     location={job.location}
                     description={job.description}
+                    date={job.date} // Job date already exists in savedJobs
                   />
                   <button
                     onClick={() => removeSavedJob(job.id)}

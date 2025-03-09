@@ -16,11 +16,12 @@ interface JobListingProps {
   company: string;
   location: string;
   description: string;
-  date: string;
+  date?: string; // Make date optional
   source?: string;
   url?: string;
   matchScore?: number;
-  matchingSkills?: string[]; // Add this prop
+  matchingSkills?: string[];
+  className?: string; // Add className prop
 }
 
 const JobListing: React.FC<JobListingProps> = ({ 
@@ -33,7 +34,8 @@ const JobListing: React.FC<JobListingProps> = ({
   source, 
   url,
   matchScore,
-  matchingSkills
+  matchingSkills,
+  className
 }) => {
   const { t } = useTranslation();
   const { savedJobs, saveJob } = useJobs();
@@ -49,11 +51,11 @@ const JobListing: React.FC<JobListingProps> = ({
   const getSourceBadgeColor = (source?: string) => {
     if (!source) return "secondary";
     
-    const sourceMap: Record<string, string> = {
+    const sourceMap: Record<string, "default" | "destructive" | "outline" | "secondary" | "warning" | "info" | "success" | "purple" | "orange"> = {
       'jobbank': 'default',
       'indeed': 'orange',
       'linkedin': 'purple',
-      'jobicy': 'blue'
+      'jobicy': 'blue' as "info" // Type cast 'blue' to 'info' which is an allowed variant
     };
     
     return sourceMap[source.toLowerCase()] || "secondary";
@@ -75,7 +77,7 @@ const JobListing: React.FC<JobListingProps> = ({
       company,
       location,
       description,
-      date,
+      date: date || new Date().toISOString(), // Provide fallback for date
       // Add required fields from Job interface
       category: "other",
       salaryRange: "",
@@ -119,7 +121,7 @@ const JobListing: React.FC<JobListingProps> = ({
     DOMPurify.sanitize(highlightMatchingSkills(shortDescription));
   
   return (
-    <Card className="overflow-hidden">
+    <Card className={`overflow-hidden ${className || ''}`}>
       <CardContent className="pt-6">
         <div className="flex justify-between">
           <div className="space-y-1">
@@ -140,9 +142,11 @@ const JobListing: React.FC<JobListingProps> = ({
             </div>
           </div>
           <div className="flex flex-col gap-2 items-end">
-            <Badge variant={getSourceBadgeColor(source)}>
-              {source || t("External")}
-            </Badge>
+            {source && (
+              <Badge variant={getSourceBadgeColor(source)}>
+                {source || t("External")}
+              </Badge>
+            )}
             
             {matchScore && (
               <Badge variant="outline" className="bg-green-50">

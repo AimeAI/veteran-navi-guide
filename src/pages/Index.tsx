@@ -11,6 +11,7 @@ const featuredJobs = [
     company: 'TechDefense Solutions',
     location: 'Ottawa, ON',
     description: 'Seeking a veteran with security background to lead our operations team. Must have experience in risk assessment and team leadership. Secret clearance preferred.',
+    date: new Date().toISOString(),
   },
   {
     id: '2',
@@ -18,6 +19,7 @@ const featuredJobs = [
     company: 'Canadian Supply Chain Inc.',
     location: 'Halifax, NS',
     description: 'Perfect for veterans with logistics MOSID. Coordinate shipments, manage inventory, and optimize supply chain processes. Competitive salary with benefits package.',
+    date: new Date().toISOString(),
   },
   {
     id: '3',
@@ -25,6 +27,7 @@ const featuredJobs = [
     company: 'Veterans Medical Centre',
     location: 'Remote - Canada',
     description: 'Join our team dedicated to improving healthcare for veterans. Looking for organized professionals with healthcare experience from military settings.',
+    date: new Date().toISOString(),
   }
 ];
 
@@ -36,6 +39,7 @@ const recommendedJobs = [
     company: 'DefenceNet Systems',
     location: 'Toronto, ON',
     description: 'Ideal for veterans with intelligence or cybersecurity background. Monitor network security and respond to incidents. Secret clearance required.',
+    date: new Date().toISOString(),
   },
   {
     id: '5',
@@ -43,6 +47,7 @@ const recommendedJobs = [
     company: 'Veterans Construction Group',
     location: 'Edmonton, AB',
     description: 'Looking for veterans with leadership experience to manage construction projects from planning to completion. Strong organizational skills required.',
+    date: new Date().toISOString(),
   },
   {
     id: '6',
@@ -50,6 +55,7 @@ const recommendedJobs = [
     company: 'First Responders Alliance',
     location: 'Calgary, AB',
     description: 'Former military medics encouraged to apply. Provide emergency medical care in civilian settings. Training assistance available.',
+    date: new Date().toISOString(),
   },
   {
     id: '7',
@@ -57,6 +63,7 @@ const recommendedJobs = [
     company: 'SkyWorks Aerospace',
     location: 'Vancouver, BC',
     description: 'Perfect transition for military aircraft technicians. Maintain and repair commercial aircraft. Transport Canada certification assistance provided.',
+    date: new Date().toISOString(),
   }
 ];
 
@@ -108,6 +115,7 @@ const Index = () => {
                 company={job.company}
                 location={job.location}
                 description={job.description}
+                date={job.date}
               />
             ))}
           </div>
@@ -142,6 +150,7 @@ const Index = () => {
                 company={job.company}
                 location={job.location}
                 description={job.description}
+                date={job.date}
                 className="h-full"
               />
             ))}
