@@ -1,6 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import { UserRole, EmployerProfile } from "@/types/application";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Session } from "@supabase/supabase-js";
 
 // Define types for our user profile
 export interface UserProfile {
@@ -23,10 +26,12 @@ export interface UserProfile {
 // Interface for the context
 interface UserContextType {
   user: UserProfile | null;
+  supabaseUser: User | null;
+  session: Session | null;
   isLoading: boolean;
   login: (email: string, password: string, isEmployer?: boolean) => Promise<void>;
   signup: (email: string, password: string, militaryBranch: string, isEmployer?: boolean, companyName?: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (updatedProfile: Partial<UserProfile>) => void;
   updateEmployerProfile: (updatedProfile: Partial<EmployerProfile>) => void;
   resendVerificationEmail: () => Promise<void>;
@@ -37,95 +42,146 @@ interface UserContextType {
 // Create the context with initial values
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Initial user profile data
-const initialUserProfile: UserProfile = {
-  name: "James Wilson",
-  email: "james.wilson@example.com",
-  phone: "613-555-7890",
-  location: "Ottawa, ON",
-  militaryBranch: "Canadian Armed Forces",
-  yearsOfService: "2008-2019",
-  rank: "Master Corporal",
-  bio: "Software Engineer with 4 years of experience. Former CAF member with background in communications and logistics. Skilled in team leadership and project management.",
-  isAuthenticated: false,
-  emailVerified: false,
-  profilePicture: undefined,
-  role: "veteran",
-  authProvider: "local"
-};
-
-// Initial employer profile data
-const initialEmployerProfile: EmployerProfile = {
-  id: "emp1",
-  companyName: "TechVets Solutions Inc.",
-  industry: "Information Technology",
-  companySize: "50-100",
-  location: "Ottawa, ON",
-  website: "https://www.techvets-example.com",
-  description: "A technology company dedicated to hiring and supporting veterans in the tech industry. We provide software solutions for government and private sector clients.",
-  contactEmail: "hr@techvets-example.com",
-  contactPhone: "613-555-1234",
-  isVerified: true
-};
-
 // Provider component
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Simulate loading the user from localStorage on mount
+  // Initialize auth state from Supabase session
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      // For development purposes only - remove in production
-      setUser({ ...initialUserProfile, isAuthenticated: false });
-    }
-    setIsLoading(false);
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      
+      // Get current session
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
+        setSupabaseUser(currentSession.user);
+        
+        // Fetch profile data from profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .single();
+        
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error("Error fetching profile:", profileError);
+          toast.error("Failed to load user profile");
+        }
+        
+        // Transform the data to match our UserProfile structure
+        if (profileData) {
+          setUser({
+            name: profileData.full_name || currentSession.user.email?.split('@')[0] || '',
+            email: currentSession.user.email || '',
+            phone: profileData.phone || '',
+            location: profileData.location || '',
+            militaryBranch: profileData.military_branch || '',
+            yearsOfService: profileData.years_of_service || '',
+            rank: profileData.rank || '',
+            bio: profileData.bio || '',
+            isAuthenticated: true,
+            emailVerified: currentSession.user.email_confirmed_at !== null,
+            profilePicture: profileData.avatar_url,
+            role: "veteran", // Default to veteran, update based on actual role when implemented
+            authProvider: currentSession.user.app_metadata.provider || "email"
+          });
+        } else {
+          // Create basic profile if none exists
+          setUser({
+            name: currentSession.user.email?.split('@')[0] || '',
+            email: currentSession.user.email || '',
+            phone: '',
+            location: '',
+            militaryBranch: '',
+            yearsOfService: '',
+            rank: '',
+            bio: '',
+            isAuthenticated: true,
+            emailVerified: currentSession.user.email_confirmed_at !== null,
+            role: "veteran",
+            authProvider: currentSession.user.app_metadata.provider || "email"
+          });
+        }
+      } else {
+        setUser(null);
+        setSupabaseUser(null);
+      }
+      
+      setIsLoading(false);
+      
+      // Set up auth subscription for real-time updates
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, newSession) => {
+          console.log("Auth state changed:", event);
+          setSession(newSession);
+          setSupabaseUser(newSession?.user || null);
+          
+          if (event === 'SIGNED_IN' && newSession?.user) {
+            // Similar logic as above for handling sign in
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', newSession.user.id)
+              .single();
+            
+            if (profileData) {
+              setUser({
+                name: profileData.full_name || newSession.user.email?.split('@')[0] || '',
+                email: newSession.user.email || '',
+                phone: profileData.phone || '',
+                location: profileData.location || '',
+                militaryBranch: profileData.military_branch || '',
+                yearsOfService: profileData.years_of_service || '',
+                rank: profileData.rank || '',
+                bio: profileData.bio || '',
+                isAuthenticated: true,
+                emailVerified: newSession.user.email_confirmed_at !== null,
+                profilePicture: profileData.avatar_url,
+                role: "veteran",
+                authProvider: newSession.user.app_metadata.provider || "email"
+              });
+              
+              toast.success("Welcome back!");
+            }
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null);
+            toast.info("You have been logged out");
+          }
+        }
+      );
+      
+      // Cleanup subscription on unmount
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+    
+    initializeAuth();
   }, []);
-
-  // Save user to localStorage whenever it changes
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    }
-  }, [user]);
 
   const login = async (email: string, password: string, isEmployer = false) => {
     setIsLoading(true);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
       
-      // In a real app, this would be an API call to verify credentials
-      console.log("Login request for:", email, isEmployer ? "(employer)" : "(veteran)");
+      if (error) throw error;
       
-      // Simulate authentication failure (for demo purposes)
-      if (password === "wrongpassword") {
-        throw new Error("Invalid email or password");
-      }
+      // User data is handled by the onAuthStateChange listener
+      // We don't need to set it manually here
       
+      // Later, we'll implement role-based redirects
       if (isEmployer) {
-        // Hardcoded employer authentication for demo purposes
-        setUser({ 
-          name: "TechVets Solutions Inc.", 
-          email, 
-          phone: "613-555-1234",
-          location: "Ottawa, ON",
-          militaryBranch: "",
-          yearsOfService: "",
-          rank: "",
-          bio: "A technology company dedicated to hiring and supporting veterans in the tech industry.",
-          isAuthenticated: true,
-          emailVerified: true,
-          role: "employer",
-          employerProfile: initialEmployerProfile
-        });
-      } else {
-        // Hardcoded veteran authentication for demo purposes
-        setUser({ ...initialUserProfile, email, isAuthenticated: true, role: "veteran" });
+        // We'll need to check if user has an employer profile
+        // and set the role accordingly
       }
       
       toast.success("Login successful!");
@@ -159,59 +215,29 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Create user metadata to pass to Supabase
+      const metadata: { [key: string]: string } = {
+        militaryBranch: militaryBranch || ''
+      };
       
-      if (isEmployer && !companyName) {
-        throw new Error("Company name is required for employer accounts");
+      if (isEmployer && companyName) {
+        metadata.companyName = companyName;
       }
       
-      console.log("Signup request for:", { 
-        email, 
-        militaryBranch, 
-        isEmployer, 
-        companyName 
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
       });
       
-      // Simulate email already in use error (for demo purposes)
-      if (email === "taken@example.com") {
-        throw new Error("Email is already registered");
-      }
+      if (error) throw error;
       
-      if (isEmployer) {
-        // Create new employer user with provided data
-        setUser({
-          name: companyName || "",
-          email,
-          phone: "",
-          location: "",
-          militaryBranch: "",
-          yearsOfService: "",
-          rank: "",
-          bio: "",
-          isAuthenticated: true,
-          emailVerified: false,
-          role: "employer",
-          employerProfile: {
-            ...initialEmployerProfile,
-            companyName: companyName || "",
-            id: `emp-${Date.now()}`,
-            contactEmail: email,
-            isVerified: false
-          }
-        });
-      } else {
-        // Create new veteran user with provided data
-        setUser({
-          ...initialUserProfile,
-          email,
-          militaryBranch,
-          isAuthenticated: true,
-          emailVerified: false,
-          role: "veteran"
-        });
-      }
+      // Profile will be created automatically through the trigger
       
+      // Show success message
       toast.success("Account created successfully!", {
         description: "Please check your email for a verification link."
       });
@@ -235,37 +261,73 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-    toast.info("You have been logged out");
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // State will be cleared by the auth listener
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to log out. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateProfile = (updatedProfile: Partial<UserProfile>) => {
-    if (user) {
-      try {
-        // Simulate API call in a real app
-        const newProfile = { ...user, ...updatedProfile };
-        setUser(newProfile);
-        toast.success("Profile updated successfully!");
-      } catch (error) {
-        console.error("Profile update error:", error);
-        toast.error("Failed to update profile", {
-          description: "Please try again later."
-        });
-      }
+  const updateProfile = async (updatedProfile: Partial<UserProfile>) => {
+    if (!supabaseUser || !user) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Map from our UserProfile to the database profile
+      const profileUpdate: { [key: string]: any } = {};
+      
+      if (updatedProfile.name) profileUpdate.full_name = updatedProfile.name;
+      if (updatedProfile.phone) profileUpdate.phone = updatedProfile.phone;
+      if (updatedProfile.location) profileUpdate.location = updatedProfile.location;
+      if (updatedProfile.militaryBranch) profileUpdate.military_branch = updatedProfile.militaryBranch;
+      if (updatedProfile.yearsOfService) profileUpdate.years_of_service = updatedProfile.yearsOfService;
+      if (updatedProfile.rank) profileUpdate.rank = updatedProfile.rank;
+      if (updatedProfile.bio) profileUpdate.bio = updatedProfile.bio;
+      
+      // Update the profile in the database
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileUpdate)
+        .eq('id', supabaseUser.id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setUser({ ...user, ...updatedProfile });
+      
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error("Failed to update profile", {
+        description: "Please try again later."
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const updateEmployerProfile = (updatedProfile: Partial<EmployerProfile>) => {
     if (user && user.role === "employer" && user.employerProfile) {
       try {
-        // Simulate API call in a real app
+        // This will need to be implemented with actual Supabase calls
+        // when we add the employers table
+        
+        // For now, just update the local state
         const newEmployerProfile = { ...user.employerProfile, ...updatedProfile };
         setUser({
           ...user,
           employerProfile: newEmployerProfile
         });
+        
         toast.success("Company profile updated successfully!");
       } catch (error) {
         console.error("Employer profile update error:", error);
@@ -277,14 +339,20 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const resendVerificationEmail = async () => {
-    if (!user) return;
+    if (!user?.email) return;
     
     try {
       setIsLoading(true);
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      console.log("Resending verification email to:", user.email);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: user.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) throw error;
       
       toast.success("Verification email sent!", {
         description: "Please check your inbox for the verification link."
@@ -299,8 +367,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // New function to handle profile picture uploads
+  // Function to handle profile picture uploads
   const uploadProfilePicture = async (file: File): Promise<string> => {
+    if (!supabaseUser) throw new Error("User not authenticated");
+    
     setIsLoading(true);
     
     try {
@@ -321,21 +391,40 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error("File is too large. Maximum size is 5MB.");
       }
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Generate a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${supabaseUser.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
       
-      // Create a local URL for the uploaded file
-      const fileUrl = URL.createObjectURL(file);
-      console.log("Profile picture uploaded:", fileUrl);
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(filePath, file);
       
-      // Update user profile with the new picture URL
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath);
+      
+      const publicUrl = data.publicUrl;
+      
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', supabaseUser.id);
+      
+      if (updateError) throw updateError;
+      
+      // Update local state
       if (user) {
-        const updatedUser = { ...user, profilePicture: fileUrl };
-        setUser(updatedUser);
+        setUser({ ...user, profilePicture: publicUrl });
       }
       
       toast.success("Profile picture updated successfully!");
-      return fileUrl;
+      return publicUrl;
     } catch (error) {
       console.error("Profile picture upload error:", error);
       
@@ -361,41 +450,37 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      let providerName: 'google' | 'facebook' | 'github' = 'google';
       
-      // In a real app, this would be an API call to authenticate with the provider
-      console.log(`Social login request for provider: ${provider}, isEmployer: ${isEmployer}`);
-      
-      if (isEmployer) {
-        // Hardcoded employer authentication for demo purposes
-        setUser({ 
-          name: "TechVets Solutions Inc.", 
-          email: `demo_${provider}@example.com`, 
-          phone: "613-555-1234",
-          location: "Ottawa, ON",
-          militaryBranch: "",
-          yearsOfService: "",
-          rank: "",
-          bio: "A technology company dedicated to hiring and supporting veterans in the tech industry.",
-          isAuthenticated: true,
-          emailVerified: true,
-          role: "employer",
-          employerProfile: initialEmployerProfile,
-          authProvider: provider
-        });
-      } else {
-        // Hardcoded veteran authentication for demo purposes
-        setUser({ 
-          ...initialUserProfile, 
-          email: `demo_${provider}@example.com`, 
-          isAuthenticated: true, 
-          role: "veteran",
-          authProvider: provider
-        });
+      switch (provider.toLowerCase()) {
+        case 'google':
+          providerName = 'google';
+          break;
+        case 'facebook':
+          providerName = 'facebook';
+          break;
+        case 'github':
+          providerName = 'github';
+          break;
+        default:
+          throw new Error(`Unsupported provider: ${provider}`);
       }
       
-      toast.success(`${provider} login successful!`);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: providerName,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            // Pass the employer role if needed
+            isEmployer: isEmployer ? 'true' : 'false'
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      // The redirect happens automatically
+      // State will be handled by the auth listener when redirected back
     } catch (error) {
       console.error(`Social login error with ${provider}:`, error);
       
@@ -413,6 +498,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return (
     <UserContext.Provider value={{ 
       user, 
+      supabaseUser,
+      session,
       isLoading, 
       login, 
       signup, 
@@ -421,7 +508,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       updateEmployerProfile,
       resendVerificationEmail,
       uploadProfilePicture,
-      socialLogin // Add the new method to the context
+      socialLogin
     }}>
       {children}
     </UserContext.Provider>

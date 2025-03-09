@@ -45,8 +45,9 @@ const NotificationPreferences = lazy(() => import("./components/NotificationPref
 const FeedbackSupportPage = lazy(() => import("./pages/FeedbackSupportPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ReferralProgramPage = lazy(() => import("./pages/ReferralProgramPage"));
-// Add new vetted jobs page
 const VettedJobsPage = lazy(() => import("./pages/VettedJobsPage"));
+// Add new auth callback page
+const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
 
 // Loading component for suspense fallback
 const PageLoading = () => (
@@ -72,44 +73,104 @@ function App() {
                     <Route path="/" element={<Index />} />
                     <Route path="/job-search" element={<JobSearch />} />
                     <Route path="/jobs/search" element={<JobSearch />} />
-                    <Route path="/saved" element={<SavedJobs />} />
+                    <Route path="/saved" element={
+                      <RequireAuth>
+                        <SavedJobs />
+                      </RequireAuth>
+                    } />
                     <Route path="/job/:id" element={<JobDetailsPage />} />
-                    <Route path="/profile" element={<UserProfile />} />
-                    <Route path="/history" element={<ApplicationsPage />} />
-                    <Route path="/recommendations" element={<RecommendedJobs />} />
-                    <Route path="/messages" element={<MessagesPage />} />
+                    <Route path="/profile" element={
+                      <RequireAuth>
+                        <UserProfile />
+                      </RequireAuth>
+                    } />
+                    <Route path="/history" element={
+                      <RequireAuth>
+                        <ApplicationsPage />
+                      </RequireAuth>
+                    } />
+                    <Route path="/recommendations" element={
+                      <RequireAuth>
+                        <RecommendedJobs />
+                      </RequireAuth>
+                    } />
+                    <Route path="/messages" element={
+                      <RequireAuth>
+                        <MessagesPage />
+                      </RequireAuth>
+                    } />
                     <Route path="/resources/career-counseling" element={<CareerCounseling />} />
                     <Route path="/resources/resume-assistance" element={<ResumeAssistance />} />
                     <Route path="/resources/interview-prep" element={<InterviewPreparation />} />
                     <Route path="/resources/military-transition" element={<MilitaryTransitionResources />} />
                     <Route path="/events" element={<JobFairsEventsPage />} />
-                    <Route path="/employer/post-job" element={<PostJobPage />} />
-                    <Route path="/employer/manage-applications" element={<EmployerDashboardPage />} />
-                    <Route path="/employer/profile" element={<EmployerProfilePage />} />
-                    <Route path="/employer/search-veterans" element={<EmployerSearchVeteransPage />} />
+                    <Route path="/employer/post-job" element={
+                      <RequireAuth roles={["employer", "admin"]}>
+                        <PostJobPage />
+                      </RequireAuth>
+                    } />
+                    <Route path="/employer/manage-applications" element={
+                      <RequireAuth roles={["employer", "admin"]}>
+                        <EmployerDashboardPage />
+                      </RequireAuth>
+                    } />
+                    <Route path="/employer/profile" element={
+                      <RequireAuth roles={["employer", "admin"]}>
+                        <EmployerProfilePage />
+                      </RequireAuth>
+                    } />
+                    <Route path="/employer/search-veterans" element={
+                      <RequireAuth roles={["employer", "admin"]}>
+                        <EmployerSearchVeteransPage />
+                      </RequireAuth>
+                    } />
                     <Route path="/resources/forums" element={<CommunityForums />} />
                     <Route path="/topic/:topicId" element={<TopicDetail />} />
                     <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/auth/callback" element={<AuthCallbackPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/verify-email" element={<VerifyEmailPage />} />
-                    <Route path="/dashboard" element={<VeteranDashboardPage />} />
-                    <Route path="/admin" element={<AdminDashboardPage />} />
-                    <Route path="/admin/content" element={
+                    <Route path="/dashboard" element={
                       <RequireAuth>
+                        <VeteranDashboardPage />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin" element={
+                      <RequireAuth roles={["admin"]}>
+                        <AdminDashboardPage />
+                      </RequireAuth>
+                    } />
+                    <Route path="/admin/content" element={
+                      <RequireAuth roles={["admin"]}>
                         <AdminContentPage />
                       </RequireAuth>
                     } />
                     <Route path="/employer-profile" element={
-                      <RequireAuth>
+                      <RequireAuth roles={["employer", "admin"]}>
                         <EmployerProfilePage />
                       </RequireAuth>
                     } />
                     <Route path="/ab-testing" element={<AbTestingPage />} />
-                    <Route path="/profile/settings" element={<UserProfile />} />
-                    <Route path="/profile/resume" element={<UserProfile />} />
-                    <Route path="/job-alerts" element={<UserProfile />} />
-                    <Route path="/recommended" element={<RecommendedJobs />} />
-                    {/* Add the new vetted jobs route */}
+                    <Route path="/profile/settings" element={
+                      <RequireAuth>
+                        <UserProfile />
+                      </RequireAuth>
+                    } />
+                    <Route path="/profile/resume" element={
+                      <RequireAuth>
+                        <UserProfile />
+                      </RequireAuth>
+                    } />
+                    <Route path="/job-alerts" element={
+                      <RequireAuth>
+                        <UserProfile />
+                      </RequireAuth>
+                    } />
+                    <Route path="/recommended" element={
+                      <RequireAuth>
+                        <RecommendedJobs />
+                      </RequireAuth>
+                    } />
                     <Route path="/vetted-jobs" element={<VettedJobsPage />} />
                     <Route
                       path="/settings/notifications"

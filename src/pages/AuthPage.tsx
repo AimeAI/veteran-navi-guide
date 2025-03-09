@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import LoadingButton from "@/components/ui/LoadingButton";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,14 @@ interface FormError {
 const AuthPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login, signup, socialLogin, isLoading, user } = useUser();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'login';
+  const redirectPath = searchParams.get('redirect') || '/';
+  const providerParam = searchParams.get('provider');
   
+  const { login, signup, socialLogin, isLoading, user, session } = useUser();
+  
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginAsEmployer, setLoginAsEmployer] = useState(false);
@@ -40,23 +47,38 @@ const AuthPage: React.FC = () => {
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: "" });
   const [csrfToken, setCsrfToken] = useState("");
   
+  // Handle social login redirect if provider is in URL
+  useEffect(() => {
+    const handleSocialLogin = async () => {
+      if (providerParam && !isLoading && !session) {
+        try {
+          await socialLogin(
+            providerParam, 
+            searchParams.get('isEmployer') === 'true'
+          );
+        } catch (error) {
+          console.error(`${providerParam} login error:`, error);
+        }
+      }
+    };
+    
+    handleSocialLogin();
+  }, [providerParam, socialLogin, isLoading, session, searchParams]);
+  
   useEffect(() => {
     setCsrfToken(storeCSRFToken());
   }, []);
 
+  // Redirect if already logged in
   useEffect(() => {
-    if (user?.isAuthenticated) {
+    if (session && user?.isAuthenticated) {
       if (!user.emailVerified) {
         navigate("/verify-email");
       } else {
-        if (user.role === "employer") {
-          navigate("/employer/manage-applications");
-        } else {
-          navigate("/");
-        }
+        navigate(redirectPath || (user.role === "employer" ? "/employer/manage-applications" : "/"));
       }
     }
-  }, [user, navigate]);
+  }, [user, session, navigate, redirectPath]);
   
   useEffect(() => {
     if (signupPassword) {
@@ -133,6 +155,9 @@ const AuthPage: React.FC = () => {
     }
     
     if (shouldRateLimit(loginEmail)) {
+      toast.error("Too many login attempts", {
+        description: "Please try again later"
+      });
       return;
     }
     
@@ -142,14 +167,10 @@ const AuthPage: React.FC = () => {
       
       setCsrfToken(storeCSRFToken());
       
-      if (loginAsEmployer) {
-        navigate("/employer/manage-applications");
-      } else {
-        navigate("/");
-      }
+      // Navigation is handled by the useEffect when the auth state changes
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login failed");
+      // The toast is shown in the login function
     }
   };
   
@@ -175,29 +196,20 @@ const AuthPage: React.FC = () => {
       
       setCsrfToken(storeCSRFToken());
       
-      if (userType === "employer") {
-        navigate("/employer/manage-applications");
-      } else {
-        navigate("/");
-      }
+      // Navigation is handled by the useEffect when the auth state changes
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("Signup failed");
+      // The toast is shown in the signup function
     }
   };
 
-  const handleSocialLogin = async (provider: string) => {
+  const handleSocialLoginClick = async (provider: string) => {
     try {
       await socialLogin(provider, userType === "employer");
-      
-      if (userType === "employer") {
-        navigate("/employer/manage-applications");
-      } else {
-        navigate("/");
-      }
+      // The redirect is handled by Supabase
     } catch (error) {
       console.error(`${provider} login error:`, error);
-      toast.error("Login failed");
+      // The toast is shown in the socialLogin function
     }
   };
 
@@ -231,10 +243,34 @@ const AuthPage: React.FC = () => {
     );
   };
 
+  // If already logged in, simply redirect
+  if (user?.isAuthenticated) {
+    return (
+      <div className="container mx-auto flex flex-col items-center justify-center py-10 px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Already Logged In</CardTitle>
+            <CardDescription>
+              You are already logged in as {user.email}
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button 
+              onClick={() => navigate(redirectPath || '/')} 
+              className="w-full"
+            >
+              Go to Home
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-10 px-4">
       <div className="w-full max-w-md">
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="login">{t('common.login')}</TabsTrigger>
             <TabsTrigger value="signup">{t('common.signup')}</TabsTrigger>
@@ -318,7 +354,7 @@ const AuthPage: React.FC = () => {
                     </div>
                   </div>
                   <SocialLoginButtons 
-                    onSocialLogin={handleSocialLogin}
+                    onSocialLogin={handleSocialLoginClick}
                     isLoading={isLoading}
                   />
                 </CardContent>
@@ -502,7 +538,7 @@ const AuthPage: React.FC = () => {
                   </div>
                   
                   <SocialLoginButtons 
-                    onSocialLogin={handleSocialLogin}
+                    onSocialLogin={handleSocialLoginClick}
                     isLoading={isLoading}
                   />
                 </CardContent>

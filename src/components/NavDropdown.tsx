@@ -24,8 +24,8 @@ export default function NavDropdown() {
     return null;
   }
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
@@ -50,13 +50,22 @@ export default function NavDropdown() {
     </DropdownMenuGroup>
   );
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part.charAt(0))
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.profilePicture || `https://avatars.dicebear.com/api/initials/${user?.name}.svg`} alt={user?.name} />
-            <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{getInitials(user?.name || 'U')}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

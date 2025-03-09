@@ -11,10 +11,10 @@ interface EmailVerificationBannerProps {
 }
 
 const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ className }) => {
-  const { user, isLoading, resendVerificationEmail } = useUser();
+  const { user, isLoading, resendVerificationEmail, session } = useUser();
 
   // Don't show if user is not logged in or email is already verified
-  if (!user || !user.isAuthenticated || user.emailVerified) {
+  if (!session || !user || !user.isAuthenticated || user.emailVerified) {
     return null;
   }
 

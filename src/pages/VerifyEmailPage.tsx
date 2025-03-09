@@ -9,10 +9,10 @@ import LoadingButton from '@/components/ui/LoadingButton';
 
 const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isLoading, resendVerificationEmail } = useUser();
+  const { user, isLoading, resendVerificationEmail, session } = useUser();
 
   // Redirect if not logged in
-  if (!user?.isAuthenticated) {
+  if (!session || !user?.isAuthenticated) {
     return (
       <div className="container mx-auto max-w-md py-10 px-4">
         <Card>

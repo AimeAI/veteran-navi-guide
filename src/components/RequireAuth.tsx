@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useUser } from '@/context/UserContext';
 import { Button } from './ui/button';
 import { LogIn, Facebook, Github, Linkedin } from 'lucide-react';
@@ -8,13 +8,16 @@ import { LogIn, Facebook, Github, Linkedin } from 'lucide-react';
 interface RequireAuthProps {
   children: React.ReactNode;
   redirectTo?: string;
+  roles?: string[];
 }
 
 export const RequireAuth: React.FC<RequireAuthProps> = ({ 
   children, 
-  redirectTo = '/auth'
+  redirectTo = '/auth',
+  roles
 }) => {
-  const { user, isLoading } = useUser();
+  const { user, isLoading, session } = useUser();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -27,16 +30,28 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
     );
   }
 
-  if (!user || !user.isAuthenticated) {
+  // Check if user is authenticated
+  const isAuthenticated = !!session && !!user?.isAuthenticated;
+
+  // If roles are specified, check if user has the required role
+  const hasRequiredRole = !roles || (user && roles.includes(user.role));
+
+  if (!isAuthenticated || !hasRequiredRole) {
+    // Save the current location to redirect back after login
+    const currentPath = encodeURIComponent(location.pathname + location.search);
+    const loginRedirect = `${redirectTo}?redirect=${currentPath}`;
+    
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] max-w-md mx-auto text-center">
         <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
         <p className="text-muted-foreground mb-6">
-          You need to be logged in to access this page.
+          {!isAuthenticated
+            ? "You need to be logged in to access this page."
+            : "You don't have permission to access this page."}
         </p>
         <div className="space-y-4 w-full">
           <Button asChild className="w-full">
-            <a href={`${redirectTo}?redirect=${window.location.pathname}`}>
+            <a href={loginRedirect}>
               <LogIn className="mr-2 h-4 w-4" />
               Log In or Sign Up
             </a>
@@ -53,7 +68,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
           
           <div className="grid grid-cols-3 gap-3">
             <Button variant="outline" className="w-full" asChild>
-              <a href={`${redirectTo}?provider=google&redirect=${window.location.pathname}`}>
+              <a href={`${redirectTo}?provider=google&redirect=${currentPath}`}>
                 <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
                   <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
                     <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
@@ -66,13 +81,13 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
               </a>
             </Button>
             <Button variant="outline" className="w-full" asChild>
-              <a href={`${redirectTo}?provider=facebook&redirect=${window.location.pathname}`}>
+              <a href={`${redirectTo}?provider=facebook&redirect=${currentPath}`}>
                 <Facebook className="h-4 w-4 mr-2 text-blue-600" />
                 Facebook
               </a>
             </Button>
             <Button variant="outline" className="w-full" asChild>
-              <a href={`${redirectTo}?provider=github&redirect=${window.location.pathname}`}>
+              <a href={`${redirectTo}?provider=github&redirect=${currentPath}`}>
                 <Github className="h-4 w-4 mr-2" />
                 GitHub
               </a>
