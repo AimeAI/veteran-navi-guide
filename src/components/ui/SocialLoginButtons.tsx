@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from './button';
-import { Facebook, Github, Linkedin } from 'lucide-react';
+import { Facebook, Github, Linkedin, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 interface SocialLoginButtonsProps {
   onSocialLogin: (provider: string) => void;
@@ -14,6 +15,22 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
   isLoading = false
 }) => {
   const { t } = useTranslation();
+  const [clickedProvider, setClickedProvider] = useState<string | null>(null);
+  
+  const handleSocialLogin = (provider: string) => {
+    if (isLoading) return;
+    
+    setClickedProvider(provider);
+    try {
+      onSocialLogin(provider);
+    } catch (error) {
+      console.error(`Error with ${provider} login:`, error);
+      toast.error(`${provider} login failed`, {
+        description: "The provider may not be enabled. Please try another method."
+      });
+      setClickedProvider(null);
+    }
+  };
   
   return (
     <div className="space-y-4">
@@ -32,8 +49,8 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => onSocialLogin('google')}
-          disabled={isLoading}
+          onClick={() => handleSocialLogin('google')}
+          disabled={isLoading || clickedProvider === 'google'}
         >
           <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
             <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -43,25 +60,25 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
               <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z" />
             </g>
           </svg>
-          Google
+          {clickedProvider === 'google' && isLoading ? 'Connecting...' : 'Google'}
         </Button>
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => onSocialLogin('facebook')}
-          disabled={isLoading}
+          onClick={() => handleSocialLogin('facebook')}
+          disabled={isLoading || clickedProvider === 'facebook'}
         >
           <Facebook className="h-4 w-4 mr-2 text-blue-600" />
-          Facebook
+          {clickedProvider === 'facebook' && isLoading ? 'Connecting...' : 'Facebook'}
         </Button>
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => onSocialLogin('github')}
-          disabled={isLoading}
+          onClick={() => handleSocialLogin('github')}
+          disabled={isLoading || clickedProvider === 'github'}
         >
           <Github className="h-4 w-4 mr-2" />
-          GitHub
+          {clickedProvider === 'github' && isLoading ? 'Connecting...' : 'GitHub'}
         </Button>
       </div>
       
@@ -69,23 +86,37 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => onSocialLogin('linkedin')}
-          disabled={isLoading}
+          onClick={() => handleSocialLogin('linkedin_oidc')}
+          disabled={isLoading || clickedProvider === 'linkedin_oidc'}
         >
           <Linkedin className="h-4 w-4 mr-2 text-blue-700" />
-          LinkedIn
+          {clickedProvider === 'linkedin_oidc' && isLoading ? 'Connecting...' : 'LinkedIn'}
         </Button>
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => onSocialLogin('twitter')}
-          disabled={isLoading}
+          onClick={() => handleSocialLogin('twitter')}
+          disabled={isLoading || clickedProvider === 'twitter'}
         >
           <svg className="h-4 w-4 mr-2 fill-current text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
           </svg>
-          Twitter
+          {clickedProvider === 'twitter' && isLoading ? 'Connecting...' : 'Twitter'}
         </Button>
+      </div>
+
+      <div className="p-4 border border-amber-200 bg-amber-50 rounded-md text-amber-800 text-sm">
+        <div className="flex items-start">
+          <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 text-amber-500" />
+          <div>
+            <p className="font-medium">Note about Social Login</p>
+            <p className="mt-1">
+              Social login providers like Google need to be enabled in your Supabase project settings. 
+              If you're seeing "provider is not enabled" errors, please visit the Supabase dashboard to 
+              configure your authentication providers.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
