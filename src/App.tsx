@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/UserContext";
-import { useJobs as JobContextProvider } from "./context/JobContext";
+import { JobProvider } from "./context/JobContext";
 import { JobAlertProvider } from "./context/JobAlertContext";
 import { MessageProvider } from "./context/MessageContext";
 import { LanguageProvider } from "./context/LanguageContext";
@@ -65,7 +65,7 @@ function App() {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <UserProvider>
-          <JobContextProvider>
+          <JobProvider>
             <JobAlertProvider>
               <MessageProvider>
                 <LanguageProvider>
@@ -77,7 +77,7 @@ function App() {
                         <Route path="/job-search" element={<JobSearch />} />
                         <Route path="/jobs/:id" element={<JobDetailsPage />} />
                         <Route path="/login" element={<AuthPage />} />
-                        <Route path="/signup" element={<AuthPage mode="signup" as="signup" />} />
+                        <Route path="/signup" element={<AuthPage mode="signup" />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/verify-email" element={<VerifyEmailPage />} />
                         
@@ -140,7 +140,7 @@ function App() {
                 </LanguageProvider>
               </MessageProvider>
             </JobAlertProvider>
-          </JobContextProvider>
+          </JobProvider>
         </UserProvider>
       </QueryClientProvider>
     </BrowserRouter>

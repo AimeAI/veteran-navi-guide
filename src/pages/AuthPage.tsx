@@ -1,16 +1,17 @@
+
 import React from 'react';
 
 // Add interface for AuthPage props
 interface AuthPageProps {
   mode?: 'login' | 'signup';
-  as?: string;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ mode = 'login', as }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ mode = 'login' }) => {
   // Component implementation here
   return (
     <div>
       {/* Component content */}
+      <h1>{mode === 'login' ? 'Login' : 'Signup'}</h1>
     </div>
   );
 };

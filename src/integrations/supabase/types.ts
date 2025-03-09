@@ -89,38 +89,59 @@ export type Database = {
       employers: {
         Row: {
           company_description: string | null
+          company_logo_url: string | null
+          company_mission: string | null
           company_name: string
+          company_size: string | null
           company_website: string
           contact_email: string | null
           contact_person: string | null
+          contact_phone: string | null
           date_added: string
           id: string
+          industry: string | null
+          location: string | null
           updated_at: string
           user_id: string | null
+          veteran_benefits: string | null
           vetting_status: Database["public"]["Enums"]["vetting_status"]
         }
         Insert: {
           company_description?: string | null
+          company_logo_url?: string | null
+          company_mission?: string | null
           company_name: string
+          company_size?: string | null
           company_website: string
           contact_email?: string | null
           contact_person?: string | null
+          contact_phone?: string | null
           date_added?: string
           id?: string
+          industry?: string | null
+          location?: string | null
           updated_at?: string
           user_id?: string | null
+          veteran_benefits?: string | null
           vetting_status?: Database["public"]["Enums"]["vetting_status"]
         }
         Update: {
           company_description?: string | null
+          company_logo_url?: string | null
+          company_mission?: string | null
           company_name?: string
+          company_size?: string | null
           company_website?: string
           contact_email?: string | null
           contact_person?: string | null
+          contact_phone?: string | null
           date_added?: string
           id?: string
+          industry?: string | null
+          location?: string | null
           updated_at?: string
           user_id?: string | null
+          veteran_benefits?: string | null
           vetting_status?: Database["public"]["Enums"]["vetting_status"]
         }
         Relationships: []
