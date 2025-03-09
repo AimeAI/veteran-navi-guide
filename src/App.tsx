@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
@@ -7,6 +8,7 @@ import { JobProvider } from "./context/JobContext";
 import { JobAlertProvider } from "./context/JobAlertContext";
 import { MessageProvider } from "./context/MessageContext";
 import { LanguageProvider } from "./context/LanguageContext";
+import "./i18n/i18nConfig"; // Import i18n configuration
 import Navbar from "./components/Navbar";
 import { RequireAuth } from "./components/RequireAuth";
 import RequireVerifiedEmail from "./components/RequireVerifiedEmail";

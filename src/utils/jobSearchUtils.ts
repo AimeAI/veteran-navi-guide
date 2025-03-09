@@ -116,7 +116,7 @@ export const performJobSearch = async (
     console.log("Fetching jobs with params:", processedParams);
     
     // Check cache first (unless refresh is requested)
-    if (!params.refresh) {
+    if (!processedParams.refresh) {
       const cacheKey = createCacheKey(processedParams, currentPage);
       const cachedResults = JobCache.getSearchResults(cacheKey);
       

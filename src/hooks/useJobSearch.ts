@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { JobCache } from '@/utils/jobCache';

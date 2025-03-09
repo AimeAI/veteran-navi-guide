@@ -1,53 +1,46 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/i18nConfig';
 
 interface LanguageContextType {
-  language: string;
+  currentLanguage: string;
   changeLanguage: (lang: string) => void;
-  saveLanguagePreference: (lang: string) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
-  language: 'en',
+  currentLanguage: 'en',
   changeLanguage: () => {},
-  saveLanguagePreference: () => {}
 });
 
 export const useLanguage = () => useContext(LanguageContext);
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { i18n } = useTranslation();
-  const [language, setLanguage] = useState(i18n.language || 'en');
+interface LanguageProviderProps {
+  children: React.ReactNode;
+}
+
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [currentLanguage, setCurrentLanguage] = useState<string>(localStorage.getItem('i18nextLng') || 'en');
+  const { t } = useTranslation();
 
   useEffect(() => {
-    // Get the stored language preference from localStorage on initial load
-    const storedLanguage = localStorage.getItem('language');
-    if (storedLanguage) {
-      changeLanguage(storedLanguage);
+    // Set the initial language
+    if (i18n.changeLanguage) {
+      i18n.changeLanguage(currentLanguage);
     }
-  }, []);
+  }, [currentLanguage]);
 
   const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    setLanguage(lang);
-    localStorage.setItem('language', lang);
-  };
-
-  const saveLanguagePreference = async (lang: string) => {
-    // This function would be used to save the language preference to Supabase
-    // when the Supabase integration is set up
-    changeLanguage(lang);
+    setCurrentLanguage(lang);
+    localStorage.setItem('i18nextLng', lang);
     
-    // For now, we'll just save to localStorage
-    localStorage.setItem('language', lang);
-    
-    // Add Supabase integration code here when available
-    // Example: await supabase.from('user_preferences').upsert({ user_id: currentUser.id, language: lang })
+    if (i18n.changeLanguage) {
+      i18n.changeLanguage(lang);
+    }
   };
 
   return (
-    <LanguageContext.Provider value={{ language, changeLanguage, saveLanguagePreference }}>
+    <LanguageContext.Provider value={{ currentLanguage, changeLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
