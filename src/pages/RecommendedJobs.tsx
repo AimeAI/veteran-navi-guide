@@ -117,7 +117,7 @@ const RecommendedJobs = () => {
                   company={job.company}
                   location={job.location}
                   description={job.description}
-                  date={job.date || new Date().toISOString()} // Add fallback date if not present
+                  date={job.postedDate || new Date().toISOString()} // Use job.postedDate or fallback to current date
                   matchScore={matchScore}
                 />
               </div>
