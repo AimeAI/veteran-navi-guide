@@ -1,7 +1,7 @@
 
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/layout/Navbar";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
 import { Toaster } from "./components/ui/sonner";
 import { AppProvider } from "./context/AppContext";

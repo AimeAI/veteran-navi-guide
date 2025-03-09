@@ -9,13 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      application_notifications: {
+        Row: {
+          application_id: string
+          created_at: string | null
+          id: string
+          new_status: string
+          old_status: string | null
+          processed: boolean | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string | null
+          id?: string
+          new_status: string
+          old_status?: string | null
+          processed?: boolean | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          old_status?: string | null
+          processed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_notifications_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           applicant_id: string | null
           cover_letter: string | null
           created_at: string | null
+          date_applied: string | null
           id: string
           job_id: string | null
+          notes: string | null
           resume_url: string | null
           status: string | null
           updated_at: string | null
@@ -24,8 +61,10 @@ export type Database = {
           applicant_id?: string | null
           cover_letter?: string | null
           created_at?: string | null
+          date_applied?: string | null
           id?: string
           job_id?: string | null
+          notes?: string | null
           resume_url?: string | null
           status?: string | null
           updated_at?: string | null
@@ -34,8 +73,10 @@ export type Database = {
           applicant_id?: string | null
           cover_letter?: string | null
           created_at?: string | null
+          date_applied?: string | null
           id?: string
           job_id?: string | null
+          notes?: string | null
           resume_url?: string | null
           status?: string | null
           updated_at?: string | null
@@ -89,41 +130,101 @@ export type Database = {
       employers: {
         Row: {
           company_description: string | null
+          company_logo_url: string | null
+          company_mission: string | null
           company_name: string
+          company_size: string | null
           company_website: string
           contact_email: string | null
           contact_person: string | null
+          contact_phone: string | null
           date_added: string
           id: string
+          industry: string | null
+          location: string | null
           updated_at: string
           user_id: string | null
+          veteran_benefits: string | null
           vetting_status: Database["public"]["Enums"]["vetting_status"]
         }
         Insert: {
           company_description?: string | null
+          company_logo_url?: string | null
+          company_mission?: string | null
           company_name: string
+          company_size?: string | null
           company_website: string
           contact_email?: string | null
           contact_person?: string | null
+          contact_phone?: string | null
           date_added?: string
           id?: string
+          industry?: string | null
+          location?: string | null
           updated_at?: string
           user_id?: string | null
+          veteran_benefits?: string | null
           vetting_status?: Database["public"]["Enums"]["vetting_status"]
         }
         Update: {
           company_description?: string | null
+          company_logo_url?: string | null
+          company_mission?: string | null
           company_name?: string
+          company_size?: string | null
           company_website?: string
           contact_email?: string | null
           contact_person?: string | null
+          contact_phone?: string | null
           date_added?: string
           id?: string
+          industry?: string | null
+          location?: string | null
           updated_at?: string
           user_id?: string | null
+          veteran_benefits?: string | null
           vetting_status?: Database["public"]["Enums"]["vetting_status"]
         }
         Relationships: []
+      }
+      job_skills: {
+        Row: {
+          created_at: string
+          id: string
+          is_required: boolean | null
+          job_id: string
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
+          job_id: string
+          skill_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
+          job_id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_skills_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["skill_id"]
+          },
+        ]
       }
       jobs: {
         Row: {
@@ -238,12 +339,75 @@ export type Database = {
           },
         ]
       }
+      skills: {
+        Row: {
+          created_at: string
+          skill_id: string
+          skill_name: string
+        }
+        Insert: {
+          created_at?: string
+          skill_id?: string
+          skill_name: string
+        }
+        Update: {
+          created_at?: string
+          skill_id?: string
+          skill_name?: string
+        }
+        Relationships: []
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          proficiency_level: string | null
+          skill_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proficiency_level?: string | null
+          skill_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proficiency_level?: string | null
+          skill_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_matching_jobs: {
+        Args: {
+          user_id: string
+          min_matches?: number
+        }
+        Returns: {
+          job_id: string
+          job_title: string
+          company: string
+          location: string
+          match_count: number
+          match_percentage: number
+        }[]
+      }
     }
     Enums: {
       job_status: "Open" | "Closed" | "Pending"
