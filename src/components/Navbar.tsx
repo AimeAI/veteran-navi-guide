@@ -12,8 +12,8 @@ const Navbar: React.FC = () => {
   const { user } = useUser();
   
   return (
-    <div className="sticky top-0 z-40 bg-white border-b shadow-sm">
-      <div className="container px-4 sm:px-6 md:px-8 py-2 max-w-screen-2xl">
+    <div className="sticky top-0 z-40 w-full bg-white border-b shadow-sm">
+      <div className="container px-4 sm:px-6 md:px-8 py-2 max-w-screen-2xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Link to="/" className="mr-4 flex items-center font-semibold">
@@ -100,7 +100,7 @@ const Navbar: React.FC = () => {
                 <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-primary px-3 py-2 rounded-md">
                   {t('common:login')}
                 </Link>
-                <Link to="/signup" className="inline-flex items-center justify-center text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                <Link to="/signup" className="inline-flex items-center justify-center text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 shadow-sm">
                   {t('common:signup')}
                 </Link>
               </>
@@ -115,7 +115,7 @@ const Navbar: React.FC = () => {
                 <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-primary px-3 py-2 rounded-md">
                   {t('common:login')}
                 </Link>
-                <Link to="/signup" className="inline-flex items-center justify-center text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                <Link to="/signup" className="inline-flex items-center justify-center text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-2 shadow-sm">
                   {t('common:signup')}
                 </Link>
               </>

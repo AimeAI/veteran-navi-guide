@@ -68,20 +68,23 @@ export function useEmployerApplications(jobId?: string) {
       if (fetchError) throw fetchError;
       
       const mappedApplications: JobApplicant[] = data.map(app => {
-        // Handle the profile object safely, ensuring it exists and has the expected properties
+        // Safely handle profile data with proper type assertions
         const profile = app.profiles || {};
         
-        // Explicitly cast to string after type checking
-        let fullName = 'Anonymous Applicant';
-        if (typeof profile === 'object' && profile !== null && 'full_name' in profile) {
-          fullName = profile.full_name as string || 'Anonymous Applicant';
-        }
+        // Explicitly type and cast the profile properties
+        const fullName: string = typeof profile === 'object' && 
+          profile !== null && 
+          'full_name' in profile && 
+          typeof profile.full_name === 'string' 
+            ? profile.full_name 
+            : 'Anonymous Applicant';
         
-        // Handle avatar URL with explicit typing
-        let avatarUrl: string | undefined = undefined;
-        if (typeof profile === 'object' && profile !== null && 'avatar_url' in profile) {
-          avatarUrl = profile.avatar_url as string | undefined;
-        }
+        const avatarUrl: string | undefined = typeof profile === 'object' && 
+          profile !== null && 
+          'avatar_url' in profile && 
+          (typeof profile.avatar_url === 'string' || profile.avatar_url === null)
+            ? (profile.avatar_url as string) 
+            : undefined;
         
         return {
           id: app.applicant_id,
