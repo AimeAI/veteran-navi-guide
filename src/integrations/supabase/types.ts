@@ -125,6 +125,45 @@ export type Database = {
         }
         Relationships: []
       }
+      job_skills: {
+        Row: {
+          created_at: string
+          id: string
+          is_required: boolean | null
+          job_id: string
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
+          job_id: string
+          skill_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
+          job_id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_skills_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           application_url: string | null
@@ -238,12 +277,75 @@ export type Database = {
           },
         ]
       }
+      skills: {
+        Row: {
+          created_at: string
+          skill_id: string
+          skill_name: string
+        }
+        Insert: {
+          created_at?: string
+          skill_id?: string
+          skill_name: string
+        }
+        Update: {
+          created_at?: string
+          skill_id?: string
+          skill_name?: string
+        }
+        Relationships: []
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          proficiency_level: string | null
+          skill_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proficiency_level?: string | null
+          skill_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proficiency_level?: string | null
+          skill_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["skill_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_matching_jobs: {
+        Args: {
+          user_id: string
+          min_matches?: number
+        }
+        Returns: {
+          job_id: string
+          job_title: string
+          company: string
+          location: string
+          match_count: number
+          match_percentage: number
+        }[]
+      }
     }
     Enums: {
       job_status: "Open" | "Closed" | "Pending"
