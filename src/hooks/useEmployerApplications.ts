@@ -68,13 +68,22 @@ export function useEmployerApplications(jobId?: string) {
       if (fetchError) throw fetchError;
       
       const mappedApplications: JobApplicant[] = data.map(app => {
+        // Handle the profile object safely, ensuring it exists and has the expected properties
         const profile = app.profiles || {};
+        const fullName = typeof profile === 'object' && profile !== null && 'full_name' in profile
+          ? profile.full_name
+          : 'Anonymous Applicant';
+        
+        const avatarUrl = typeof profile === 'object' && profile !== null && 'avatar_url' in profile
+          ? profile.avatar_url
+          : undefined;
+        
         return {
           id: app.applicant_id,
           applicationId: app.id,
-          fullName: profile.full_name || 'Anonymous Applicant',
+          fullName: fullName || 'Anonymous Applicant',
           email: '', // We'll need to add email to profiles or fetch from auth
-          avatarUrl: profile.avatar_url,
+          avatarUrl: avatarUrl,
           resumeUrl: app.resume_url,
           coverLetter: app.cover_letter,
           appliedDate: new Date(app.date_applied || app.created_at || new Date()),
