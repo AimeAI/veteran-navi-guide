@@ -29,5 +29,5 @@ export interface VeteranBadge {
   description: string;
   earnedDate: string;
   icon: BadgeIconType;
-  level: number;
+  level: 1 | 2 | 3;
 }

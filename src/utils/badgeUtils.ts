@@ -1,4 +1,5 @@
-import { SkillLevel, BadgeType, VeteranBadge, BadgeIconType } from "@/types/badges";
+
+import { BadgeType, VeteranBadge, BadgeIconType } from "@/types/badges";
 
 interface BadgeConfig {
   background: string;
@@ -7,8 +8,8 @@ interface BadgeConfig {
   icon: "badge" | "award" | "trophy" | "check" | "star" | "book" | "briefcase" | "medal";
 }
 
-export const getSkillLevelBadgeConfig = (level: SkillLevel): BadgeConfig => {
-  const configs: Record<SkillLevel, BadgeConfig> = {
+export const getSkillLevelBadgeConfig = (level: 'beginner' | 'intermediate' | 'advanced' | 'expert'): BadgeConfig => {
+  const configs: Record<'beginner' | 'intermediate' | 'advanced' | 'expert', BadgeConfig> = {
     beginner: {
       background: "bg-blue-50 dark:bg-blue-900",
       text: "text-blue-800 dark:text-blue-100",
