@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,11 +15,17 @@ import {
   ChevronRight, 
   UserPlus, 
   CalendarPlus,
-  MessageSquare
+  MessageSquare,
+  UserRound
 } from 'lucide-react';
-import { MentorshipProfile, MentorshipConnection, MentorshipMeeting, getMentorshipProfile, getMentorConnections, getMenteeConnections, getMentorshipMeetings } from '@/services/mentorshipService';
+import { useMentorship } from '@/hooks/useMentorship';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import MentorshipProfileForm from '@/components/mentorship/MentorshipProfileForm';
+import ConnectionsList from '@/components/mentorship/ConnectionsList';
+import MentorshipChat from '@/components/mentorship/MentorshipChat';
+import MeetingScheduler from '@/components/mentorship/MeetingScheduler';
+import MeetingsList from '@/components/mentorship/MeetingsList';
 
 const MentorshipDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +58,7 @@ const MentorshipDashboardPage: React.FC = () => {
     }
   }, [userProfile, selectedConnection, activeTab]);
 
-  const handleProfileSubmit = async (data: Partial<MentorshipProfile>) => {
+  const handleProfileSubmit = async (data: Partial<any>) => {
     await updateProfile(data);
     toast.success('Profile updated successfully');
     setActiveTab('connections');
@@ -75,11 +82,11 @@ const MentorshipDashboardPage: React.FC = () => {
     await changeMeetingStatus(meetingId, 'cancelled');
   };
 
-  const getConnectionName = (connection: MentorshipConnection) => {
+  const getConnectionName = (connection: any) => {
     const userIsMentor = connection.mentor?.user_id === user?.email;
     return userIsMentor 
-      ? connection.mentee?.full_name || 'Mentee'
-      : connection.mentor?.full_name || 'Mentor';
+      ? connection.mentee?.user_name || 'Mentee'
+      : connection.mentor?.user_name || 'Mentor';
   };
 
   if (!user) {

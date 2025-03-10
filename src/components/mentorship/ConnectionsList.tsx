@@ -1,22 +1,21 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Check, X, MessageSquare, Calendar } from 'lucide-react';
-import { MentorshipConnection } from '@/services/mentorshipService';
+import { Badge } from '@/components/ui/badge';
+import { Clock, CheckCircle, XCircle, MessageCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow } from 'date-fns';
+import { MentorshipConnection } from '@/services/mentorship';
 
 interface ConnectionsListProps {
   connections: MentorshipConnection[];
-  userIsMentor?: boolean;
+  userIsMentor: boolean;
   onSelectConnection: (connection: MentorshipConnection) => void;
-  onAcceptRequest?: (connectionId: string) => void;
-  onDeclineRequest?: (connectionId: string) => void;
+  onAcceptRequest: (connectionId: string) => void;
+  onDeclineRequest: (connectionId: string) => void;
   selectedConnectionId?: string;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
 const ConnectionsList: React.FC<ConnectionsListProps> = ({
@@ -140,11 +139,11 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({
                           <p className="font-medium">{getConnectionName(connection)}</p>
                           <div className="flex space-x-2 text-xs text-gray-500">
                             <span className="flex items-center">
-                              <MessageSquare className="mr-1 h-3 w-3" />
+                              <MessageCircle className="mr-1 h-3 w-3" />
                               Message
                             </span>
                             <span className="flex items-center">
-                              <Calendar className="mr-1 h-3 w-3" />
+                              <Clock className="mr-1 h-3 w-3" />
                               Schedule
                             </span>
                           </div>
@@ -220,7 +219,7 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({
                                 onDeclineRequest(connection.id);
                               }}
                             >
-                              <X className="h-4 w-4 mr-1" />
+                              <XCircle className="h-4 w-4 mr-1" />
                               Decline
                             </Button>
                             <Button
@@ -231,7 +230,7 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({
                                 onAcceptRequest(connection.id);
                               }}
                             >
-                              <Check className="h-4 w-4 mr-1" />
+                              <CheckCircle className="h-4 w-4 mr-1" />
                               Accept
                             </Button>
                           </>

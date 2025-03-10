@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useMentorship } from '@/hooks/useMentorship';
 import { useUser } from '@/context/UserContext';
 import MentorCard from '@/components/mentorship/MentorCard';
-import { MentorshipProfile } from '@/services/mentorshipService';
+import { MentorshipProfile } from '@/services/mentorship';
 
 const FindMentorsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ const FindMentorsPage: React.FC = () => {
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       results = results.filter(mentor => 
-        mentor.full_name?.toLowerCase().includes(lowerSearchTerm) ||
+        mentor.user_name?.toLowerCase().includes(lowerSearchTerm) ||
         mentor.mentor_bio?.toLowerCase().includes(lowerSearchTerm) ||
         mentor.mentoring_topics?.some(topic => topic.toLowerCase().includes(lowerSearchTerm))
       );

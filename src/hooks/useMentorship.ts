@@ -4,21 +4,24 @@ import { useUser } from '@/context/UserContext';
 import { 
   MentorshipProfile, 
   MentorshipConnection,
-  getMentorshipMessages,
-  getUserMentorshipProfile,
-  getUserMentorshipConnections,
+  MentorshipMessage,
+  MentorshipMeeting,
+  getConnectionMessages,
+  getMentorshipProfile,
+  getMentorConnections,
+  getMenteeConnections,
+  getUserConnections,
   getAvailableMentors,
   upsertMentorshipProfile,
-  requestMentorship,
+  createConnectionRequest,
   updateConnectionStatus,
-  sendMentorshipMessage,
+  sendMessage,
   subscribeToMessages,
-  createMentorshipMeeting,
+  scheduleMeeting,
   getMentorshipMeetings,
   updateMeetingStatus,
-  MentorshipMessage,
-  MentorshipMeeting
-} from '@/services/mentorshipService';
+  markMessagesAsRead
+} from '@/services/mentorship';
 
 export const useMentorship = () => {
   const { user } = useUser();
@@ -35,7 +38,7 @@ export const useMentorship = () => {
     if (!user) return;
     
     setIsLoading(true);
-    const profile = await getUserMentorshipProfile(user.email);
+    const profile = await getMentorshipProfile(user.email);
     setUserProfile(profile);
     setIsLoading(false);
   }, [user]);
@@ -53,7 +56,7 @@ export const useMentorship = () => {
     if (!user) return;
     
     setIsLoading(true);
-    const userConnections = await getUserMentorshipConnections(user.email);
+    const userConnections = await getUserConnections(user.email);
     setConnections(userConnections);
     setIsLoading(false);
   }, [user]);
@@ -70,12 +73,15 @@ export const useMentorship = () => {
 
   // Request mentorship from a mentor
   const requestMentorConnection = useCallback(async (mentorProfileId: string) => {
-    const success = await requestMentorship(mentorProfileId);
+    if (!user) return false;
+    
+    const success = await createConnectionRequest(mentorProfileId, user.email);
     if (success) {
       await loadConnections();
+      return true;
     }
-    return success;
-  }, [loadConnections]);
+    return false;
+  }, [user, loadConnections]);
 
   // Update connection status (accept/decline/complete)
   const updateMentorshipStatus = useCallback(async (connectionId: string, status: 'active' | 'declined' | 'completed') => {
@@ -96,31 +102,35 @@ export const useMentorship = () => {
     setSelectedConnection(connection);
     
     // Load messages for this connection
-    const connectionMessages = await getMentorshipMessages(connection.id);
+    const connectionMessages = await getConnectionMessages(connection.id);
     setMessages(connectionMessages);
     
     // Load meetings for this connection
     const connectionMeetings = await getMentorshipMeetings(connection.id);
     setMeetings(connectionMeetings);
-  }, []);
+    
+    // Mark messages as read
+    if (user) {
+      await markMessagesAsRead(connection.id, user.email);
+    }
+  }, [user]);
 
   // Send a message in the selected connection
-  const sendMessage = useCallback(async (content: string) => {
-    if (!selectedConnection) return false;
+  const sendMessageInConversation = useCallback(async (content: string) => {
+    if (!selectedConnection || !user) return false;
     
-    const success = await sendMentorshipMessage(selectedConnection.id, content);
-    if (success) {
-      // Message will be added through the real-time subscription
+    const newMessage = await sendMessage(selectedConnection.id, user.email, content);
+    if (newMessage) {
       return true;
     }
     return false;
-  }, [selectedConnection]);
+  }, [selectedConnection, user]);
 
   // Schedule a meeting in the selected connection
-  const scheduleMeeting = useCallback(async (meetingData: Omit<MentorshipMeeting, 'id' | 'connection_id' | 'created_at' | 'updated_at'>) => {
+  const scheduleMeetingInConnection = useCallback(async (meetingData: Omit<MentorshipMeeting, 'id' | 'connection_id' | 'created_at' | 'updated_at'>) => {
     if (!selectedConnection) return null;
     
-    const meeting = await createMentorshipMeeting({
+    const meeting = await scheduleMeeting({
       ...meetingData,
       connection_id: selectedConnection.id
     });
@@ -133,7 +143,7 @@ export const useMentorship = () => {
   }, [selectedConnection]);
 
   // Update a meeting's status
-  const changeMeetingStatus = useCallback(async (meetingId: string, status: 'scheduled' | 'completed' | 'cancelled') => {
+  const changeMeetingStatus = useCallback(async (meetingId: string, status: 'completed' | 'cancelled') => {
     const success = await updateMeetingStatus(meetingId, status);
     if (success) {
       setMeetings(prev => 
@@ -181,8 +191,8 @@ export const useMentorship = () => {
     requestMentorConnection,
     updateMentorshipStatus,
     selectConnection,
-    sendMessage,
-    scheduleMeeting,
+    sendMessage: sendMessageInConversation,
+    scheduleMeeting: scheduleMeetingInConnection,
     changeMeetingStatus
   };
 };
