@@ -8,7 +8,11 @@ import {
   BookOpen, 
   BadgeCheck, 
   Briefcase, 
-  Medal
+  Medal,
+  Building,
+  Linkedin,
+  Globe,
+  FileText
 } from "lucide-react";
 
 export type BadgeIconType = 
@@ -19,7 +23,12 @@ export type BadgeIconType =
   | "book"
   | "badge"
   | "briefcase"
-  | "medal";
+  | "medal"
+  | "linkedin"
+  | "indeed"
+  | "jobbank"
+  | "jobicy"
+  | "external";
 
 export const badgeIcons = {
   award: Award,
@@ -29,7 +38,12 @@ export const badgeIcons = {
   book: BookOpen,
   badge: BadgeCheck,
   briefcase: Briefcase,
-  medal: Medal
+  medal: Medal,
+  linkedin: Linkedin,
+  indeed: Building,
+  jobbank: FileText,
+  jobicy: Globe,
+  external: Globe
 };
 
 interface BadgeIconProps {
