@@ -26,13 +26,13 @@ const LanguageSelector: React.FC = () => {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-9 px-2 lg:gap-1"
+          className="h-9 px-2 lg:gap-1 cursor-pointer"
         >
           <GlobeIcon className="h-4 w-4" aria-hidden="true" />
           <span className="hidden md:inline-flex ml-2">{language === 'en' ? 'EN' : 'FR'}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white">
+      <DropdownMenuContent align="end" className="bg-white z-50">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}

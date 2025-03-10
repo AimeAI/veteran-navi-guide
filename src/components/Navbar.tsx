@@ -4,7 +4,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/context/UserContext';
 import { Briefcase, User, Bell, Menu, MessageSquare } from 'lucide-react';
-import NavDropdown from './NavDropdown';
+import NavDropdown from '@/components/navigation/NavDropdown';
 import MobileMenu from './navigation/MobileMenu';
 import MessageNotificationBadge from './messaging/MessageNotificationBadge';
 import LanguageSelector from './language/LanguageSelector';

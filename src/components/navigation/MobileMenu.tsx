@@ -17,11 +17,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-[250px] bg-white">
+      <SheetContent side="left" className="w-[250px] bg-white z-50">
         <nav className="flex flex-col gap-4 mt-8">
           <Button
             variant="ghost"
-            className="justify-start"
+            className="justify-start cursor-pointer"
             onClick={() => {
               navigate('/');
               onOpenChange(false);
@@ -31,7 +31,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
           </Button>
           <Button
             variant="ghost"
-            className="justify-start"
+            className="justify-start cursor-pointer"
             onClick={() => {
               navigate('/job-search');
               onOpenChange(false);
@@ -41,7 +41,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
           </Button>
           <Button
             variant="ghost"
-            className="justify-start"
+            className="justify-start cursor-pointer"
             onClick={() => {
               navigate('/resources');
               onOpenChange(false);
@@ -51,7 +51,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
           </Button>
           <Button
             variant="ghost"
-            className="justify-start"
+            className="justify-start cursor-pointer"
             onClick={() => {
               navigate('/dashboard');
               onOpenChange(false);

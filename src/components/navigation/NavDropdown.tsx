@@ -62,14 +62,14 @@ const NavDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full cursor-pointer">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.profilePicture || `https://avatars.dicebear.com/api/initials/${user?.name}.svg`} alt={user?.name} />
             <AvatarFallback>{getInitials(user?.name || 'U')}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
+      <DropdownMenuContent className="w-56 bg-white z-50" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user?.name}</p>

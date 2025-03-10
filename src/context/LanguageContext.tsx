@@ -11,7 +11,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState(i18n.language || 'en');
+  const [language, setLanguage] = useState(localStorage.getItem('i18nextLng') || i18n.language || 'en');
   const { i18n: i18nInstance } = useTranslation();
 
   useEffect(() => {
