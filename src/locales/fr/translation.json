@@ -1,4 +1,3 @@
-
 {
   "common": {
     "language": "Langue",
@@ -19,7 +18,10 @@
     "delete": "Supprimer",
     "close": "Fermer",
     "back": "Retour",
-    "next": "Suivant"
+    "next": "Suivant",
+    "linkCopied": "Lien copié",
+    "linkCopiedDescription": "Lien de l'offre copié dans le presse-papiers",
+    "linkCopyFailed": "Échec de la copie du lien"
   },
   "navigation": {
     "jobSearch": "Recherche d'emploi",
@@ -96,6 +98,14 @@
     "fullDescription": "Description complète du poste",
     "jobDescriptionPreview": "Aperçu de la description du poste",
     "jobAlreadySaved": "Offre d'emploi déjà sauvegardée",
-    "jobSavedSuccessfully": "Offre d'emploi enregistrée avec succès"
+    "jobSavedSuccessfully": "Offre d'emploi enregistrée avec succès",
+    "share": "Partager",
+    "shareThisJob": "Partager cette offre"
+  },
+  "share": {
+    "facebook": "Partager sur Facebook",
+    "twitter": "Partager sur Twitter",
+    "linkedin": "Partager sur LinkedIn",
+    "copyLink": "Copier le lien"
   }
 }

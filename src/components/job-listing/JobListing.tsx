@@ -106,6 +106,8 @@ const JobListing: React.FC<JobListingProps> = ({
       <CardFooter className="p-0">
         <JobListingActions 
           jobId={jobId} 
+          title={title}
+          company={company}
           url={url} 
           isJobSaved={isJobSaved} 
           onSaveJob={handleSaveJob} 

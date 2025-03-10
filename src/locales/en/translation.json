@@ -1,4 +1,3 @@
-
 {
   "common": {
     "language": "Language",
@@ -19,7 +18,10 @@
     "delete": "Delete",
     "close": "Close",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "linkCopied": "Link copied",
+    "linkCopiedDescription": "Job link copied to clipboard",
+    "linkCopyFailed": "Failed to copy link"
   },
   "navigation": {
     "jobSearch": "Job Search",
@@ -96,6 +98,14 @@
     "fullDescription": "Full job description",
     "jobDescriptionPreview": "Job description preview",
     "jobAlreadySaved": "Job already saved",
-    "jobSavedSuccessfully": "Job saved successfully"
+    "jobSavedSuccessfully": "Job saved successfully",
+    "share": "Share",
+    "shareThisJob": "Share this job"
+  },
+  "share": {
+    "facebook": "Share on Facebook",
+    "twitter": "Share on Twitter",
+    "linkedin": "Share on LinkedIn",
+    "copyLink": "Copy link"
   }
 }
