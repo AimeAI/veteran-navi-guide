@@ -2,13 +2,14 @@
 import { createClient } from "@supabase/supabase-js";
 import { Job } from "@/context/JobContext";
 import { generateJobDeduplicationKey } from "@/utils/jobicyRssParser";
+import { supabase as supabaseIntegration } from "@/integrations/supabase/client";
 
 // The Supabase URL and anon key
 const supabaseUrl = "https://ykperxxuwqolbfvhuqig.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrcGVyeHh1d3FvbGJmdmh1cWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwODE3OTIsImV4cCI6MjA1MzY1Nzc5Mn0.-WvuM5Xtfo4Q2oFwWQrXiJm5UTxnUqupOPsDRQ2DDOU";
 
-// Create the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create the Supabase client - use integration client if available
+export const supabase = supabaseIntegration || createClient(supabaseUrl, supabaseAnonKey);
 
 // Interface for job search parameters
 interface JobSearchParams {
@@ -19,7 +20,7 @@ interface JobSearchParams {
   category?: string;
   jobType?: string;
   limit?: number;
-  offset?: number; // Add this to fix useJobicyJobs.ts error
+  offset?: number;
 }
 
 // Function to get jobs from Supabase
@@ -28,6 +29,8 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
   count: number;
 }> => {
   try {
+    console.log("Fetching jobs from Supabase with params:", params);
+    
     let query = supabase.from('jobs').select('*', { count: 'exact' });
     
     // Apply filters if provided
@@ -55,44 +58,44 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
       query = query.eq('job_type', params.jobType);
     }
     
-    // Apply offset
-    if (params.offset) {
+    // Apply offset and limit for pagination
+    if (params.offset !== undefined) {
       query = query.range(params.offset, params.offset + (params.limit || 10) - 1);
-    } else {
-      // Set limit
-      if (params.limit) {
-        query = query.limit(params.limit);
-      }
+    } else if (params.limit) {
+      query = query.limit(params.limit);
     }
     
     // Execute query
     const { data, error, count } = await query;
     
     if (error) {
+      console.error("Supabase query error:", error);
       throw error;
     }
     
+    console.log(`Supabase returned ${data?.length || 0} jobs`);
+    
     // Map database records to Job interface
-    const jobs: Job[] = data.map(record => ({
+    const jobs: Job[] = (data || []).map(record => ({
       id: record.id,
       title: record.title,
       company: record.company,
       location: record.location,
       description: record.description,
       category: record.category || 'other',
-      salaryRange: record.salary_range || 'range1',
+      salaryRange: record.salary_range || '',
       remote: record.remote || false,
       clearanceLevel: record.clearance_level || 'none',
       mosCode: record.mos_code || '',
       requiredSkills: record.required_skills || [],
-      preferredSkills: record.preferred_skills || [],
+      preferredSkills: record.requirements || [],
       date: record.created_at,
       jobType: record.job_type || 'fulltime',
       industry: record.industry || '',
       experienceLevel: record.experience_level || '',
       educationLevel: record.education_level || '',
       source: record.source,
-      url: record.url,
+      url: record.application_url || record.url,
     }));
     
     return {
@@ -101,7 +104,7 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
     };
   } catch (error) {
     console.error('Error getting jobs from Supabase:', error);
-    return { jobs: [], count: 0 };
+    throw error; // Re-throw so we can handle it in the calling code
   }
 };
 

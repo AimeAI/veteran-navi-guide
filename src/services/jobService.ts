@@ -3,6 +3,7 @@ import { Job } from "@/context/JobContext";
 import { filterMockJobs } from "@/utils/filterJobs";
 import { getJobsFromSupabase } from "@/utils/supabaseClient";
 import { searchJobBankJobs } from "@/utils/jobBankApi";
+import { toast } from "sonner";
 
 /**
  * Interface for job search parameters
@@ -26,6 +27,8 @@ export interface SearchParams {
   country?: "us" | "canada";
   useJobicy?: boolean;
   skills?: string[];
+  limit?: number; // Added limit parameter
+  page?: number;   // Added page parameter
 }
 
 /**
@@ -34,7 +37,32 @@ export interface SearchParams {
 export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
   let allJobs: Job[] = [];
   
-  if (params.useJobicy) {
+  // Try fetching from Supabase first
+  try {
+    const supabaseParams = {
+      source: params.useJobicy ? 'jobicy' : undefined,
+      keywords: params.keywords?.join(' '),
+      location: params.locations?.[0],
+      remote: params.remote,
+      category: params.industry,
+      jobType: params.jobType,
+      limit: params.limit || 50,
+      offset: params.page ? (params.page - 1) * (params.limit || 50) : 0,
+    };
+    
+    const { jobs: supabaseJobs, count } = await getJobsFromSupabase(supabaseParams);
+    
+    if (supabaseJobs.length > 0) {
+      console.log(`Retrieved ${supabaseJobs.length} jobs from Supabase`);
+      allJobs = [...allJobs, ...supabaseJobs];
+    }
+  } catch (error) {
+    console.error('Error fetching jobs from Supabase:', error);
+    // Don't throw here, continue with other sources
+  }
+  
+  // If specified to use Jobicy but we couldn't fetch them above
+  if (params.useJobicy && allJobs.length === 0) {
     try {
       const supabaseParams = {
         source: 'jobicy',
@@ -43,7 +71,7 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
         remote: params.remote,
         category: params.industry,
         jobType: params.jobType,
-        limit: 50,
+        limit: params.limit || 50,
       };
       
       const { jobs: jobicyJobs } = await getJobsFromSupabase(supabaseParams);
@@ -57,13 +85,14 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
     }
   }
   
-  if (params.country === 'canada') {
+  // Try Canada Job Bank if specified
+  if (params.country === 'canada' && allJobs.length === 0) {
     try {
       const jobBankParams = {
         keywords: params.keywords?.join(' ') || '',
         location: params.locations?.[0] || '',
         distance: params.radius,
-        page: 1,
+        page: params.page || 1,
         skills: params.skills,
       };
       
@@ -78,11 +107,13 @@ export const searchJobs = async (params: SearchParams): Promise<Job[]> => {
     }
   }
   
+  // If all sources failed, use mock data as fallback
   if (allJobs.length === 0) {
     console.log('Using mock job data as fallback');
     allJobs = filterMockJobs(params) as Job[];
   }
   
+  // Remove duplicates
   const uniqueJobs = Array.from(
     new Map(allJobs.map(job => [job.id, job])).values()
   );
