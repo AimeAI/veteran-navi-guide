@@ -110,13 +110,16 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
     }
     
     // Create a map of deduplication keys to detect duplicates
-    // Fix the type instantiation issue by using explicit type casting
-    const existingJobsQuery = supabase
-      .from('jobs')
-      .select('id, title, company');
-      
-    // Execute query separately to avoid deep type instantiation
-    const existingJobsResponse = await existingJobsQuery.in('source', ['jobicy']);
+    // First, get the existing jobs from Supabase without chaining
+    let existingJobsResponse;
+    try {
+      existingJobsResponse = await supabase
+        .from('jobs')
+        .select('id, title, company');
+    } catch (error) {
+      console.error('Error fetching existing jobs:', error);
+      return 0;
+    }
     
     if (existingJobsResponse.error) {
       throw existingJobsResponse.error;
@@ -124,7 +127,7 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
     
     // Create a set of existing job keys for deduplication
     const existingJobKeys = new Set(
-      existingJobsResponse.data.map(job => 
+      (existingJobsResponse.data || []).map(job => 
         generateJobDeduplicationKey({ title: job.title, company: job.company } as Job)
       )
     );
@@ -159,22 +162,17 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
     
     for (let i = 0; i < jobsToInsert.length; i += BATCH_SIZE) {
       const batch = jobsToInsert.slice(i, i + BATCH_SIZE);
+      
+      // Insert the batch without chaining
       const insertResult = await supabase
         .from('jobs')
         .insert(batch);
         
-      // Query for count separately to avoid deep type instantiation
-      const { data, error, count } = await supabase
-        .from('jobs')
-        .select('*', { count: 'exact' })
-        .in('title', batch.map(job => job.title))
-        .in('company', batch.map(job => job.company));
-      
-      if (error) {
-        console.error(`Error inserting batch ${i / BATCH_SIZE + 1}:`, error);
+      if (insertResult.error) {
+        console.error(`Error inserting batch ${i / BATCH_SIZE + 1}:`, insertResult.error);
       } else {
-        insertedCount += count || batch.length;
-        console.log(`Inserted batch ${i / BATCH_SIZE + 1} with ${count || batch.length} jobs`);
+        console.log(`Inserted batch ${i / BATCH_SIZE + 1} with ${batch.length} jobs`);
+        insertedCount += batch.length;
       }
     }
     
