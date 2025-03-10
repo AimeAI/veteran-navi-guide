@@ -31,46 +31,31 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
   try {
     console.log("Fetching jobs from Supabase with params:", params);
     
-    let query = supabase
-      .from('jobs')
-      .select('*', { count: 'exact' });
+    // Start with a basic query
+    const query = supabase.from('jobs').select('*', { count: 'exact' });
     
-    // Apply filters if provided
+    // Apply filters sequentially as needed
     if (params.source) {
-      // Using .ilike for case-insensitive matching if source information is stored in a field
-      query = query.ilike('source', `%${params.source}%`);
+      query.ilike('source', `%${params.source}%`);
     }
     
     if (params.keywords) {
-      query = query.or(`title.ilike.%${params.keywords}%,description.ilike.%${params.keywords}%`);
+      query.or(`title.ilike.%${params.keywords}%,description.ilike.%${params.keywords}%`);
     }
     
     if (params.location) {
-      query = query.ilike('location', `%${params.location}%`);
-    }
-    
-    if (params.remote !== undefined) {
-      // Only apply if the field exists in your table
-      if (params.remote === true) {
-        // For boolean fields or to check specific values
-        query = query.eq('remote', true);
-      }
-    }
-    
-    if (params.category) {
-      // Only apply if you have a category field
-      query = query.eq('category', params.category);
+      query.ilike('location', `%${params.location}%`);
     }
     
     if (params.jobType) {
-      query = query.eq('job_type', params.jobType);
+      query.eq('job_type', params.jobType);
     }
     
-    // Apply offset and limit for pagination
+    // Apply pagination
     if (params.offset !== undefined) {
-      query = query.range(params.offset, params.offset + (params.limit || 10) - 1);
+      query.range(params.offset, params.offset + (params.limit || 10) - 1);
     } else if (params.limit) {
-      query = query.limit(params.limit);
+      query.limit(params.limit);
     }
     
     // Execute query
@@ -83,16 +68,17 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
     
     console.log(`Supabase returned ${data?.length || 0} jobs`);
     
-    // Map database records to Job interface
+    // Map database records to Job interface, being careful to only use fields that exist
     const jobs: Job[] = (data || []).map(record => ({
       id: record.id,
       title: record.title,
       company: record.company,
       location: record.location,
       description: record.description,
-      category: record.category || 'other', // Provide defaults for fields that might not exist
+      // Use default values for fields that don't exist in the database
+      category: 'other', // Default since category doesn't exist in DB
       salaryRange: record.salary_range || '',
-      remote: false, // Default value since field doesn't exist in DB
+      remote: false, // Default value
       clearanceLevel: 'none', // Default value
       mosCode: '', // Default value
       requiredSkills: record.required_skills || [],
@@ -150,9 +136,8 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
       return 0;
     }
     
-    // Map the jobs to the database schema
+    // Map the jobs to the database schema - only include fields that exist in the database
     const jobsToInsert = newJobs.map(job => ({
-      id: job.id,
       title: job.title,
       company: job.company,
       location: job.location,
@@ -162,8 +147,7 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
       required_skills: job.requiredSkills,
       requirements: job.preferredSkills,
       application_url: job.url,
-      status: 'open',
-      // Only include fields that actually exist in your database schema
+      status: 'open'
     }));
     
     // Insert jobs in batches to avoid exceeding payload limits
