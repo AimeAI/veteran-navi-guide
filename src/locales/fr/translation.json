@@ -1,3 +1,4 @@
+
 {
   "common": {
     "language": "Langue",
@@ -6,22 +7,7 @@
     "login": "Se connecter",
     "signup": "S'inscrire",
     "search": "Rechercher",
-    "home": "Accueil",
-    "profile": "Profil",
-    "settings": "Paramètres",
-    "dashboard": "Tableau de bord",
-    "logout": "Se déconnecter",
-    "loading": "Chargement",
-    "cancel": "Annuler",
-    "submit": "Soumettre",
-    "save": "Enregistrer",
-    "delete": "Supprimer",
-    "close": "Fermer",
-    "back": "Retour",
-    "next": "Suivant",
-    "linkCopied": "Lien copié",
-    "linkCopiedDescription": "Lien de l'offre copié dans le presse-papiers",
-    "linkCopyFailed": "Échec de la copie du lien"
+    "home": "Accueil"
   },
   "navigation": {
     "jobSearch": "Recherche d'emploi",
@@ -60,52 +46,6 @@
     "confirmPassword": "Confirmer le mot de passe",
     "militaryBranch": "Branche militaire",
     "companyName": "Nom de l'entreprise",
-    "passwordRequirements": "Le mot de passe doit comporter au moins 8 caractères avec des majuscules, des minuscules et des chiffres",
-    "required": "Ce champ est obligatoire",
-    "invalidEmail": "Veuillez entrer une adresse e-mail valide",
-    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
-  },
-  "accessibility": {
-    "skipToContent": "Passer au contenu principal",
-    "mainNavigation": "Navigation principale",
-    "closeMenu": "Fermer le menu",
-    "openMenu": "Ouvrir le menu",
-    "languageSelector": "Sélecteur de langue",
-    "currentLanguage": "Langue actuelle",
-    "toggleSection": "Basculer la section",
-    "expandDetails": "Développer les détails",
-    "collapseDetails": "Réduire les détails",
-    "showMore": "Afficher plus",
-    "showLess": "Afficher moins",
-    "loadMore": "Charger plus",
-    "sortBy": "Trier par",
-    "filterBy": "Filtrer par",
-    "searchResults": "Résultats de recherche",
-    "noResults": "Aucun résultat trouvé",
-    "requiredField": "Champ obligatoire"
-  },
-  "jobListing": {
-    "matchScore": "Score de correspondance",
-    "matchedSkills": "Compétences correspondantes",
-    "viewJob": "Voir l'offre",
-    "viewDetails": "Voir les détails",
-    "save": "Enregistrer",
-    "saved": "Enregistré",
-    "apply": "Postuler",
-    "applied": "Postulé",
-    "postedOn": "Publié le",
-    "jobDescription": "Description du poste",
-    "fullDescription": "Description complète du poste",
-    "jobDescriptionPreview": "Aperçu de la description du poste",
-    "jobAlreadySaved": "Offre d'emploi déjà sauvegardée",
-    "jobSavedSuccessfully": "Offre d'emploi enregistrée avec succès",
-    "share": "Partager",
-    "shareThisJob": "Partager cette offre"
-  },
-  "share": {
-    "facebook": "Partager sur Facebook",
-    "twitter": "Partager sur Twitter",
-    "linkedin": "Partager sur LinkedIn",
-    "copyLink": "Copier le lien"
+    "passwordRequirements": "Le mot de passe doit comporter au moins 8 caractères avec des majuscules, des minuscules et des chiffres"
   }
 }

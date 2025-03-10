@@ -23,15 +23,12 @@ const languages: LanguageOption[] = [
 
 const LanguageSelector: React.FC = () => {
   const { t } = useTranslation();
-  const { language, changeLanguage } = useLanguage();
+  const { language, saveLanguagePreference } = useLanguage();
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger 
-        className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200"
-        aria-label={t('common.language')}
-      >
-        <Globe className="h-4 w-4 mr-2" aria-hidden="true" />
+      <DropdownMenuTrigger className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200">
+        <Globe className="h-4 w-4 mr-2" />
         <span>{t('common.language')}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40">
@@ -42,11 +39,9 @@ const LanguageSelector: React.FC = () => {
               "flex items-center cursor-pointer",
               language === lang.code ? "bg-accent" : ""
             )}
-            onClick={() => changeLanguage(lang.code)}
-            role="menuitem"
-            aria-current={language === lang.code ? "true" : "false"}
+            onClick={() => saveLanguagePreference(lang.code)}
           >
-            <div className="w-4 h-4 flex items-center justify-center mr-2" aria-hidden="true">
+            <div className="w-4 h-4 flex items-center justify-center mr-2">
               {language === lang.code && (
                 <div className="w-2 h-2 bg-primary rounded-full" />
               )}

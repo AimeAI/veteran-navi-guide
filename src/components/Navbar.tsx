@@ -1,141 +1,134 @@
-
 import React, { useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useUser } from '@/context/UserContext';
-import { Briefcase, User, Bell, Menu, MessageSquare } from 'lucide-react';
-import NavDropdown from '@/components/navigation/NavDropdown';
-import MobileMenu from './navigation/MobileMenu';
-import MessageNotificationBadge from './messaging/MessageNotificationBadge';
-import LanguageSelector from './language/LanguageSelector';
+import { Link } from 'react-router-dom';
+import { Briefcase, User, BookOpen, Building, ChevronDown, Shield } from 'lucide-react';
+import MobileMenu from './MobileMenu';
+import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import LanguageSelector from './LanguageSelector';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useUser } from '@/context/UserContext';
+import NavDropdown from './NavDropdown';
 
 const Navbar: React.FC = () => {
-  const { user } = useUser();
   const { t } = useTranslation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
+  const { user } = useUser();
+  
+  // Navigation data
+  const navSections = [
+    {
+      title: t('navigation.jobSearch'),
+      icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.jobSearch'), href: '/job-search' },
+        { label: t('navigation.savedJobs'), href: '/saved' },
+        { label: t('navigation.recommendedJobs'), href: '/recommended' },
+        { label: t('navigation.jobAlerts'), href: '/job-alerts' },
+        { label: t('navigation.jobFairs'), href: '/events' },
+        { label: t('navigation.vettedJobs'), href: '/vetted-jobs', icon: <Shield className="h-3 w-3 ml-1 text-primary" /> },
+      ],
+    },
+    {
+      title: t('navigation.profile'),
+      icon: <User className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.profile'), href: '/profile' },
+        { label: t('navigation.resume'), href: '/profile/resume' },
+        { label: t('navigation.applicationHistory'), href: '/history' },
+        { label: t('navigation.settings'), href: '/profile/settings' },
+      ],
+    },
+    {
+      title: t('navigation.resources'),
+      icon: <BookOpen className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.careerCounseling'), href: '/resources/career-counseling' },
+        { label: t('navigation.resumeAssistance'), href: '/resources/resume-assistance' },
+        { label: t('navigation.interviewPrep'), href: '/resources/interview-prep' },
+        { label: t('navigation.militaryTransition'), href: '/resources/military-transition' },
+        { label: t('navigation.communityForums'), href: '/resources/forums' },
+      ],
+    },
+    {
+      title: t('navigation.employers'),
+      icon: <Building className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: t('navigation.postJob'), href: '/employer/post-job' },
+        { label: t('navigation.manageApplications'), href: '/employer/manage-applications' },
+        { label: t('navigation.searchVeterans'), href: '/employer/search-veterans' },
+      ],
+    },
+  ];
 
   return (
-    <nav className="bg-white border-b py-4 sticky top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center">
-          <Link to="/" className="font-bold text-xl text-primary mr-10">
-            VeteranJobBoard
-          </Link>
-          
-          <div className="hidden md:flex space-x-6">
-            <NavLink
-              to="/job-search"
-              className={({ isActive }) =>
-                `text-sm font-medium ${
-                  isActive ? 'text-primary' : 'text-gray-600 hover:text-gray-900'
-                }`
-              }
-            >
-              {t('Find Jobs')}
-            </NavLink>
+    <header className="fixed top-0 left-0 right-0 z-50 w-full backdrop-blur supports-backdrop-blur:bg-nav/80">
+      <div className="border-b border-nav-border bg-nav/85 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center">
+              <Link to="/" className="flex items-center" aria-label="VeteranJobBoard Home">
+                <span className="text-lg sm:text-xl font-semibold tracking-tight truncate">VeteranJobBoard</span>
+              </Link>
+            </div>
             
-            <NavLink
-              to="/resources"
-              className={({ isActive }) =>
-                `text-sm font-medium ${
-                  isActive ? 'text-primary' : 'text-gray-600 hover:text-gray-900'
-                }`
-              }
-            >
-              {t('Resources')}
-            </NavLink>
-            
-            <NavLink
-              to="/mentorship"
-              className={({ isActive }) =>
-                `text-sm font-medium ${
-                  isActive ? 'text-primary' : 'text-gray-600 hover:text-gray-900'
-                }`
-              }
-            >
-              {t('Mentorship')}
-            </NavLink>
-            
-            {user && user.role === 'employer' && (
-              <NavLink
-                to="/post-job"
-                className={({ isActive }) =>
-                  `text-sm font-medium ${
-                    isActive ? 'text-primary' : 'text-gray-600 hover:text-gray-900'
-                  }`
-                }
-              >
-                {t('Post a Job')}
-              </NavLink>
-            )}
-            
-            {user && user.role === 'veteran' && (
-              <NavLink
-                to="/dashboard/lms-integration"
-                className={({ isActive }) =>
-                  `text-sm font-medium ${
-                    isActive ? 'text-primary' : 'text-gray-600 hover:text-gray-900'
-                  }`
-                }
-              >
-                {t('Learning')}
-              </NavLink>
-            )}
+            <nav aria-label="Main Navigation" className="hidden lg:flex lg:items-center lg:space-x-4 xl:space-x-6">
+              {navSections.map((section) => (
+                <div key={section.title} className="relative">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200">
+                      {section.icon}
+                      <span className="ml-2">{section.title}</span>
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-48">
+                      {section.items.map((item) => (
+                        <DropdownMenuItem key={item.label} asChild>
+                          <Link to={item.href} className="flex items-center">
+                            {item.label}
+                            {item.icon && item.icon}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
+              
+              <LanguageSelector />
+            </nav>
+
+            <MobileMenu sections={navSections} />
+
+            <div className="hidden lg:flex lg:items-center lg:space-x-4">
+              {user ? (
+                <NavDropdown />
+              ) : (
+                <>
+                  <Link
+                    to="/auth"
+                    className="px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                    aria-label="Log in to your account"
+                  >
+                    {t('common.login')}
+                  </Link>
+                  <Link
+                    to="/auth?tab=signup"
+                    className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                    aria-label="Create a new account"
+                  >
+                    {t('common.signup')}
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-3">
-          <LanguageSelector />
-          
-          {user ? (
-            <>
-              <div className="hidden md:flex space-x-3">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/messages">
-                    <MessageNotificationBadge />
-                  </Link>
-                </Button>
-                
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to={user.role === 'employer' ? '/employer-dashboard' : '/dashboard'}>
-                    {user.role === 'employer' ? <Briefcase className="h-5 w-5" /> : <User className="h-5 w-5" />}
-                  </Link>
-                </Button>
-              </div>
-              
-              <NavDropdown />
-            </>
-          ) : (
-            <div className="hidden md:flex space-x-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/login">{t('Log in')}</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link to="/signup">{t('Sign up')}</Link>
-              </Button>
-            </div>
-          )}
-          
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-        </div>
       </div>
-      
-      {/* Mobile menu */}
-      <MobileMenu 
-        onOpenChange={setMobileMenuOpen} 
-        open={mobileMenuOpen} 
-      />
-    </nav>
+    </header>
   );
 };
 

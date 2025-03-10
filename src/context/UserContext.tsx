@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import { UserRole, EmployerProfile } from "@/types/application";
@@ -20,7 +21,6 @@ export interface UserProfile {
   role: UserRole;
   employerProfile?: EmployerProfile;
   authProvider?: string; // Add auth provider to track how user is authenticated
-  skills?: string[]; // Add skills property
 }
 
 // Interface for the context
@@ -75,9 +75,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // Transform the data to match our UserProfile structure
         if (profileData) {
-          // Check if skills property exists in profileData, if not, set it to an empty array
-          const skills = Array.isArray((profileData as any).skills) ? (profileData as any).skills : [];
-          
           setUser({
             name: profileData.full_name || currentSession.user.email?.split('@')[0] || '',
             email: currentSession.user.email || '',
@@ -91,8 +88,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             emailVerified: currentSession.user.email_confirmed_at !== null,
             profilePicture: profileData.avatar_url,
             role: "veteran", // Default to veteran, update based on actual role when implemented
-            authProvider: currentSession.user.app_metadata.provider || "email",
-            skills: skills
+            authProvider: currentSession.user.app_metadata.provider || "email"
           });
         } else {
           // Create basic profile if none exists
@@ -108,8 +104,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             isAuthenticated: true,
             emailVerified: currentSession.user.email_confirmed_at !== null,
             role: "veteran",
-            authProvider: currentSession.user.app_metadata.provider || "email",
-            skills: []
+            authProvider: currentSession.user.app_metadata.provider || "email"
           });
         }
       } else {
@@ -135,9 +130,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               .single();
             
             if (profileData) {
-              // Check if skills property exists in profileData, if not, set it to an empty array
-              const skills = Array.isArray((profileData as any).skills) ? (profileData as any).skills : [];
-              
               setUser({
                 name: profileData.full_name || newSession.user.email?.split('@')[0] || '',
                 email: newSession.user.email || '',
@@ -151,8 +143,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 emailVerified: newSession.user.email_confirmed_at !== null,
                 profilePicture: profileData.avatar_url,
                 role: "veteran",
-                authProvider: newSession.user.app_metadata.provider || "email",
-                skills: skills
+                authProvider: newSession.user.app_metadata.provider || "email"
               });
               
               toast.success("Welcome back!");

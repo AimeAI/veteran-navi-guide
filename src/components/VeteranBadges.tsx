@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { VeteranBadgeComponent, VeteranBadge } from "@/components/ui/badges";
+import { VeteranBadgeComponent, VeteranBadge } from "@/components/ui/veteran-badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy } from "lucide-react";
-import { availableBadges } from "@/utils/badges/sampleBadges";
+import { availableBadges } from "@/utils/badgeUtils";
 
 interface VeteranBadgesProps {
   earnedBadges: VeteranBadge[];

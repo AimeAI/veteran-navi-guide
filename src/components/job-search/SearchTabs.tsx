@@ -8,10 +8,9 @@ import AdvancedSearchFilters from '@/components/AdvancedSearchFilters';
 import MilitarySkillsFilter from '@/components/MilitarySkillsFilter';
 import JobList from '@/components/JobList';
 import SkillSearch from '@/components/job-search/SkillSearch';
-import { JobFilterState, SavedFilter } from '@/context/JobContext';
+import { JobFilterState } from '@/context/JobContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
-import { ClearanceLevel, MilitaryBranch, EducationLevel, SalaryRange } from '@/types/badges';
 
 interface SearchTabsProps {
   activeTab: string;
@@ -21,16 +20,10 @@ interface SearchTabsProps {
   onLocationChange: (location: string) => void;
   onRemoteToggle: (remote: boolean) => void;
   onCountryChange: (country: "us" | "canada") => void;
-  onClearanceLevelChange: (level: ClearanceLevel) => void;
-  onMilitaryBranchChange: (branch: MilitaryBranch) => void;
-  onEducationLevelChange: (level: EducationLevel) => void;
-  onSalaryRangeChange: (range: SalaryRange) => void;
-  onYearsOfServiceChange: (years: number) => void;
   onClearFilters: () => void;
   onFilterChange: (name: string, value: any) => void;
   onMilitarySkillsChange: (skills: string[]) => void;
-  onSkillsChange?: (skills: string[]) => void;
-  onSaveFilter: (name: string) => void;
+  onSkillsChange?: (skills: string[]) => void; // Add this prop
   jobs: any[];
   isLoading: boolean;
   error: Error | null;
@@ -38,7 +31,6 @@ interface SearchTabsProps {
   totalPages: number;
   totalJobs: number;
   onPageChange: (page: number) => void;
-  savedFilters?: SavedFilter[];
 }
 
 const SearchTabs: React.FC<SearchTabsProps> = ({
@@ -49,16 +41,10 @@ const SearchTabs: React.FC<SearchTabsProps> = ({
   onLocationChange,
   onRemoteToggle,
   onCountryChange,
-  onClearanceLevelChange,
-  onMilitaryBranchChange,
-  onEducationLevelChange,
-  onSalaryRangeChange,
-  onYearsOfServiceChange,
   onClearFilters,
   onFilterChange,
   onMilitarySkillsChange,
   onSkillsChange,
-  onSaveFilter,
   jobs,
   isLoading,
   error,
@@ -66,7 +52,6 @@ const SearchTabs: React.FC<SearchTabsProps> = ({
   totalPages,
   totalJobs,
   onPageChange,
-  savedFilters = [],
 }) => {
   const { t } = useTranslation();
 
@@ -84,23 +69,12 @@ const SearchTabs: React.FC<SearchTabsProps> = ({
           location={filters.location}
           remote={filters.remote}
           country={filters.country}
-          clearanceLevel={filters.clearanceLevel}
-          militaryBranch={filters.militaryBranch}
-          educationLevel={filters.educationLevel}
-          salaryRange={filters.salaryRange}
-          yearsOfService={filters.yearsOfService}
           onKeywordChange={onKeywordChange}
           onLocationChange={onLocationChange}
           onRemoteToggle={onRemoteToggle}
           onCountryChange={onCountryChange}
-          onClearanceLevelChange={onClearanceLevelChange}
-          onMilitaryBranchChange={onMilitaryBranchChange}
-          onEducationLevelChange={onEducationLevelChange}
-          onSalaryRangeChange={onSalaryRangeChange}
-          onYearsOfServiceChange={onYearsOfServiceChange}
           onToggleAdvancedFilters={() => setActiveTab('filters')}
           onClearFilters={onClearFilters}
-          onSaveFilter={onSaveFilter}
         />
         
         <Separator className="my-6" />

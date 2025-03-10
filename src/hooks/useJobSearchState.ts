@@ -1,159 +1,139 @@
 
 import { useState, useCallback } from 'react';
 import { JobFilterState } from '@/context/JobContext';
-import { ClearanceLevel, MilitaryBranch, EducationLevel, SalaryRange } from '@/types/badges';
+import { JobCache } from '@/utils/jobCache';
+import { toast } from 'sonner';
 
-interface JobSearchStateHook {
-  filters: JobFilterState;
-  activeTab: string;
-  isRefreshing: boolean;
-  setActiveTab: (tab: string) => void;
-  handleFilterChange: (name: string, value: any) => void;
-  handleKeywordSearch: (keywords: string) => void;
-  handleLocationSearch: (location: string) => void;
-  handleRemoteToggle: (remote: boolean) => void;
-  handleCountryChange: (country: "us" | "canada") => void;
-  handleMilitarySkillsChange: (skills: string[]) => void;
-  handleSkillsChange: (skills: string[]) => void;
-  handleClearFilters: () => void;
-  handleClearCacheAndRefresh: () => Promise<void>;
-  handleClearanceLevelChange: (level: ClearanceLevel) => void;
-  handleMilitaryBranchChange: (branch: MilitaryBranch) => void;
-  handleEducationLevelChange: (level: EducationLevel) => void;
-  handleSalaryRangeChange: (range: SalaryRange) => void;
-  handleYearsOfServiceChange: (years: number) => void;
-}
-
-export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSearchStateHook => {
-  const [activeTab, setActiveTab] = useState('search');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+export function useJobSearchState(refreshJobs: () => Promise<void>) {
   const [filters, setFilters] = useState<JobFilterState>({
     keywords: '',
     location: '',
-    radius: 50,
+    mosCodes: [],
+    clearanceLevel: [],
     remote: false,
     militarySkills: [],
-    jobType: '',
+    radius: 50,
     industry: '',
     experienceLevel: '',
-    educationLevel: undefined,
-    country: 'canada',
-    skills: [],
-    // Advanced filter options
-    mosCodes: undefined,
-    clearanceLevel: undefined,
+    educationLevel: '',
+    jobType: '',
     companySize: '',
     companyRating: undefined,
-    benefits: undefined,
+    benefits: [],
+    country: 'canada',
     useJobicy: false,
+    skills: [], // Initialize skills array
     category: '',
-    salaryRange: undefined,
-    militaryBranch: undefined,
-    yearsOfService: undefined,
+    salaryRange: '',
   });
   
-  const handleFilterChange = useCallback((name: string, value: any) => {
-    setFilters(prev => ({ ...prev, [name]: value }));
-  }, []);
+  const [activeTab, setActiveTab] = useState('search');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showSkillsFilter, setShowSkillsFilter] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
-  const handleKeywordSearch = useCallback((keywords: string) => {
-    setFilters(prev => ({ ...prev, keywords }));
-  }, []);
+  const handleFilterChange = (name: string, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
   
-  const handleLocationSearch = useCallback((location: string) => {
-    setFilters(prev => ({ ...prev, location }));
-  }, []);
+  const handleKeywordSearch = (keywords: string) => {
+    handleFilterChange('keywords', keywords);
+  };
   
-  const handleRemoteToggle = useCallback((remote: boolean) => {
-    setFilters(prev => ({ ...prev, remote }));
-  }, []);
+  const handleLocationSearch = (location: string) => {
+    handleFilterChange('location', location);
+  };
   
-  const handleCountryChange = useCallback((country: "us" | "canada") => {
-    setFilters(prev => ({ ...prev, country }));
-  }, []);
+  const handleRemoteToggle = (remote: boolean) => {
+    handleFilterChange('remote', remote);
+  };
   
-  const handleMilitarySkillsChange = useCallback((skills: string[]) => {
-    setFilters(prev => ({ ...prev, militarySkills: skills }));
-  }, []);
-
-  const handleSkillsChange = useCallback((skills: string[]) => {
-    setFilters(prev => ({ ...prev, skills }));
-  }, []);
+  const handleCountryChange = (country: "us" | "canada") => {
+    handleFilterChange('country', country);
+  };
   
-  const handleClearanceLevelChange = useCallback((level: ClearanceLevel) => {
-    setFilters(prev => ({ ...prev, clearanceLevel: level }));
-  }, []);
+  const handleMilitarySkillsChange = (skills: string[]) => {
+    const skillKeywords = skills.map(skill => `skill:${skill}`).join(',');
+    const updatedKeywords = filters.keywords 
+      ? `${filters.keywords.replace(/skill:[a-z]+,?/g, '')} ${skillKeywords}`.trim()
+      : skillKeywords;
+    
+    setFilters(prev => ({
+      ...prev,
+      keywords: updatedKeywords,
+      militarySkills: skills,
+    }));
+  };
   
-  const handleMilitaryBranchChange = useCallback((branch: MilitaryBranch) => {
-    setFilters(prev => ({ ...prev, militaryBranch: branch }));
-  }, []);
+  // New handler for skills change
+  const handleSkillsChange = (skills: string[]) => {
+    setFilters(prev => ({
+      ...prev,
+      skills,
+    }));
+  };
   
-  const handleEducationLevelChange = useCallback((level: EducationLevel) => {
-    setFilters(prev => ({ ...prev, educationLevel: level }));
-  }, []);
-  
-  const handleSalaryRangeChange = useCallback((range: SalaryRange) => {
-    setFilters(prev => ({ ...prev, salaryRange: range }));
-  }, []);
-  
-  const handleYearsOfServiceChange = useCallback((years: number) => {
-    setFilters(prev => ({ ...prev, yearsOfService: years }));
-  }, []);
-  
-  const handleClearFilters = useCallback(() => {
+  const handleClearFilters = () => {
     setFilters({
       keywords: '',
       location: '',
-      radius: 50,
+      mosCodes: [],
+      clearanceLevel: [],
       remote: false,
       militarySkills: [],
-      jobType: '',
+      radius: 50,
       industry: '',
       experienceLevel: '',
-      educationLevel: undefined,
-      country: 'canada',
-      skills: [],
-      // Adding the missing properties to match JobFilterState
-      mosCodes: undefined,
-      clearanceLevel: undefined,
+      educationLevel: '',
+      jobType: '',
       companySize: '',
       companyRating: undefined,
-      benefits: undefined,
+      benefits: [],
+      country: 'canada',
       useJobicy: false,
+      skills: [], // Clear skills too
       category: '',
-      salaryRange: undefined,
-      militaryBranch: undefined,
-      yearsOfService: undefined,
+      salaryRange: '',
     });
-  }, []);
+    setShowAdvancedFilters(false);
+    setShowSkillsFilter(false);
+  };
   
   const handleClearCacheAndRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await refreshCallback();
+      JobCache.clearCache();
+      toast.info("Cleared job search cache");
+      await refreshJobs();
+      toast.success("Job results refreshed");
+    } catch (error) {
+      console.error('Error refreshing jobs:', error);
+      toast.error("Failed to refresh job results");
     } finally {
       setIsRefreshing(false);
     }
-  }, [refreshCallback]);
+  }, [refreshJobs]);
   
   return {
     filters,
     activeTab,
+    showAdvancedFilters,
+    showSkillsFilter,
     isRefreshing,
     setActiveTab,
+    setShowAdvancedFilters,
+    setShowSkillsFilter,
     handleFilterChange,
     handleKeywordSearch,
     handleLocationSearch,
     handleRemoteToggle,
     handleCountryChange,
     handleMilitarySkillsChange,
-    handleSkillsChange,
+    handleSkillsChange, // Export this
     handleClearFilters,
     handleClearCacheAndRefresh,
-    handleClearanceLevelChange,
-    handleMilitaryBranchChange,
-    handleEducationLevelChange,
-    handleSalaryRangeChange,
-    handleYearsOfServiceChange,
   };
-};
+}
