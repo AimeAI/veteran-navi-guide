@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useJobs } from '@/context/JobContext';
-import { Briefcase, MapPin, Building, Clock, ExternalLink, BookmarkPlus, Check, Search } from 'lucide-react';
+import { Briefcase, MapPin, Building, Clock, ExternalLink, BookmarkPlus, Check, Search, DollarSign, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { toast } from 'sonner';
@@ -22,6 +22,8 @@ interface JobListingProps {
   matchScore?: number;
   matchingSkills?: string[];
   className?: string; // Add className prop
+  salaryRange?: string; // Add salary range
+  companyDescription?: string; // Add company description
 }
 
 const JobListing: React.FC<JobListingProps> = ({ 
@@ -35,7 +37,9 @@ const JobListing: React.FC<JobListingProps> = ({
   url,
   matchScore,
   matchingSkills,
-  className
+  className,
+  salaryRange,
+  companyDescription
 }) => {
   const { t } = useTranslation();
   const { savedJobs, saveJob } = useJobs();
@@ -47,6 +51,22 @@ const JobListing: React.FC<JobListingProps> = ({
   const shortDescription = description.length > MAX_DESCRIPTION_LENGTH ? 
     `${description.substring(0, MAX_DESCRIPTION_LENGTH)}...` : 
     description;
+  
+  // Generate a company logo from the first letter of company name
+  const companyInitial = company.charAt(0).toUpperCase();
+  const bgColors = [
+    'bg-blue-100 text-blue-800',
+    'bg-green-100 text-green-800',
+    'bg-purple-100 text-purple-800',
+    'bg-orange-100 text-orange-800',
+    'bg-pink-100 text-pink-800',
+    'bg-indigo-100 text-indigo-800',
+    'bg-teal-100 text-teal-800',
+  ];
+  
+  // Use company name to consistently generate the same color for the same company
+  const colorIndex = company.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % bgColors.length;
+  const logoColorClass = bgColors[colorIndex];
   
   const getSourceBadgeColor = (source?: string) => {
     if (!source) return "secondary";
@@ -80,7 +100,7 @@ const JobListing: React.FC<JobListingProps> = ({
       date: date || new Date().toISOString(), // Provide fallback for date
       // Add required fields from Job interface
       category: "other",
-      salaryRange: "",
+      salaryRange: salaryRange || "",
       remote: false,
       clearanceLevel: "none",
       mosCode: "",
@@ -122,25 +142,41 @@ const JobListing: React.FC<JobListingProps> = ({
   
   return (
     <Card className={`overflow-hidden ${className || ''}`}>
-      <CardContent className="pt-6">
-        <div className="flex justify-between">
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-              <div className="flex items-center">
-                <Building className="h-3.5 w-3.5 mr-1" />
-                {company}
+      <CardHeader className="pb-0">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex gap-4 items-start">
+            {/* Company logo */}
+            <div className={`flex-shrink-0 h-12 w-12 rounded-md ${logoColorClass} flex items-center justify-center text-lg font-bold`}>
+              {companyInitial}
+            </div>
+            
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold">{title}</h3>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <Building className="h-3.5 w-3.5 mr-1" />
+                  {company}
+                </div>
+                <div className="flex items-center">
+                  <MapPin className="h-3.5 w-3.5 mr-1" />
+                  {location}
+                </div>
+                <div className="flex items-center">
+                  <Clock className="h-3.5 w-3.5 mr-1" />
+                  {formattedDate}
+                </div>
               </div>
-              <div className="flex items-center">
-                <MapPin className="h-3.5 w-3.5 mr-1" />
-                {location}
-              </div>
-              <div className="flex items-center">
-                <Clock className="h-3.5 w-3.5 mr-1" />
-                {formattedDate}
-              </div>
+              
+              {/* Salary range */}
+              {salaryRange && (
+                <div className="flex items-center text-sm font-medium text-green-600 mt-1">
+                  <DollarSign className="h-3.5 w-3.5 mr-1" />
+                  {salaryRange}
+                </div>
+              )}
             </div>
           </div>
+          
           <div className="flex flex-col gap-2 items-end">
             {source && (
               <Badge variant={getSourceBadgeColor(source)}>
@@ -156,9 +192,19 @@ const JobListing: React.FC<JobListingProps> = ({
           </div>
         </div>
         
+        {/* Company description */}
+        {companyDescription && (
+          <div className="mt-3 px-2 py-1.5 bg-slate-50 rounded-md text-sm text-slate-600 flex items-start">
+            <Info className="h-4 w-4 mr-2 mt-0.5 text-slate-400 flex-shrink-0" />
+            <p>{companyDescription}</p>
+          </div>
+        )}
+      </CardHeader>
+      
+      <CardContent className="pt-4">
         {matchingSkills && matchingSkills.length > 0 && (
-          <div className="mt-2">
-            <div className="flex flex-wrap gap-1.5 mt-1">
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-1.5">
               <Badge variant="outline" className="bg-yellow-50 border-yellow-200 text-yellow-800">
                 <Search className="h-3 w-3 mr-1" />
                 {t("Matched Skills")}:
@@ -178,7 +224,7 @@ const JobListing: React.FC<JobListingProps> = ({
         )}
         
         <div 
-          className="mt-4 text-sm text-gray-600"
+          className="text-sm text-gray-600"
           dangerouslySetInnerHTML={{ __html: sanitizedHighlightedDescription }}
         />
         
@@ -195,10 +241,11 @@ const JobListing: React.FC<JobListingProps> = ({
       <CardFooter className="flex justify-between bg-gray-50 py-3 border-t">
         <div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleSaveJob}
             disabled={isJobSaved}
+            className={isJobSaved ? "bg-blue-50 text-blue-600" : ""}
           >
             {isJobSaved ? (
               <>
@@ -208,7 +255,7 @@ const JobListing: React.FC<JobListingProps> = ({
             ) : (
               <>
                 <BookmarkPlus className="h-4 w-4 mr-1" />
-                {t("Save")}
+                {t("Save Job")}
               </>
             )}
           </Button>
@@ -216,7 +263,7 @@ const JobListing: React.FC<JobListingProps> = ({
         <div>
           {url ? (
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={() => window.open(url, '_blank')}
             >
@@ -226,7 +273,7 @@ const JobListing: React.FC<JobListingProps> = ({
             </Button>
           ) : (
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={() => window.open(`/jobs/${jobId}`, '_self')}
             >

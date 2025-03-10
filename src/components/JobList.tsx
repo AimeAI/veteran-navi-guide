@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -22,6 +23,7 @@ interface JobListProps {
 
 interface JobWithScore extends Job {
   matchScore?: number;
+  companyDescription?: string;
 }
 
 const JobList: React.FC<JobListProps> = ({
@@ -88,6 +90,28 @@ const JobList: React.FC<JobListProps> = ({
   const indeedCount = jobsBySource['indeed']?.length || 0;
   const linkedinCount = jobsBySource['linkedin']?.length || 0;
   const otherSourcesCount = totalJobs - jobBankCount - indeedCount - linkedinCount;
+  
+  // Generate simple company descriptions for jobs that don't have them
+  const getCompanyDescription = (company: string, industry: string): string => {
+    if (!company) return "";
+    
+    const industries = {
+      'technology': 'A leading technology company specializing in innovative solutions.',
+      'healthcare': 'A healthcare provider committed to quality patient care.',
+      'logistics': 'A logistics company focused on efficient supply chain management.',
+      'security': 'A security firm providing protection and risk management services.',
+      'management': 'A management consultancy helping businesses optimize operations.',
+      'education': 'An educational institution dedicated to academic excellence.',
+      'finance': 'A financial services firm offering comprehensive financial solutions.',
+      'retail': 'A retail company providing quality products to consumers.',
+      'manufacturing': 'A manufacturing company producing high-quality goods.',
+      'construction': 'A construction company building innovative structures.',
+      'government': 'A government organization serving the public interest.',
+    };
+    
+    return industries[industry as keyof typeof industries] || 
+           `${company} is a respected organization in its field.`;
+  };
 
   return (
     <div className="space-y-6">
@@ -155,6 +179,12 @@ const JobList: React.FC<JobListProps> = ({
                   url={job.url}
                   date={job.date}
                   matchScore={jobWithScore.matchScore}
+                  matchingSkills={jobWithScore.matchingSkills}
+                  salaryRange={job.salaryRange}
+                  companyDescription={
+                    jobWithScore.companyDescription || 
+                    getCompanyDescription(job.company, job.industry)
+                  }
                 />
               );
             })}
