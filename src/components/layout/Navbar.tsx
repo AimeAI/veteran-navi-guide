@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, User, BookOpen, Building, ChevronDown, Shield, Map } from 'lucide-react';
-import MobileMenu from './MobileMenu';
+import MobileMenu from '../MobileMenu';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import LanguageSelector from './LanguageSelector';
+import LanguageSelector from '../LanguageSelector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser } from '@/context/UserContext';
-import NavDropdown from './NavDropdown';
+import NavDropdown from '../NavDropdown';
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
