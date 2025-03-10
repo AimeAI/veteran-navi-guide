@@ -132,8 +132,8 @@ const Navbar: React.FC = () => {
       
       {/* Mobile menu */}
       <MobileMenu 
-        open={mobileMenuOpen} 
         onOpenChange={setMobileMenuOpen} 
+        open={mobileMenuOpen} 
       />
     </nav>
   );

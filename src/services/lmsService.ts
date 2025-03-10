@@ -51,7 +51,7 @@ export const getUserLmsConnections = async (userId: string): Promise<LmsConnecti
     
     if (error) throw error;
     
-    return data;
+    return data as LmsConnection[];
   } catch (error) {
     console.error('Error fetching LMS connections:', error);
     toast.error('Failed to load LMS connections');
@@ -74,7 +74,7 @@ export const addLmsConnection = async (connection: Omit<LmsConnection, 'id' | 'c
     if (error) throw error;
     
     toast.success('LMS connected successfully');
-    return data;
+    return data as LmsConnection;
   } catch (error) {
     console.error('Error connecting LMS:', error);
     toast.error('Failed to connect LMS');
@@ -111,7 +111,7 @@ export const getUserCourses = async (connectionId: string): Promise<LmsCourse[]>
     
     if (error) throw error;
     
-    return data;
+    return data as LmsCourse[];
   } catch (error) {
     console.error('Error fetching courses:', error);
     toast.error('Failed to load courses');
@@ -130,7 +130,7 @@ export const addUserCourses = async (courses: Omit<LmsCourse, 'id'>[]): Promise<
     if (error) throw error;
     
     toast.success('Courses imported successfully');
-    return data;
+    return data as LmsCourse[];
   } catch (error) {
     console.error('Error importing courses:', error);
     toast.error('Failed to import courses');
@@ -148,7 +148,7 @@ export const getUserCertifications = async (userId: string): Promise<LmsCertific
     
     if (error) throw error;
     
-    return data;
+    return data as LmsCertification[];
   } catch (error) {
     console.error('Error fetching certifications:', error);
     toast.error('Failed to load certifications');
@@ -168,7 +168,7 @@ export const addUserCertification = async (certification: Omit<LmsCertification,
     if (error) throw error;
     
     toast.success('Certification added successfully');
-    return data;
+    return data as LmsCertification;
   } catch (error) {
     console.error('Error adding certification:', error);
     toast.error('Failed to add certification');

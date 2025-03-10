@@ -1,49 +1,66 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { AuthRoutes } from './authRoutes';
-import { veteranRoutes } from './veteranRoutes';
-import { EmployerRoutes } from './employerRoutes';
-import { ResourceRoutes } from './resourceRoutes';
-import { AdminRoutes } from './adminRoutes';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
+import { authRoutes } from './authRoutes';
+import { resourceRoutes } from './resourceRoutes';
+import { employerRoutes } from './employerRoutes';
+import { veteranRoutes } from './veteranRoutes';
+import { adminRoutes } from './adminRoutes';
+import RequireAuth from '@/components/RequireAuth';
+import NotFound from '@/pages/NotFound';
+import Index from '@/pages/Index';
+import JobSearch from '@/pages/JobSearch';
+import JobDetailsPage from '@/pages/JobDetailsPage';
+import PostJobPage from '@/pages/PostJobPage';
+import MessagesPage from '@/pages/MessagesPage';
 
-// Page imports
-const Index = React.lazy(() => import("@/pages/Index"));
-const NotFound = React.lazy(() => import("@/pages/NotFound"));
-
-export const AppRoutes = () => {
+const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Index />} />
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Index />} />
+        <Route path="job-search" element={<JobSearch />} />
+        <Route path="job/:id" element={<JobDetailsPage />} />
+        <Route path="post-job" element={<PostJobPage />} />
+        <Route path="messages" element={<MessagesPage />} />
         
-        {/* Auth Routes */}
-        <AuthRoutes />
+        {/* Auth routes */}
+        {authRoutes.map((route) => (
+          <Route key={route.path} path={route.path} element={route.element} />
+        ))}
         
-        {/* Veteran Routes */}
-        <Route path="dashboard">
-          {veteranRoutes.map((route) => (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={route.element}
-            />
+        {/* Resource routes */}
+        {resourceRoutes.map((route) => (
+          <Route key={route.path} path={route.path} element={route.element} />
+        ))}
+        
+        {/* Employer routes */}
+        <Route path="employer-dashboard/*" element={<RequireAuth allowedRoles={['employer']} />}>
+          {employerRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
           ))}
         </Route>
         
-        {/* Employer Routes */}
-        <EmployerRoutes />
+        {/* Veteran routes */}
+        <Route path="dashboard/*" element={<RequireAuth allowedRoles={['veteran']} />}>
+          {veteranRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        </Route>
         
-        {/* Resource Routes */}
-        <ResourceRoutes />
+        {/* Admin routes */}
+        <Route path="admin/*" element={<RequireAuth allowedRoles={['admin']} />}>
+          {adminRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        </Route>
         
-        {/* Admin Routes */}
-        <AdminRoutes />
-        
-        {/* Catch-all route */}
+        {/* 404 route */}
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
 };
+
+export default AppRoutes;

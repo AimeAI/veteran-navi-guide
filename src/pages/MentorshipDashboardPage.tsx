@@ -1,19 +1,24 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserRound, Users, UserPlus, MessageSquare } from 'lucide-react';
-import { useMentorship } from '@/hooks/useMentorship';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/context/UserContext';
-import MentorshipProfileForm from '@/components/mentorship/MentorshipProfileForm';
-import ConnectionsList from '@/components/mentorship/ConnectionsList';
-import MentorshipChat from '@/components/mentorship/MentorshipChat';
-import MeetingScheduler from '@/components/mentorship/MeetingScheduler';
-import MeetingsList from '@/components/mentorship/MeetingsList';
+import { 
+  UserCircle2, 
+  Users, 
+  Calendar, 
+  BookOpen, 
+  Clock, 
+  ChevronRight, 
+  UserPlus, 
+  CalendarPlus,
+  MessageSquare
+} from 'lucide-react';
+import { MentorshipProfile, MentorshipConnection, MentorshipMeeting, getMentorshipProfile, getMentorConnections, getMenteeConnections, getMentorshipMeetings } from '@/services/mentorshipService';
+import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
-import { MentorshipConnection, MentorshipProfile } from '@/services/mentorshipService';
 
 const MentorshipDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +41,6 @@ const MentorshipDashboardPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<string>('profile');
 
-  // Redirect to connections tab if profile exists and connections tab if a connection is selected
   useEffect(() => {
     if (userProfile && activeTab === 'profile') {
       setActiveTab('connections');
