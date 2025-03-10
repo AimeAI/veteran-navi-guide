@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Award, Star, Users, Target, Zap } from "lucide-react";
@@ -9,9 +8,8 @@ import { useUser } from '@/context/UserContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { determineEarnedBadges } from '@/utils/badgeUtils';
+import { determineEarnedBadges } from '@/utils/badges/badgeEarningLogic';
 
-// Sample leaderboard data - this would come from Supabase in production
 const mockLeaderboard = [
   { id: '1', name: 'John Doe', points: 850, avatarUrl: '', rank: 1 },
   { id: '2', name: 'Jane Smith', points: 720, avatarUrl: '', rank: 2 },
@@ -35,18 +33,9 @@ export interface UserStats {
 export default function GamificationDashboard() {
   const { user } = useUser();
   
-  // Fetch user stats from Supabase
   const { data: userStats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['userStats', user?.email],
     queryFn: async () => {
-      // In production, fetch from Supabase
-      // const { data, error } = await supabase
-      //   .from('user_stats')
-      //   .select('*')
-      //   .eq('user_id', user?.id)
-      //   .single();
-      
-      // For demo purposes, return mock data
       return {
         points: 625,
         rank: 4,
@@ -62,12 +51,9 @@ export default function GamificationDashboard() {
     enabled: !!user?.email,
   });
   
-  // Fetch earned badges
   const { data: earnedBadges, isLoading: isLoadingBadges } = useQuery({
     queryKey: ['earnedBadges', user?.email],
     queryFn: async () => {
-      // In production, fetch from a Supabase table dedicated to tracking user badges
-      // For demo, we'll use the determineEarnedBadges utility
       return determineEarnedBadges(
         user,
         Array(3).fill({}), // Mock applied jobs
@@ -102,7 +88,6 @@ export default function GamificationDashboard() {
   
   return (
     <div className="space-y-6">
-      {/* Points and Level */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-semibold flex items-center">
@@ -137,7 +122,6 @@ export default function GamificationDashboard() {
             </div>
           </div>
           
-          {/* Challenge progress */}
           <div className="mt-6 flex flex-col space-y-2">
             <div className="flex justify-between items-center">
               <div className="text-sm font-medium flex items-center">
@@ -153,12 +137,10 @@ export default function GamificationDashboard() {
         </CardContent>
       </Card>
       
-      {/* Badges */}
       {earnedBadges && (
         <VeteranBadges earnedBadges={earnedBadges} showAvailable={true} />
       )}
       
-      {/* Leaderboard */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-semibold flex items-center">

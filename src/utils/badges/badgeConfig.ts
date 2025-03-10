@@ -1,11 +1,11 @@
 
-import { BadgeType, VeteranBadge, BadgeIconType } from "@/types/badges";
+import { BadgeType, BadgeIconType } from "@/types/badges";
 
 interface BadgeConfig {
   background: string;
   text: string;
   border: string;
-  icon: "badge" | "award" | "trophy" | "check" | "star" | "book" | "briefcase" | "medal";
+  icon: BadgeIconType;
 }
 
 export const getSkillLevelBadgeConfig = (level: 'beginner' | 'intermediate' | 'advanced' | 'expert'): BadgeConfig => {
@@ -146,95 +146,4 @@ export const getSkillTypeBadgeConfig = (type: BadgeType): BadgeConfig => {
   };
   
   return configs[type];
-};
-
-export const availableBadges: VeteranBadge[] = [
-  {
-    id: "profile-complete-1",
-    type: "profile-complete",
-    name: "Profile Complete",
-    description: "Completed your veteran profile",
-    earnedDate: new Date().toISOString(),
-    icon: "badge",
-    level: 1
-  },
-  {
-    id: "first-application-1",
-    type: "first-application",
-    name: "First Application",
-    description: "Submitted your first job application",
-    earnedDate: new Date().toISOString(),
-    icon: "medal",
-    level: 1
-  },
-  {
-    id: "resume-master-1",
-    type: "resume-master",
-    name: "Resume Master",
-    description: "Uploaded and optimized your resume",
-    earnedDate: new Date().toISOString(),
-    icon: "book",
-    level: 1
-  }
-];
-
-type User = {
-  name: string;
-  email: string;
-  phone?: string;
-  location?: string;
-  militaryBranch?: string;
-  yearsOfService?: string;
-  rank?: string;
-  bio?: string;
-};
-
-export const determineEarnedBadges = (
-  user: User | null,
-  appliedJobs: any[],
-  forumPosts: number,
-  interviewPrepCompleted: boolean,
-  resumeUploaded: boolean,
-  connectionsCount: number,
-  verifiedSkills: boolean
-): VeteranBadge[] => {
-  const earnedBadges: VeteranBadge[] = [];
-
-  if (user && user.name && user.email && user.militaryBranch && user.rank) {
-    earnedBadges.push({
-      id: "profile-complete-1",
-      type: "profile-complete",
-      name: "Profile Complete",
-      description: "Completed your veteran profile",
-      earnedDate: new Date().toISOString(),
-      icon: "badge",
-      level: 1
-    });
-  }
-
-  if (appliedJobs.length > 0) {
-    earnedBadges.push({
-      id: "first-application-1",
-      type: "first-application",
-      name: "First Application",
-      description: "Submitted your first job application",
-      earnedDate: new Date().toISOString(),
-      icon: "medal",
-      level: 1
-    });
-  }
-
-  if (resumeUploaded) {
-    earnedBadges.push({
-      id: "resume-master-1",
-      type: "resume-master",
-      name: "Resume Master",
-      description: "Uploaded and optimized your resume",
-      earnedDate: new Date().toISOString(),
-      icon: "book",
-      level: 1
-    });
-  }
-
-  return earnedBadges;
 };

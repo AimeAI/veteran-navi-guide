@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,7 @@ import FormErrorMessage from "@/components/ui/form-error-message";
 import { AlertCircle, Bell, BellOff, Mail, Lock, Save } from "lucide-react";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import VeteranBadges from "@/components/VeteranBadges";
-import { determineEarnedBadges } from "@/utils/badgeUtils";
+import { determineEarnedBadges } from "@/utils/badges/badgeEarningLogic";
 import ResumeParser from "@/components/resume/ResumeParser";
 import ProfileCompletionProgress from "@/components/ProfileCompletionProgress";
 
