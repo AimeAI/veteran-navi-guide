@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useJobSearch } from '@/hooks/useJobSearch';
@@ -117,24 +118,30 @@ const JobSearch: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <Helmet>
         <title>{t('Job Search - Veteran Career Compass')}</title>
+        <meta name="description" content="Search for veteran-friendly jobs that match your military skills and experience" />
       </Helmet>
+      
+      {/* Skip to content link for keyboard users */}
+      <a href="#job-results" className="skip-link">
+        {t('accessibility.skipToContent')}
+      </a>
       
       {showOnboarding && supabaseUser && (
         <div className="mb-8">
           <Card className="border-blue-200 bg-blue-50">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-blue-800">
-                <UserPlus className="h-5 w-5 mr-2" />
-                Welcome to Job Search
+                <UserPlus className="h-5 w-5 mr-2" aria-hidden="true" />
+                {t('Welcome to Job Search')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <Alert className="border-blue-200 bg-white">
-                  <AlertCircle className="h-4 w-4 text-blue-600" />
-                  <AlertTitle>Complete your profile to get better job matches</AlertTitle>
+                  <AlertCircle className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                  <AlertTitle>{t('Complete your profile to get better job matches')}</AlertTitle>
                   <AlertDescription>
-                    Your profile information helps us match you with relevant jobs based on your military experience and skills.
+                    {t('Your profile information helps us match you with relevant jobs based on your military experience and skills.')}
                   </AlertDescription>
                 </Alert>
                 
@@ -142,9 +149,9 @@ const JobSearch: React.FC = () => {
                   <ProfileCompletionProgress className="mb-4" />
                   
                   <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2">Your Current Skills:</h3>
+                    <h3 className="text-sm font-medium mb-2">{t('Your Current Skills')}:</h3>
                     <div className="flex flex-wrap gap-2">
-                      {userSkills.length > 0 ? (
+                      {userSkills && userSkills.length > 0 ? (
                         userSkills.map((skill, index) => (
                           <SkillBadge 
                             key={index} 
@@ -154,7 +161,7 @@ const JobSearch: React.FC = () => {
                           />
                         ))
                       ) : (
-                        <p className="text-sm text-gray-500">No skills added yet. Update your profile to add skills.</p>
+                        <p className="text-sm text-gray-500">{t('No skills added yet. Update your profile to add skills.')}</p>
                       )}
                     </div>
                   </div>
@@ -162,14 +169,18 @@ const JobSearch: React.FC = () => {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between border-t pt-4 bg-white rounded-b-lg">
-              <Button variant="outline" onClick={dismissOnboarding}>
-                <Check className="mr-2 h-4 w-4" />
-                I'll do this later
+              <Button 
+                variant="outline" 
+                onClick={dismissOnboarding}
+                aria-label={t('Dismiss onboarding and continue to job search')}
+              >
+                <Check className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('I\'ll do this later')}
               </Button>
               <Button asChild>
-                <Link to="/profile">
-                  <UserCheck className="mr-2 h-4 w-4" />
-                  Complete Profile
+                <Link to="/profile" aria-label={t('Go to profile to complete your information')}>
+                  <UserCheck className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {t('Complete Profile')}
                 </Link>
               </Button>
             </CardFooter>
@@ -183,33 +194,35 @@ const JobSearch: React.FC = () => {
         isLoading={isLoading}
       />
       
-      <SearchTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        filters={filters}
-        onKeywordChange={handleKeywordSearch}
-        onLocationChange={handleLocationSearch}
-        onRemoteToggle={handleRemoteToggle}
-        onCountryChange={handleCountryChange}
-        onClearFilters={handleClearFilters}
-        onFilterChange={handleFilterChange}
-        onMilitarySkillsChange={handleMilitarySkillsChange}
-        onSkillsChange={handleSkillsChange}
-        jobs={jobs}
-        isLoading={isLoading}
-        error={error}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalJobs={totalJobs}
-        onPageChange={handlePageChange}
-      />
+      <div id="job-results" tabIndex={-1}>
+        <SearchTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          filters={filters}
+          onKeywordChange={handleKeywordSearch}
+          onLocationChange={handleLocationSearch}
+          onRemoteToggle={handleRemoteToggle}
+          onCountryChange={handleCountryChange}
+          onClearFilters={handleClearFilters}
+          onFilterChange={handleFilterChange}
+          onMilitarySkillsChange={handleMilitarySkillsChange}
+          onSkillsChange={handleSkillsChange}
+          jobs={jobs}
+          isLoading={isLoading}
+          error={error}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalJobs={totalJobs}
+          onPageChange={handlePageChange}
+        />
+      </div>
       
       {userSkills.length > 0 && !showOnboarding && (
-        <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
-          <div className="flex items-center">
-            <BookOpen className="h-5 w-5 text-blue-600 mr-2" />
-            <span className="text-sm font-medium">Job matches are based on your skills:</span>
-            <div className="flex flex-wrap gap-1.5 ml-2 max-w-md overflow-hidden">
+        <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-t border-gray-200 pt-4">
+          <div className="flex flex-wrap items-center mb-2 sm:mb-0">
+            <BookOpen className="h-5 w-5 text-blue-600 mr-2" aria-hidden="true" />
+            <span className="text-sm font-medium">{t('Job matches are based on your skills')}:</span>
+            <div className="flex flex-wrap gap-1.5 ml-2 max-w-md overflow-hidden mt-1 sm:mt-0">
               {userSkills.slice(0, 3).map((skill, index) => (
                 <SkillBadge 
                   key={index} 
@@ -221,13 +234,15 @@ const JobSearch: React.FC = () => {
               ))}
               {userSkills.length > 3 && (
                 <Badge variant="outline" className="bg-gray-100 text-gray-700 text-xs">
-                  +{userSkills.length - 3} more
+                  +{userSkills.length - 3} {t('more')}
                 </Badge>
               )}
             </div>
           </div>
           <Button variant="ghost" size="sm" asChild className="text-xs">
-            <Link to="/profile">Update skills</Link>
+            <Link to="/profile" aria-label={t('Go to profile page to update your skills')}>
+              {t('Update skills')}
+            </Link>
           </Button>
         </div>
       )}

@@ -7,8 +7,10 @@ import NewConversationDialog from '@/components/messaging/NewConversationDialog'
 import { useMessages } from '@/context/MessageContext';
 import { RequireAuth } from '@/components/RequireAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslation } from 'react-i18next';
 
 const MessagesPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentConversation } = useMessages();
   const [showMobileConversation, setShowMobileConversation] = useState(false);
   const [newConversationOpen, setNewConversationOpen] = useState(false);
@@ -16,30 +18,35 @@ const MessagesPage: React.FC = () => {
   return (
     <RequireAuth>
       <Helmet>
-        <title>Messages | VeteranJobBoard</title>
-        <meta name="description" content="Your messages with employers and veterans" />
+        <title>{t('Messages | VeteranJobBoard')}</title>
+        <meta name="description" content={t('Your messages with employers and veterans')} />
       </Helmet>
       
+      {/* Skip to main content link for keyboard users */}
+      <a href="#messages-content" className="skip-link">
+        {t('accessibility.skipToContent')}
+      </a>
+      
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Messages</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('Messages')}</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)] min-h-[500px]">
+        <div id="messages-content" className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)] min-h-[500px]" tabIndex={-1}>
           {/* Mobile View Tabs */}
           <div className="md:hidden">
             <Tabs defaultValue={showMobileConversation && currentConversation ? "conversation" : "list"}>
-              <TabsList className="grid grid-cols-2 mb-4">
+              <TabsList className="grid grid-cols-2 mb-4" aria-label={t('Conversation Navigation')}>
                 <TabsTrigger 
                   value="list" 
                   onClick={() => setShowMobileConversation(false)}
                 >
-                  Conversations
+                  {t('Conversations')}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="conversation" 
                   disabled={!currentConversation}
                   onClick={() => setShowMobileConversation(true)}
                 >
-                  Messages
+                  {t('Messages')}
                 </TabsTrigger>
               </TabsList>
               
@@ -66,7 +73,8 @@ const MessagesPage: React.FC = () => {
       
       <NewConversationDialog 
         open={newConversationOpen} 
-        onOpenChange={setNewConversationOpen} 
+        onOpenChange={setNewConversationOpen}
+        aria-label={t('Start a new conversation')}
       />
     </RequireAuth>
   );
