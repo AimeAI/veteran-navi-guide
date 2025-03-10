@@ -9,6 +9,7 @@ import ApplicationsTable from './ApplicationsTable';
 import ApplicationStatusChart from './ApplicationStatusChart';
 import { supabase } from '@/integrations/supabase/client';
 import { useUser } from '@/context/UserContext';
+import { Application } from './ApplicationCard';
 
 export default function EmployerDashboard() {
   const { user } = useUser();
@@ -42,15 +43,15 @@ export default function EmployerDashboard() {
   const { data: recentApplications, isLoading: isLoadingApplications } = useQuery({
     queryKey: ['recentApplications', user?.email],
     queryFn: async () => {
-      // Mock data for recent applications
+      // Mock data for recent applications - ensure status values match ApplicationStatus type
       return Array(5).fill(null).map((_, index) => ({
         id: `app-${index + 1}`,
         candidateName: `Candidate ${index + 1}`,
         jobTitle: `Position ${['Software Engineer', 'Project Manager', 'UI Designer', 'DevOps Engineer', 'QA Analyst'][index]}`,
         applicationDate: new Date(Date.now() - (index * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
-        status: ['Under Review', 'Screening', 'Interview Scheduled', 'Offered', 'Hired'][index],
+        status: ['Under Review', 'Screening', 'Interview Scheduled', 'Offered', 'Hired'][index] as Application['status'],
         skills: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'AWS'].slice(0, 3 + (index % 3))
-      }));
+      })) as Application[];
     },
     enabled: !!user?.email,
   });
