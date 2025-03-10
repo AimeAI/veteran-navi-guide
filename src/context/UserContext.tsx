@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import { UserRole, EmployerProfile } from "@/types/application";
@@ -75,6 +76,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         // Transform the data to match our UserProfile structure
         if (profileData) {
+          // Check if skills property exists in profileData, if not, set it to an empty array
+          const skills = Array.isArray((profileData as any).skills) ? (profileData as any).skills : [];
+          
           setUser({
             name: profileData.full_name || currentSession.user.email?.split('@')[0] || '',
             email: currentSession.user.email || '',
@@ -89,7 +93,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             profilePicture: profileData.avatar_url,
             role: "veteran", // Default to veteran, update based on actual role when implemented
             authProvider: currentSession.user.app_metadata.provider || "email",
-            skills: profileData.skills || []
+            skills: skills
           });
         } else {
           // Create basic profile if none exists
@@ -132,6 +136,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               .single();
             
             if (profileData) {
+              // Check if skills property exists in profileData, if not, set it to an empty array
+              const skills = Array.isArray((profileData as any).skills) ? (profileData as any).skills : [];
+              
               setUser({
                 name: profileData.full_name || newSession.user.email?.split('@')[0] || '',
                 email: newSession.user.email || '',
@@ -146,7 +153,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 profilePicture: profileData.avatar_url,
                 role: "veteran",
                 authProvider: newSession.user.app_metadata.provider || "email",
-                skills: profileData.skills || []
+                skills: skills
               });
               
               toast.success("Welcome back!");
