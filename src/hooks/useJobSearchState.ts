@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { JobFilterState } from '@/context/JobContext';
+import { ClearanceLevel, MilitaryBranch, EducationLevel, SalaryRange } from '@/types/badges';
 
 interface JobSearchStateHook {
   filters: JobFilterState;
@@ -16,6 +17,11 @@ interface JobSearchStateHook {
   handleSkillsChange: (skills: string[]) => void;
   handleClearFilters: () => void;
   handleClearCacheAndRefresh: () => Promise<void>;
+  handleClearanceLevelChange: (level: ClearanceLevel) => void;
+  handleMilitaryBranchChange: (branch: MilitaryBranch) => void;
+  handleEducationLevelChange: (level: EducationLevel) => void;
+  handleSalaryRangeChange: (range: SalaryRange) => void;
+  handleYearsOfServiceChange: (years: number) => void;
 }
 
 export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSearchStateHook => {
@@ -30,10 +36,10 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
     jobType: '',
     industry: '',
     experienceLevel: '',
-    educationLevel: '',
+    educationLevel: undefined,
     country: 'canada',
     skills: [],
-    // Adding the missing properties to match JobFilterState
+    // Advanced filter options
     mosCodes: undefined,
     clearanceLevel: undefined,
     companySize: '',
@@ -41,7 +47,9 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
     benefits: undefined,
     useJobicy: false,
     category: '',
-    salaryRange: '',
+    salaryRange: undefined,
+    militaryBranch: undefined,
+    yearsOfService: undefined,
   });
   
   const handleFilterChange = useCallback((name: string, value: any) => {
@@ -72,6 +80,26 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
     setFilters(prev => ({ ...prev, skills }));
   }, []);
   
+  const handleClearanceLevelChange = useCallback((level: ClearanceLevel) => {
+    setFilters(prev => ({ ...prev, clearanceLevel: level }));
+  }, []);
+  
+  const handleMilitaryBranchChange = useCallback((branch: MilitaryBranch) => {
+    setFilters(prev => ({ ...prev, militaryBranch: branch }));
+  }, []);
+  
+  const handleEducationLevelChange = useCallback((level: EducationLevel) => {
+    setFilters(prev => ({ ...prev, educationLevel: level }));
+  }, []);
+  
+  const handleSalaryRangeChange = useCallback((range: SalaryRange) => {
+    setFilters(prev => ({ ...prev, salaryRange: range }));
+  }, []);
+  
+  const handleYearsOfServiceChange = useCallback((years: number) => {
+    setFilters(prev => ({ ...prev, yearsOfService: years }));
+  }, []);
+  
   const handleClearFilters = useCallback(() => {
     setFilters({
       keywords: '',
@@ -82,7 +110,7 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
       jobType: '',
       industry: '',
       experienceLevel: '',
-      educationLevel: '',
+      educationLevel: undefined,
       country: 'canada',
       skills: [],
       // Adding the missing properties to match JobFilterState
@@ -93,7 +121,9 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
       benefits: undefined,
       useJobicy: false,
       category: '',
-      salaryRange: '',
+      salaryRange: undefined,
+      militaryBranch: undefined,
+      yearsOfService: undefined,
     });
   }, []);
   
@@ -120,5 +150,10 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
     handleSkillsChange,
     handleClearFilters,
     handleClearCacheAndRefresh,
+    handleClearanceLevelChange,
+    handleMilitaryBranchChange,
+    handleEducationLevelChange,
+    handleSalaryRangeChange,
+    handleYearsOfServiceChange,
   };
 };

@@ -16,10 +16,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import ProfileCompletionProgress from '@/components/ProfileCompletionProgress';
 import SkillBadge from '@/components/SkillBadge';
 import { Badge } from '@/components/ui/badge';
+import { useJobs } from '@/context/JobContext';
+import { ClearanceLevel, MilitaryBranch, EducationLevel, SalaryRange } from '@/types/badges';
+import { toast } from 'sonner';
 
 const JobSearch: React.FC = () => {
   const { t } = useTranslation();
   const { user, supabaseUser } = useUser();
+  const { savedFilters, saveFilter } = useJobs();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userSkills, setUserSkills] = useState<string[]>([]);
   
@@ -59,8 +63,18 @@ const JobSearch: React.FC = () => {
     handleSkillsChange,
     handleClearFilters,
     handleClearCacheAndRefresh,
+    handleClearanceLevelChange,
+    handleMilitaryBranchChange,
+    handleEducationLevelChange,
+    handleSalaryRangeChange,
+    handleYearsOfServiceChange,
   } = useJobSearchState(refreshJobs);
   
+  const handleSaveFilter = (name: string) => {
+    saveFilter(name, filters);
+    toast.success(t('Search filter saved successfully!'));
+  };
+
   const handlePageChange = (page: number) => {
     setPage(page);
     window.scrollTo(0, 0);
@@ -107,6 +121,10 @@ const JobSearch: React.FC = () => {
     filters.jobType,
     filters.country,
     filters.skills,
+    filters.clearanceLevel,
+    filters.militaryBranch,
+    filters.salaryRange,
+    filters.yearsOfService,
   ]);
   
   const dismissOnboarding = () => {
@@ -207,6 +225,12 @@ const JobSearch: React.FC = () => {
           onFilterChange={handleFilterChange}
           onMilitarySkillsChange={handleMilitarySkillsChange}
           onSkillsChange={handleSkillsChange}
+          onClearanceLevelChange={handleClearanceLevelChange}
+          onMilitaryBranchChange={handleMilitaryBranchChange}
+          onEducationLevelChange={handleEducationLevelChange}
+          onSalaryRangeChange={handleSalaryRangeChange}
+          onYearsOfServiceChange={handleYearsOfServiceChange}
+          onSaveFilter={handleSaveFilter}
           jobs={jobs}
           isLoading={isLoading}
           error={error}
@@ -214,6 +238,7 @@ const JobSearch: React.FC = () => {
           totalPages={totalPages}
           totalJobs={totalJobs}
           onPageChange={handlePageChange}
+          savedFilters={savedFilters}
         />
       </div>
       

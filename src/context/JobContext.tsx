@@ -1,5 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { ClearanceLevel, MilitaryBranch, EducationLevel, SalaryRange } from '@/types/badges';
 
 // Job interface with all required fields for type safety
 export interface Job {
@@ -34,13 +34,13 @@ export interface JobFilterState {
   keywords: string;
   location: string;
   mosCodes: string[] | undefined;
-  clearanceLevel: string[] | undefined;
+  clearanceLevel: ClearanceLevel | undefined;
   remote: boolean;
   militarySkills: string[] | undefined;
   radius: number;
   industry: string;
   experienceLevel: string;
-  educationLevel: string;
+  educationLevel: EducationLevel | undefined;
   jobType: string;
   companySize: string;
   companyRating: number | undefined;
@@ -49,7 +49,11 @@ export interface JobFilterState {
   useJobicy: boolean;
   skills: string[] | undefined;
   category: string;
-  salaryRange: string;
+  salaryRange: SalaryRange | undefined;
+  militaryBranch: MilitaryBranch | undefined;
+  yearsOfService: number | undefined;
+  savedId?: string;
+  savedName?: string;
 }
 
 // Interface for the Job Context
@@ -66,6 +70,10 @@ export interface JobContextProps {
   applyToJob: (job: Job) => void;
   searchJobs: (filters: JobFilterState) => Promise<void>;
   clearFilters: () => void;
+  savedFilters: SavedFilter[];
+  saveFilter: (name: string, filters: JobFilterState) => void;
+  deleteSavedFilter: (id: string) => void;
+  applySavedFilter: (id: string) => void;
 }
 
 // Default filter state
@@ -79,7 +87,7 @@ const defaultFilters: JobFilterState = {
   radius: 50,
   industry: '',
   experienceLevel: '',
-  educationLevel: '',
+  educationLevel: undefined,
   jobType: '',
   companySize: '',
   companyRating: undefined,
@@ -88,7 +96,9 @@ const defaultFilters: JobFilterState = {
   useJobicy: false,
   skills: undefined,
   category: '',
-  salaryRange: '',
+  salaryRange: undefined,
+  militaryBranch: undefined,
+  yearsOfService: undefined,
 };
 
 // Create the context
@@ -108,10 +118,18 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [filters, setFilters] = useState<JobFilterState>(defaultFilters);
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(() => {
+    const storedFilters = localStorage.getItem('savedFilters');
+    return storedFilters ? JSON.parse(storedFilters) : [];
+  });
 
   useEffect(() => {
     localStorage.setItem('savedJobs', JSON.stringify(savedJobs));
   }, [savedJobs]);
+
+  useEffect(() => {
+    localStorage.setItem('savedFilters', JSON.stringify(savedFilters));
+  }, [savedFilters]);
 
   // Function to save a job
   const saveJob = (job: Job) => {
@@ -144,6 +162,35 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem('appliedJobs', JSON.stringify(newAppliedJobs));
       return newAppliedJobs;
     });
+  };
+
+  // Function to save a filter configuration
+  const saveFilter = (name: string, filterConfig: JobFilterState) => {
+    const newSavedFilter: SavedFilter = {
+      id: crypto.randomUUID(),
+      name,
+      filters: filterConfig,
+      dateCreated: new Date().toISOString(),
+    };
+    
+    setSavedFilters(prev => [...prev, newSavedFilter]);
+  };
+
+  // Function to delete a saved filter
+  const deleteSavedFilter = (id: string) => {
+    setSavedFilters(prev => prev.filter(filter => filter.id !== id));
+  };
+
+  // Function to apply a saved filter
+  const applySavedFilter = (id: string) => {
+    const savedFilter = savedFilters.find(filter => filter.id === id);
+    if (savedFilter) {
+      setFilters({
+        ...savedFilter.filters,
+        savedId: id,
+        savedName: savedFilter.name
+      });
+    }
   };
 
   // Function to search for jobs
@@ -221,6 +268,10 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         applyToJob,
         searchJobs,
         clearFilters,
+        savedFilters,
+        saveFilter,
+        deleteSavedFilter,
+        applySavedFilter,
       }}
     >
       {children}
