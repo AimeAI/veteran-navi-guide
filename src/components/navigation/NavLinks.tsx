@@ -7,7 +7,6 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
@@ -154,6 +153,38 @@ const NavLinks = () => {
                         className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                       >
                         {t('navigation.employers', 'Employer Dashboard')}
+                      </NavLink>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          )}
+
+          {user?.email?.endsWith('@admin.com') && (
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="text-sm font-medium text-nav-foreground hover:text-primary bg-transparent">
+                Admin
+              </NavigationMenuTrigger>
+              <NavigationMenuContent className="bg-white border shadow-md rounded-md min-w-[200px] z-50">
+                <ul className="grid gap-3 p-4">
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <NavLink 
+                        to="/admin"
+                        className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      >
+                        Admin Dashboard
+                      </NavLink>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <NavLink 
+                        to="/admin/content"
+                        className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      >
+                        Content Management
                       </NavLink>
                     </NavigationMenuLink>
                   </li>

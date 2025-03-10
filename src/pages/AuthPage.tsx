@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,6 @@ const AuthPage: React.FC = () => {
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: "" });
   const [csrfToken, setCsrfToken] = useState("");
   
-  // Handle social login redirect if provider is in URL
   useEffect(() => {
     const handleSocialLogin = async () => {
       if (providerParam && !isLoading && !session) {
@@ -69,7 +67,6 @@ const AuthPage: React.FC = () => {
     setCsrfToken(storeCSRFToken());
   }, []);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (session && user?.isAuthenticated) {
       if (!user.emailVerified) {
@@ -213,6 +210,15 @@ const AuthPage: React.FC = () => {
     }
   };
 
+  const handleAdminLogin = async () => {
+    try {
+      await login('admin@admin.com', 'Admin123!', false);
+    } catch (error) {
+      console.error("Admin login error:", error);
+      toast.error("Admin login failed. Please try signing up with an admin email first.");
+    }
+  };
+
   const renderPasswordStrength = () => {
     if (!signupPassword) return null;
     
@@ -243,7 +249,6 @@ const AuthPage: React.FC = () => {
     );
   };
 
-  // If already logged in, simply redirect
   if (user?.isAuthenticated) {
     return (
       <div className="container mx-auto flex flex-col items-center justify-center py-10 px-4">
@@ -356,6 +361,8 @@ const AuthPage: React.FC = () => {
                   <SocialLoginButtons 
                     onSocialLogin={handleSocialLoginClick}
                     isLoading={isLoading}
+                    showAdminLogin={true}
+                    onAdminLogin={handleAdminLogin}
                   />
                 </CardContent>
                 <CardFooter>
@@ -540,6 +547,8 @@ const AuthPage: React.FC = () => {
                   <SocialLoginButtons 
                     onSocialLogin={handleSocialLoginClick}
                     isLoading={isLoading}
+                    showAdminLogin={true}
+                    onAdminLogin={handleAdminLogin}
                   />
                 </CardContent>
                 <CardFooter>
