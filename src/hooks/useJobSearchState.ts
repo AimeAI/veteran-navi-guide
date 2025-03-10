@@ -33,6 +33,15 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
     educationLevel: '',
     country: 'canada',
     skills: [],
+    // Adding the missing properties to match JobFilterState
+    mosCodes: undefined,
+    clearanceLevel: undefined,
+    companySize: '',
+    companyRating: undefined,
+    benefits: undefined,
+    useJobicy: false,
+    category: '',
+    salaryRange: '',
   });
   
   const handleFilterChange = useCallback((name: string, value: any) => {
@@ -76,6 +85,15 @@ export const useJobSearchState = (refreshCallback: () => Promise<void>): JobSear
       educationLevel: '',
       country: 'canada',
       skills: [],
+      // Adding the missing properties to match JobFilterState
+      mosCodes: undefined,
+      clearanceLevel: undefined,
+      companySize: '',
+      companyRating: undefined,
+      benefits: undefined,
+      useJobicy: false,
+      category: '',
+      salaryRange: '',
     });
   }, []);
   

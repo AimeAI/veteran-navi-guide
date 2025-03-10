@@ -1,11 +1,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/context/UserContext'; // Changed from useAuth to useUser
 import { getUserSkills, matchJobsWithSkills, SkillMatch } from '@/utils/skillMatching';
 
 export const useSkillMatching = (jobs: Job[]) => {
-  const { user } = useAuth();
+  const { user } = useUser(); // Changed from useAuth to useUser
   const [userSkills, setUserSkills] = useState<string[]>([]);
   const [matchedJobs, setMatchedJobs] = useState<SkillMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);

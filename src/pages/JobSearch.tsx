@@ -6,12 +6,12 @@ import { useJobSearchState } from '@/hooks/useJobSearchState';
 import { useTranslation } from 'react-i18next';
 import JobSearchHeader from '@/components/job-search/JobSearchHeader';
 import SearchTabs from '@/components/job-search/SearchTabs';
-import { useAuth } from '@/hooks/useAuth'; // Import auth hook
+import { useUser } from '@/context/UserContext'; // Changed from useAuth to useUser
 import { getUserSkills } from '@/utils/skillMatching'; // Import skill matching function
 
 const JobSearch: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth(); // Get current user
+  const { user } = useUser(); // Get current user
   
   const {
     jobs,
