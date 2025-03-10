@@ -1,5 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { MentorshipMessage } from "./types";
+import { toast } from "sonner";
 
 // Get messages for a connection
 export const getConnectionMessages = async (connectionId: string): Promise<MentorshipMessage[]> => {
@@ -8,7 +10,7 @@ export const getConnectionMessages = async (connectionId: string): Promise<Mento
       .from('mentorship_messages')
       .select(`
         *,
-        sender_profile:sender_id (
+        profiles:sender_id (
           full_name,
           avatar_url
         )
@@ -20,8 +22,8 @@ export const getConnectionMessages = async (connectionId: string): Promise<Mento
     
     return data.map(message => ({
       ...message,
-      sender_name: message.sender_profile?.full_name || '',
-      sender_avatar: message.sender_profile?.avatar_url || ''
+      sender_name: message.profiles?.full_name || '',
+      sender_avatar: message.profiles?.avatar_url || ''
     }));
   } catch (error) {
     console.error('Error fetching messages:', error);

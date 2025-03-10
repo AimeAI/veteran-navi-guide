@@ -14,11 +14,11 @@ const mapProfileData = (profile: any): MentorshipProfile => ({
   mentor_bio: profile.mentor_bio,
   mentoring_topics: profile.mentoring_topics,
   availability: profile.availability,
-  full_name: profile.user?.full_name,
-  avatar_url: profile.user?.avatar_url,
-  military_branch: profile.user?.military_branch,
-  user_name: profile.user?.full_name,
-  user_avatar: profile.user?.avatar_url
+  full_name: profile.profiles?.full_name,
+  avatar_url: profile.profiles?.avatar_url,
+  military_branch: profile.profiles?.military_branch,
+  user_name: profile.profiles?.full_name,
+  user_avatar: profile.profiles?.avatar_url
 });
 
 // Get all available mentors
@@ -28,7 +28,7 @@ export const getAvailableMentors = async (): Promise<MentorshipProfile[]> => {
       .from('mentorship_profiles')
       .select(`
         *,
-        user:user_id (
+        profiles:user_id (
           full_name,
           avatar_url,
           military_branch
@@ -51,7 +51,7 @@ export const getProfileById = async (profileId: string): Promise<MentorshipProfi
       .from('mentorship_profiles')
       .select(`
         *,
-        user:user_id (
+        profiles:user_id (
           full_name,
           avatar_url,
           military_branch
@@ -75,7 +75,7 @@ export const getProfileByUserId = async (userId: string): Promise<MentorshipProf
       .from('mentorship_profiles')
       .select(`
         *,
-        user:user_id (
+        profiles:user_id (
           full_name,
           avatar_url,
           military_branch
@@ -114,7 +114,7 @@ export const upsertMentorshipProfile = async (profile: Partial<MentorshipProfile
       })
       .select(`
         *,
-        user:user_id (
+        profiles:user_id (
           full_name,
           avatar_url,
           military_branch
@@ -129,3 +129,8 @@ export const upsertMentorshipProfile = async (profile: Partial<MentorshipProfile
     return null;
   }
 };
+
+// For compatibility with existing code
+export const getMentorshipProfile = getProfileByUserId;
+export const updateProfile = upsertMentorshipProfile;
+export const createProfile = upsertMentorshipProfile;

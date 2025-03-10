@@ -5,24 +5,19 @@ import {
   MentorshipProfile, 
   MentorshipConnection,
   MentorshipMessage,
-  MentorshipMeeting
-} from '@/services/mentorship/types';
-import {
-  getConnectionMessages,
+  MentorshipMeeting,
   getProfileByUserId,
-  getMentorshipProfile,
   getAvailableMentors,
   getUserConnections,
   createConnectionRequest,
   updateConnectionStatus,
+  getConnectionMessages,
   sendMessage,
   subscribeToMessages,
   scheduleMeeting,
   getMentorshipMeetings,
   updateMeetingStatus,
   markMessagesAsRead,
-  updateProfile,
-  createProfile,
   upsertMentorshipProfile
 } from '@/services/mentorship/index';
 
@@ -41,7 +36,7 @@ export const useMentorship = () => {
     if (!user) return;
     
     setIsLoading(true);
-    const profile = await getMentorshipProfile(user.email);
+    const profile = await getProfileByUserId(user.email);
     setUserProfile(profile);
     setIsLoading(false);
   }, [user]);
