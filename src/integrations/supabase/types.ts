@@ -340,6 +340,172 @@ export type Database = {
         }
         Relationships: []
       }
+      mentorship_connections: {
+        Row: {
+          created_at: string
+          id: string
+          mentee_id: string
+          mentor_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mentee_id: string
+          mentor_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mentee_id?: string
+          mentor_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_connections_mentee_id_fkey"
+            columns: ["mentee_id"]
+            isOneToOne: false
+            referencedRelation: "mentorship_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentorship_connections_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentorship_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorship_meetings: {
+        Row: {
+          connection_id: string
+          created_at: string
+          description: string | null
+          duration: number
+          id: string
+          meeting_link: string | null
+          meeting_time: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          description?: string | null
+          duration: number
+          id?: string
+          meeting_link?: string | null
+          meeting_time: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          description?: string | null
+          duration?: number
+          id?: string
+          meeting_link?: string | null
+          meeting_time?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_meetings_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "mentorship_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorship_messages: {
+        Row: {
+          connection_id: string
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          sender_id: string
+        }
+        Insert: {
+          connection_id: string
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          sender_id: string
+        }
+        Update: {
+          connection_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_messages_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "mentorship_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorship_profiles: {
+        Row: {
+          availability: string | null
+          created_at: string
+          id: string
+          industry: string | null
+          is_mentor: boolean
+          max_mentees: number | null
+          mentor_bio: string | null
+          mentoring_topics: string[] | null
+          updated_at: string
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          availability?: string | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          is_mentor?: boolean
+          max_mentees?: number | null
+          mentor_bio?: string | null
+          mentoring_topics?: string[] | null
+          updated_at?: string
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          availability?: string | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          is_mentor?: boolean
+          max_mentees?: number | null
+          mentor_bio?: string | null
+          mentoring_topics?: string[] | null
+          updated_at?: string
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -469,6 +635,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      are_profiles_connected: {
+        Args: {
+          profile_id1: string
+          profile_id2: string
+        }
+        Returns: boolean
+      }
       get_matching_jobs: {
         Args: {
           user_id: string
