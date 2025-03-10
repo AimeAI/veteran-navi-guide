@@ -10,7 +10,7 @@ export const getConnectionMessages = async (connectionId: string): Promise<Mento
       .from('mentorship_messages')
       .select(`
         *,
-        profiles!mentorship_messages_sender_id_fkey (
+        profiles (
           full_name,
           avatar_url
         )
