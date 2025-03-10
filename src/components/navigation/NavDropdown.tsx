@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '@/context/UserContext';
+import { User, Building, Settings, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,92 +15,84 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  User,
-  Settings,
-  CreditCard,
-  Bell,
-  LogOut,
-  Bookmark,
-  MessageSquare,
-  LifeBuoy,
-  Building,
-} from 'lucide-react';
 
-const NavDropdown: React.FC = () => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
+const NavDropdown = () => {
   const { user, logout } = useUser();
+  const navigate = useNavigate();
 
-  const handleSignOut = async () => {
+  if (!user) {
+    return null;
+  }
+
+  const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate('/login');
+  };
+
+  // Profile section for both roles
+  const profileSection = (
+    <DropdownMenuGroup>
+      {user.role === 'veteran' ? (
+        <DropdownMenuItem asChild>
+          <Link to="/profile">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+      ) : (
+        <DropdownMenuItem asChild>
+          <Link to="/employer-profile">
+            <Building className="mr-2 h-4 w-4" />
+            <span>Company Profile</span>
+          </Link>
+        </DropdownMenuItem>
+      )}
+    </DropdownMenuGroup>
+  );
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part.charAt(0))
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center space-x-2 p-1 rounded-full hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            {user?.profilePicture ? (
-              <AvatarImage src={user.profilePicture} alt={user?.name || "User"} />
-            ) : (
-              <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
-            )}
+            <AvatarImage src={user?.profilePicture || `https://avatars.dicebear.com/api/initials/${user?.name}.svg`} alt={user?.name} />
+            <AvatarFallback>{getInitials(user?.name || 'U')}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium sr-only">{user?.name}</span>
-        </button>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
+      <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user?.email || ""}</p>
+            <p className="text-sm font-medium leading-none">{user?.name}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user?.email}
+            </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {profileSection}
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
-            <User className="mr-2 h-4 w-4" />
-            <span>{t('navigation.profile')}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/saved')}>
-            <Bookmark className="mr-2 h-4 w-4" />
-            <span>{t('navigation.savedJobs')}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/history')}>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>{t('navigation.applicationHistory')}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/settings/notifications')}>
-            <Bell className="mr-2 h-4 w-4" />
-            <span>{t('navigation.notifications')}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/profile/settings')}>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>{t('navigation.settings')}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/messages')}>
-            <MessageSquare className="mr-2 h-4 w-4" />
-            <span>{t('navigation.messages')}</span>
+          <DropdownMenuItem asChild>
+            <Link to="/settings">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate('/employer/profile')}>
-            <Building className="mr-2 h-4 w-4" />
-            <span>{t('navigation.employerProfile')}</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/feedback')}>
-          <LifeBuoy className="mr-2 h-4 w-4" />
-          <span>{t('navigation.support')}</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>{t('common.signOut')}</span>
+          <span>Log out</span>
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>

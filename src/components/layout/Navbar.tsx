@@ -1,18 +1,17 @@
 
 import React, { useState } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useUser } from '@/context/UserContext';
 import { Menu } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import NavDropdown from '@/components/navigation/NavDropdown';
 import MobileMenu from '@/components/navigation/MobileMenu';
-import MessageNotificationBadge from '@/components/messaging/MessageNotificationBadge';
 import LanguageSelector from '@/components/language/LanguageSelector';
+import NavLinks from '@/components/navigation/NavLinks';
+import AuthButtons from '@/components/navigation/AuthButtons';
+import UserNavigation from '@/components/navigation/UserNavigation';
 
 const Navbar = () => {
   const { user } = useUser();
-  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -23,103 +22,16 @@ const Navbar = () => {
             VeteranJobBoard
           </Link>
           
-          <div className="hidden md:flex space-x-6">
-            <NavLink
-              to="/job-search"
-              className={({ isActive }) =>
-                `text-sm font-medium ${
-                  isActive ? 'text-primary' : 'text-nav-foreground hover:text-primary'
-                }`
-              }
-            >
-              {t('navigation.jobSearch')}
-            </NavLink>
-            
-            <NavLink
-              to="/vetted-jobs"
-              className={({ isActive }) =>
-                `text-sm font-medium ${
-                  isActive ? 'text-primary' : 'text-nav-foreground hover:text-primary'
-                }`
-              }
-            >
-              {t('navigation.vettedJobs')}
-            </NavLink>
-            
-            <NavLink
-              to="/mentorship"
-              className={({ isActive }) =>
-                `text-sm font-medium ${
-                  isActive ? 'text-primary' : 'text-nav-foreground hover:text-primary'
-                }`
-              }
-            >
-              {t('navigation.mentorship')}
-            </NavLink>
-            
-            <NavLink
-              to="/resources"
-              className={({ isActive }) =>
-                `text-sm font-medium ${
-                  isActive ? 'text-primary' : 'text-nav-foreground hover:text-primary'
-                }`
-              }
-            >
-              {t('navigation.resources')}
-            </NavLink>
-            
-            {user?.role === 'employer' && (
-              <NavLink
-                to="/post-job"
-                className={({ isActive }) =>
-                  `text-sm font-medium ${
-                    isActive ? 'text-primary' : 'text-nav-foreground hover:text-primary'
-                  }`
-                }
-              >
-                {t('navigation.postJob')}
-              </NavLink>
-            )}
-            
-            {user?.role === 'veteran' && (
-              <NavLink
-                to="/learning"
-                className={({ isActive }) =>
-                  `text-sm font-medium ${
-                    isActive ? 'text-primary' : 'text-nav-foreground hover:text-primary'
-                  }`
-                }
-              >
-                {t('navigation.learning')}
-              </NavLink>
-            )}
-          </div>
+          <NavLinks />
         </div>
         
         <div className="flex items-center space-x-3">
           <LanguageSelector />
           
           {user ? (
-            <>
-              <div className="hidden md:flex space-x-3">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/messages">
-                    <MessageNotificationBadge />
-                  </Link>
-                </Button>
-                
-                <NavDropdown />
-              </div>
-            </>
+            <UserNavigation />
           ) : (
-            <div className="hidden md:flex space-x-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/auth?tab=login">{t('common.login')}</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link to="/auth?tab=signup">{t('common.signup')}</Link>
-              </Button>
-            </div>
+            <AuthButtons />
           )}
           
           {/* Mobile menu button */}
