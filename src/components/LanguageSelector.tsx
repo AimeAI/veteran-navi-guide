@@ -23,7 +23,7 @@ const languages: LanguageOption[] = [
 
 const LanguageSelector: React.FC = () => {
   const { t } = useTranslation();
-  const { language, saveLanguagePreference } = useLanguage();
+  const { language, changeLanguage } = useLanguage();
 
   return (
     <DropdownMenu>
@@ -42,7 +42,7 @@ const LanguageSelector: React.FC = () => {
               "flex items-center cursor-pointer",
               language === lang.code ? "bg-accent" : ""
             )}
-            onClick={() => saveLanguagePreference(lang.code)}
+            onClick={() => changeLanguage(lang.code)}
             role="menuitem"
             aria-current={language === lang.code ? "true" : "false"}
           >
