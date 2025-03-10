@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { AuthRoutes } from './authRoutes';
-import { VeteranRoutes } from './veteranRoutes';
+import { veteranRoutes } from './veteranRoutes';
 import { EmployerRoutes } from './employerRoutes';
 import { ResourceRoutes } from './resourceRoutes';
 import { AdminRoutes } from './adminRoutes';

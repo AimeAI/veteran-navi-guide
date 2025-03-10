@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useUser } from '@/context/UserContext';
 import { Briefcase, User, Bell, Menu } from 'lucide-react';
 import NavDropdown from './NavDropdown';
-import { MobileMenu } from './navigation/MobileMenu';
+import MobileMenu from './navigation/MobileMenu';
 import MessageNotificationBadge from './messaging/MessageNotificationBadge';
 import LanguageSelector from './language/LanguageSelector';
 import { useTranslation } from 'react-i18next';

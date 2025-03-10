@@ -1,6 +1,6 @@
 
 import { lazy } from 'react';
-import { VeteranDashboardPage } from '@/pages';
+import VeteranDashboardPage from '@/pages/VeteranDashboardPage';
 import JobAlertsPage from '@/pages/JobAlertsPage';
 import SavedJobs from '@/pages/SavedJobs';
 import ApplicationsPage from '@/pages/ApplicationsPage';
