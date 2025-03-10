@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, User, BookOpen, Building, ChevronDown, Shield } from 'lucide-react';
-import MobileMenu from '../navigation/MobileMenu';
+import { Briefcase, User, BookOpen, Building, ChevronDown, Shield, Map } from 'lucide-react';
+import MobileMenu from './MobileMenu';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import LanguageSelector from '../language/LanguageSelector';
+import LanguageSelector from './LanguageSelector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser } from '@/context/UserContext';
-import NavDropdown from '../navigation/NavDropdown';
+import NavDropdown from './NavDropdown';
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
@@ -61,6 +61,13 @@ const Navbar: React.FC = () => {
         { label: t('navigation.postJob'), href: '/employer/post-job' },
         { label: t('navigation.manageApplications'), href: '/employer/manage-applications' },
         { label: t('navigation.searchVeterans'), href: '/employer/search-veterans' },
+      ],
+    },
+    {
+      title: "Dev",
+      icon: <Map className="h-4 w-4" aria-hidden="true" />,
+      items: [
+        { label: "All Routes", href: '/routes' },
       ],
     },
   ];

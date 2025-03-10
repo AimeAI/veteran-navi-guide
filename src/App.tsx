@@ -46,8 +46,8 @@ const FeedbackSupportPage = lazy(() => import("./pages/FeedbackSupportPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ReferralProgramPage = lazy(() => import("./pages/ReferralProgramPage"));
 const VettedJobsPage = lazy(() => import("./pages/VettedJobsPage"));
-// Add new auth callback page
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+const AllRoutes = lazy(() => import("./pages/AllRoutes"));
 
 // Loading component for suspense fallback
 const PageLoading = () => (
@@ -196,6 +196,7 @@ function App() {
                         </RequireAuth>
                       }
                     />
+                    <Route path="/routes" element={<AllRoutes />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
