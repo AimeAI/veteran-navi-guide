@@ -1,4 +1,3 @@
-
 import { VeteranBadge, BadgeType } from "@/components/ui/veteran-badge";
 import { UserProfile } from "@/context/UserContext";
 
@@ -67,6 +66,22 @@ export const availableBadges: VeteranBadge[] = [
     description: "Added verified military skills to your profile",
     icon: "book",
     level: 1
+  },
+  {
+    id: "onboarding-complete",
+    type: "achievement",
+    name: "Onboarding Complete",
+    description: "Successfully completed the onboarding process",
+    icon: "check-circle",
+    level: 1
+  },
+  {
+    id: "skills-specialist",
+    type: "skill",
+    name: "Skills Specialist",
+    description: "Added 5 or more skills to your profile",
+    icon: "award",
+    level: 1
   }
 ];
 
@@ -98,6 +113,24 @@ export const checkJobSeekerBadge = (appliedJobs: any[]): boolean => {
   return appliedJobs && appliedJobs.length >= 5;
 };
 
+// New function to check if user has completed onboarding
+export const checkOnboardingCompleteBadge = (user: UserProfile): boolean => {
+  if (!user) return false;
+  
+  // Check if essential onboarding fields are filled
+  return Boolean(
+    user.name &&
+    user.email &&
+    user.location &&
+    user.militaryBranch
+  );
+};
+
+// New function to check for skills specialist badge
+export const checkSkillsSpecialistBadge = (skills: string[]): boolean => {
+  return skills && skills.length >= 5;
+};
+
 // Function to determine which badges a user has earned
 export const determineEarnedBadges = (
   user: UserProfile,
@@ -106,7 +139,8 @@ export const determineEarnedBadges = (
   interviewPrep: boolean = false,
   resumeUploaded: boolean = false,
   connections: number = 0,
-  verifiedSkills: boolean = false
+  verifiedSkills: boolean = false,
+  skills: string[] = []
 ): VeteranBadge[] => {
   if (!user) return [];
   
@@ -117,6 +151,22 @@ export const determineEarnedBadges = (
   if (checkProfileCompleteBadge(user)) {
     earnedBadges.push({
       ...availableBadges.find(b => b.type === "profile-complete")!,
+      earnedDate: now
+    });
+  }
+  
+  // Check for onboarding complete badge
+  if (checkOnboardingCompleteBadge(user)) {
+    earnedBadges.push({
+      ...availableBadges.find(b => b.id === "onboarding-complete")!,
+      earnedDate: now
+    });
+  }
+  
+  // Check for skills specialist badge
+  if (checkSkillsSpecialistBadge(skills)) {
+    earnedBadges.push({
+      ...availableBadges.find(b => b.id === "skills-specialist")!,
       earnedDate: now
     });
   }

@@ -2,9 +2,10 @@
 import React from "react";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { AlertCircle, Check, Circle, CircleOff, HelpCircle } from "lucide-react";
+import { AlertCircle, Check, Circle, CircleOff, HelpCircle, Trophy } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { cn } from "@/lib/utils";
+import { Badge } from "./ui/badge";
 
 export interface ProfileSection {
   id: string;
@@ -13,17 +14,20 @@ export interface ProfileSection {
   isComplete: boolean;
   tooltipText: string;
   priority: number; // 1 = high priority, 2 = medium, 3 = low
+  points?: number; // Points awarded for gamification
 }
 
 interface ProfileCompletionProgressProps {
   className?: string;
   showDetails?: boolean;
+  showPoints?: boolean;
   sections?: ProfileSection[];
 }
 
 export const ProfileCompletionProgress = ({
   className,
   showDetails = true,
+  showPoints = false,
   sections: providedSections,
 }: ProfileCompletionProgressProps) => {
   const { user } = useUser();
@@ -36,40 +40,54 @@ export const ProfileCompletionProgress = ({
       name: "Basic Information",
       description: "Name, location, contact details",
       isComplete: Boolean(user?.name && user?.email && user?.location),
-      tooltipText: "Complete your basic information",
+      tooltipText: "Complete your basic information to help employers contact you",
       priority: 1,
+      points: 10
     },
     {
       id: "military-service",
       name: "Military Service",
       description: "Branch, rank, years of service",
       isComplete: Boolean(user?.militaryBranch && user?.rank && user?.yearsOfService),
-      tooltipText: "Add your military service details",
+      tooltipText: "Add your military service details to enhance job matching with relevant positions",
       priority: 1,
+      points: 15
     },
     {
       id: "bio",
       name: "Professional Summary",
       description: "Bio and summary of experience",
       isComplete: Boolean(user?.bio && user?.bio.length > 30),
-      tooltipText: "Write a professional summary (at least 30 characters)",
+      tooltipText: "Write a professional summary (at least 30 characters) to showcase your background",
       priority: 2,
+      points: 10
     },
     {
       id: "profile-picture",
       name: "Profile Picture",
       description: "Add a professional photo",
       isComplete: Boolean(user?.profilePicture),
-      tooltipText: "Upload a professional photo",
+      tooltipText: "Upload a professional photo to make your profile more personable",
       priority: 2,
+      points: 5
     },
     {
       id: "email-verification",
       name: "Email Verification",
       description: "Verify your email address",
       isComplete: Boolean(user?.emailVerified),
-      tooltipText: "Verify your email to access all features",
+      tooltipText: "Verify your email to access all features and ensure you receive important notifications",
       priority: 1,
+      points: 5
+    },
+    {
+      id: "skills",
+      name: "Skills",
+      description: "Add your professional and military skills",
+      isComplete: Boolean(user?.skills && user?.skills.length > 3),
+      tooltipText: "Add at least 3 relevant skills to improve job matching and recommendations",
+      priority: 1,
+      points: 15
     }
   ];
 
@@ -134,6 +152,12 @@ export const ProfileCompletionProgress = ({
   const totalSections = sections.length;
   const completionPercentage = Math.round((completedSections / totalSections) * 100);
   
+  // Calculate total points earned
+  const totalPointsPossible = sections.reduce((sum, section) => sum + (section.points || 0), 0);
+  const earnedPoints = sections
+    .filter(section => section.isComplete)
+    .reduce((sum, section) => sum + (section.points || 0), 0);
+  
   // Get completion status
   const getCompletionStatus = () => {
     if (completionPercentage === 100) return "Complete";
@@ -181,9 +205,17 @@ export const ProfileCompletionProgress = ({
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm font-medium">Profile Completion</p>
-          <p className={cn("text-sm font-semibold", getStatusColor())}>
-            {completionPercentage}% - {getCompletionStatus()}
-          </p>
+          <div className="flex items-center gap-2">
+            {showPoints && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Trophy className="h-3 w-3" />
+                <span>{earnedPoints}/{totalPointsPossible} points</span>
+              </Badge>
+            )}
+            <p className={cn("text-sm font-semibold", getStatusColor())}>
+              {completionPercentage}% - {getCompletionStatus()}
+            </p>
+          </div>
         </div>
         <div className="relative">
           <Progress 
@@ -202,7 +234,7 @@ export const ProfileCompletionProgress = ({
                 <TooltipTrigger asChild>
                   <div 
                     className={cn(
-                      "flex items-center justify-between p-2 rounded-md",
+                      "flex items-center justify-between p-2 rounded-md transition-colors cursor-pointer",
                       section.isComplete 
                         ? "bg-gray-50 hover:bg-gray-100" 
                         : section.priority === 1 
@@ -217,7 +249,17 @@ export const ProfileCompletionProgress = ({
                         <p className="text-xs text-gray-500">{section.description}</p>
                       </div>
                     </div>
-                    <HelpCircle className="h-4 w-4 text-gray-400" />
+                    <div className="flex items-center gap-2">
+                      {showPoints && section.points && (
+                        <Badge variant="outline" className={cn(
+                          "text-xs",
+                          section.isComplete ? "bg-green-50" : "bg-gray-50"
+                        )}>
+                          {section.points} pts
+                        </Badge>
+                      )}
+                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                    </div>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="p-2 max-w-xs">
