@@ -31,11 +31,14 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
   try {
     console.log("Fetching jobs from Supabase with params:", params);
     
-    let query = supabase.from('jobs').select('*', { count: 'exact' });
+    let query = supabase
+      .from('jobs')
+      .select('*', { count: 'exact' });
     
     // Apply filters if provided
     if (params.source) {
-      query = query.eq('source', params.source);
+      // Using .ilike for case-insensitive matching if source information is stored in a field
+      query = query.ilike('source', `%${params.source}%`);
     }
     
     if (params.keywords) {
@@ -47,10 +50,15 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
     }
     
     if (params.remote !== undefined) {
-      query = query.eq('remote', params.remote);
+      // Only apply if the field exists in your table
+      if (params.remote === true) {
+        // For boolean fields or to check specific values
+        query = query.eq('remote', true);
+      }
     }
     
     if (params.category) {
+      // Only apply if you have a category field
       query = query.eq('category', params.category);
     }
     
@@ -82,20 +90,20 @@ export const getJobsFromSupabase = async (params: JobSearchParams): Promise<{
       company: record.company,
       location: record.location,
       description: record.description,
-      category: record.category || 'other',
+      category: record.category || 'other', // Provide defaults for fields that might not exist
       salaryRange: record.salary_range || '',
-      remote: record.remote || false,
-      clearanceLevel: record.clearance_level || 'none',
-      mosCode: record.mos_code || '',
+      remote: false, // Default value since field doesn't exist in DB
+      clearanceLevel: 'none', // Default value
+      mosCode: '', // Default value
       requiredSkills: record.required_skills || [],
       preferredSkills: record.requirements || [],
       date: record.created_at,
       jobType: record.job_type || 'fulltime',
-      industry: record.industry || '',
-      experienceLevel: record.experience_level || '',
-      educationLevel: record.education_level || '',
-      source: record.source,
-      url: record.application_url || record.url,
+      industry: '', // Default value
+      experienceLevel: '', // Default value
+      educationLevel: '', // Default value
+      source: params.source || 'supabase',
+      url: record.application_url || '',
     }));
     
     return {
@@ -149,20 +157,13 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
       company: job.company,
       location: job.location,
       description: job.description,
-      category: job.category,
       salary_range: job.salaryRange,
-      remote: job.remote,
-      clearance_level: job.clearanceLevel,
-      mos_code: job.mosCode,
-      required_skills: job.requiredSkills,
-      preferred_skills: job.preferredSkills,
-      date: job.date,
       job_type: job.jobType,
-      industry: job.industry,
-      experience_level: job.experienceLevel,
-      education_level: job.educationLevel,
-      source: job.source,
-      url: job.url,
+      required_skills: job.requiredSkills,
+      requirements: job.preferredSkills,
+      application_url: job.url,
+      status: 'open',
+      // Only include fields that actually exist in your database schema
     }));
     
     // Insert jobs in batches to avoid exceeding payload limits
