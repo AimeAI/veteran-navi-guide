@@ -29,7 +29,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
               onOpenChange(false);
             }}
           >
-            {t('navigation.home')}
+            {t('navigation.home', 'Home')}
           </Button>
           <Button
             variant="ghost"
@@ -39,7 +39,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
               onOpenChange(false);
             }}
           >
-            {t('navigation.jobSearch')}
+            {t('navigation.jobSearch', 'Job Search')}
           </Button>
           <Button
             variant="ghost"
@@ -49,17 +49,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
               onOpenChange(false);
             }}
           >
-            {t('navigation.vettedJobs')}
+            {t('navigation.vettedJobs', 'Vetted Jobs')}
           </Button>
           <Button
             variant="ghost"
             className="justify-start cursor-pointer"
             onClick={() => {
-              navigate('/mentorship');
+              navigate('/find-mentors');
               onOpenChange(false);
             }}
           >
-            {t('navigation.mentorship')}
+            {t('navigation.mentorship', 'Mentorship')}
           </Button>
           <Button
             variant="ghost"
@@ -69,7 +69,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
               onOpenChange(false);
             }}
           >
-            {t('navigation.resources')}
+            {t('navigation.resources', 'Resources')}
           </Button>
           
           {user?.role === 'employer' && (
@@ -81,7 +81,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
                 onOpenChange(false);
               }}
             >
-              {t('navigation.postJob')}
+              {t('navigation.postJob', 'Post Job')}
             </Button>
           )}
           
@@ -94,7 +94,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
                 onOpenChange(false);
               }}
             >
-              {t('navigation.learning')}
+              {t('navigation.learning', 'Learning')}
             </Button>
           )}
         </nav>

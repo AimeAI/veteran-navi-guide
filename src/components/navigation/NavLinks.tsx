@@ -48,7 +48,7 @@ const NavLinks = () => {
 
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-sm font-medium text-nav-foreground hover:text-primary">
-              {t('navigation.mentorship')}
+              {t('navigation.mentorship', 'Mentorship')}
             </NavigationMenuTrigger>
             <NavigationMenuContent className="bg-white z-50">
               <ul className="grid gap-3 p-6 w-[400px]">
@@ -58,7 +58,7 @@ const NavLinks = () => {
                       to="/find-mentors"
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      {t('navigation.findMentors')}
+                      {t('navigation.findMentors', 'Find Mentors')}
                     </NavLink>
                   </NavigationMenuLink>
                 </li>
@@ -68,7 +68,7 @@ const NavLinks = () => {
                       to="/mentorship-dashboard"
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      {t('navigation.mentorshipDashboard')}
+                      {t('navigation.mentorshipDashboard', 'Mentorship Dashboard')}
                     </NavLink>
                   </NavigationMenuLink>
                 </li>
@@ -78,7 +78,7 @@ const NavLinks = () => {
 
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-sm font-medium text-nav-foreground hover:text-primary">
-              {t('navigation.resources')}
+              {t('navigation.resources', 'Resources')}
             </NavigationMenuTrigger>
             <NavigationMenuContent className="bg-white z-50">
               <ul className="grid gap-3 p-6 w-[400px]">
@@ -88,7 +88,7 @@ const NavLinks = () => {
                       to="/resources/career-counseling"
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      {t('navigation.careerCounseling')}
+                      {t('navigation.careerCounseling', 'Career Counseling')}
                     </NavLink>
                   </NavigationMenuLink>
                 </li>
@@ -98,7 +98,7 @@ const NavLinks = () => {
                       to="/resources/resume-assistance"
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      {t('navigation.resumeAssistance')}
+                      {t('navigation.resumeAssistance', 'Resume Assistance')}
                     </NavLink>
                   </NavigationMenuLink>
                 </li>
@@ -108,7 +108,7 @@ const NavLinks = () => {
                       to="/resources/military-transition"
                       className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                     >
-                      {t('navigation.militaryTransition')}
+                      {t('navigation.militaryTransition', 'Military Transition')}
                     </NavLink>
                   </NavigationMenuLink>
                 </li>
@@ -126,7 +126,7 @@ const NavLinks = () => {
                   }`
                 }
               >
-                {t('navigation.postJob')}
+                {t('navigation.postJob', 'Post Job')}
               </NavLink>
             </NavigationMenuItem>
           )}
@@ -141,7 +141,7 @@ const NavLinks = () => {
                   }`
                 }
               >
-                {t('navigation.learning')}
+                {t('navigation.learning', 'Learning')}
               </NavLink>
             </NavigationMenuItem>
           )}
