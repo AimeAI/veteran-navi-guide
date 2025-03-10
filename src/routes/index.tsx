@@ -22,7 +22,15 @@ export const AppRoutes = () => {
         <AuthRoutes />
         
         {/* Veteran Routes */}
-        <VeteranRoutes />
+        <Route path="dashboard">
+          {veteranRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
+        </Route>
         
         {/* Employer Routes */}
         <EmployerRoutes />

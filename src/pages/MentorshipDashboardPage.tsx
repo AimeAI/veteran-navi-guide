@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { UserRound, Users, UserPlus } from 'lucide-react';
+import { UserRound, Users, UserPlus, MessageSquare } from 'lucide-react';
 import { useMentorship } from '@/hooks/useMentorship';
 import { useUser } from '@/context/UserContext';
 import MentorshipProfileForm from '@/components/mentorship/MentorshipProfileForm';

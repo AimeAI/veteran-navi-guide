@@ -73,9 +73,9 @@ export const getAvailableMentors = async (): Promise<MentorshipProfile[]> => {
     // Format the data to include profile information
     return data.map(mentor => ({
       ...mentor,
-      full_name: mentor.profiles?.full_name,
-      avatar_url: mentor.profiles?.avatar_url,
-      military_branch: mentor.profiles?.military_branch
+      full_name: mentor.profiles?.full_name || '',
+      avatar_url: mentor.profiles?.avatar_url || '',
+      military_branch: mentor.profiles?.military_branch || ''
     }));
   } catch (error) {
     console.error('Error fetching mentors:', error);
@@ -105,9 +105,9 @@ export const getUserMentorshipProfile = async (userId: string): Promise<Mentorsh
     
     return {
       ...data,
-      full_name: data.profiles?.full_name,
-      avatar_url: data.profiles?.avatar_url,
-      military_branch: data.profiles?.military_branch
+      full_name: data.profiles?.full_name || '',
+      avatar_url: data.profiles?.avatar_url || '',
+      military_branch: data.profiles?.military_branch || ''
     };
   } catch (error) {
     console.error('Error fetching mentorship profile:', error);
@@ -147,9 +147,9 @@ export const upsertMentorshipProfile = async (profile: Partial<MentorshipProfile
     
     return {
       ...data,
-      full_name: data.profiles?.full_name,
-      avatar_url: data.profiles?.avatar_url,
-      military_branch: data.profiles?.military_branch
+      full_name: data.profiles?.full_name || '',
+      avatar_url: data.profiles?.avatar_url || '',
+      military_branch: data.profiles?.military_branch || ''
     };
   } catch (error) {
     console.error('Error updating mentorship profile:', error);
@@ -194,21 +194,27 @@ export const getUserMentorshipConnections = async (userId: string): Promise<Ment
     if (error) throw error;
     
     // Format the connections with profile information
-    return data.map(connection => ({
-      ...connection,
-      mentor: connection.mentor ? {
-        ...connection.mentor,
-        full_name: connection.mentor.profiles?.full_name,
-        avatar_url: connection.mentor.profiles?.avatar_url,
-        military_branch: connection.mentor.profiles?.military_branch
-      } : undefined,
-      mentee: connection.mentee ? {
-        ...connection.mentee,
-        full_name: connection.mentee.profiles?.full_name,
-        avatar_url: connection.mentee.profiles?.avatar_url,
-        military_branch: connection.mentee.profiles?.military_branch
-      } : undefined
-    }));
+    return data.map(connection => {
+      // Type assertion to handle status
+      const typedStatus = connection.status as 'pending' | 'active' | 'declined' | 'completed';
+      
+      return {
+        ...connection,
+        status: typedStatus,
+        mentor: connection.mentor ? {
+          ...connection.mentor,
+          full_name: connection.mentor.profiles?.full_name || '',
+          avatar_url: connection.mentor.profiles?.avatar_url || '',
+          military_branch: connection.mentor.profiles?.military_branch || ''
+        } : undefined,
+        mentee: connection.mentee ? {
+          ...connection.mentee,
+          full_name: connection.mentee.profiles?.full_name || '',
+          avatar_url: connection.mentee.profiles?.avatar_url || '',
+          military_branch: connection.mentee.profiles?.military_branch || ''
+        } : undefined
+      };
+    });
   } catch (error) {
     console.error('Error fetching mentorship connections:', error);
     toast.error('Failed to load mentorship connections');
@@ -298,8 +304,8 @@ export const getMentorshipMessages = async (connectionId: string): Promise<Mento
     // Format the messages with sender information
     return data.map(message => ({
       ...message,
-      sender_name: message.profiles?.full_name,
-      sender_avatar: message.profiles?.avatar_url
+      sender_name: message.profiles?.full_name || '',
+      sender_avatar: message.profiles?.avatar_url || ''
     }));
   } catch (error) {
     console.error('Error fetching mentorship messages:', error);
@@ -375,8 +381,14 @@ export const createMentorshipMeeting = async (meeting: Omit<MentorshipMeeting, '
     
     if (error) throw error;
     
+    // Type assertion for status
+    const typedMeeting = {
+      ...data,
+      status: data.status as 'scheduled' | 'completed' | 'cancelled'
+    };
+    
     toast.success('Meeting scheduled successfully');
-    return data;
+    return typedMeeting;
   } catch (error) {
     console.error('Error creating meeting:', error);
     toast.error('Failed to schedule meeting');
@@ -395,7 +407,11 @@ export const getMentorshipMeetings = async (connectionId: string): Promise<Mento
     
     if (error) throw error;
     
-    return data;
+    // Type assertion for status in each meeting
+    return data.map(meeting => ({
+      ...meeting,
+      status: meeting.status as 'scheduled' | 'completed' | 'cancelled'
+    }));
   } catch (error) {
     console.error('Error fetching meetings:', error);
     toast.error('Failed to load meetings');

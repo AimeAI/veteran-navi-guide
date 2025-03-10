@@ -118,9 +118,9 @@ const Navbar: React.FC = () => {
       </div>
       
       {/* Mobile menu */}
-      <MobileMenu
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
+      <MobileMenu 
+        isOpen={mobileMenuOpen} 
+        onClose={() => setMobileMenuOpen(false)} 
         user={user}
       />
     </nav>
