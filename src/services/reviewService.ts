@@ -1,101 +1,131 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { EmployerReview, EmployerRatingSummary } from "@/types/review";
+import { EmployerReview } from "@/types/review";
 
-// Helper function to transform database response to frontend model
-const transformDbToReview = (data: any[]): EmployerReview[] => {
-  return data.map(item => ({
-    id: item.id,
-    employerId: item.employer_id,
-    reviewerId: item.reviewer_id,
-    reviewerName: item.reviewer_name,
-    rating: item.rating,
-    title: item.title,
-    comment: item.comment,
-    datePosted: item.date_posted,
-    isVerified: item.is_verified,
-    isHidden: item.is_hidden,
-    position: item.position,
-    pros: item.pros,
-    cons: item.cons,
-    helpfulCount: item.helpful_count,
-    status: item.status
-  }));
-};
-
-// Fetch reviews for an employer
+// Function to fetch reviews for a specific employer
 export async function getEmployerReviews(employerId: string): Promise<EmployerReview[]> {
-  const { data, error } = await supabase
-    .from('employer_reviews')
-    .select('*')
-    .eq('employer_id', employerId)
-    .eq('status', 'approved')
-    .eq('is_hidden', false)
-    .order('date_posted', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('employer_reviews')
+      .select('*')
+      .eq('employer_id', employerId)
+      .eq('status', 'approved')
+      .eq('is_hidden', false)
+      .order('date_posted', { ascending: false });
 
-  if (error) {
+    if (error) {
+      throw error;
+    }
+
+    // Transform snake_case to camelCase for frontend
+    return data.map(item => ({
+      id: item.id,
+      employerId: item.employer_id,
+      reviewerId: item.reviewer_id,
+      reviewerName: item.reviewer_name,
+      rating: item.rating,
+      title: item.title,
+      comment: item.comment,
+      datePosted: item.date_posted,
+      isVerified: item.is_verified,
+      isHidden: item.is_hidden,
+      position: item.position,
+      pros: item.pros,
+      cons: item.cons,
+      helpfulCount: item.helpful_count,
+      status: item.status as "pending" | "approved" | "rejected"
+    }));
+  } catch (error) {
     console.error('Error fetching employer reviews:', error);
-    return [];
+    throw error;
   }
-
-  return transformDbToReview(data);
 }
 
-// Submit a new review
-export async function submitEmployerReview(
-  review: Omit<EmployerReview, 'id' | 'datePosted' | 'isVerified' | 'isHidden' | 'helpfulCount'>
-): Promise<{ success: boolean; error?: string }> {
-  // Transform from camelCase to snake_case for database
-  const dbReview = {
-    employer_id: review.employerId,
-    reviewer_id: review.reviewerId,
-    reviewer_name: review.reviewerName,
-    rating: review.rating,
-    title: review.title,
-    comment: review.comment,
-    position: review.position,
-    pros: review.pros,
-    cons: review.cons,
-    status: review.status
-  };
+// Function to submit a new review
+export async function submitEmployerReview(reviewData: Omit<EmployerReview, "id" | "datePosted" | "isVerified" | "isHidden" | "helpfulCount">): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Convert from camelCase to snake_case for database
+    const { data, error } = await supabase
+      .from('employer_reviews')
+      .insert({
+        employer_id: reviewData.employerId,
+        reviewer_id: reviewData.reviewerId,
+        reviewer_name: reviewData.reviewerName,
+        rating: reviewData.rating,
+        title: reviewData.title,
+        comment: reviewData.comment,
+        position: reviewData.position,
+        pros: reviewData.pros,
+        cons: reviewData.cons,
+        status: reviewData.status
+      });
 
-  const { data, error } = await supabase
-    .from('employer_reviews')
-    .insert([dbReview])
-    .select();
-
-  if (error) {
-    console.error('Error submitting review:', error);
-    return { success: false, error: error.message };
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error submitting employer review:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
-
-  return { success: true };
 }
 
-// Mark a review as helpful
+// Function to mark a review as helpful
 export async function markReviewAsHelpful(reviewId: string): Promise<boolean> {
-  const { error } = await supabase.rpc('increment_review_helpful_count', {
-    review_id: reviewId
-  });
+  try {
+    // Call the RPC function we defined in the SQL
+    const { error } = await supabase.rpc('increment_review_helpful_count', {
+      review_id: reviewId
+    });
 
-  if (error) {
+    if (error) throw error;
+    
+    return true;
+  } catch (error) {
     console.error('Error marking review as helpful:', error);
     return false;
   }
-
-  return true;
 }
 
-// Get rating summary for an employer
-export async function getEmployerRatingSummary(employerId: string): Promise<EmployerRatingSummary> {
-  const { data, error } = await supabase
-    .from('employer_reviews')
-    .select('rating')
-    .eq('employer_id', employerId)
-    .eq('status', 'approved')
-    .eq('is_hidden', false);
-
-  if (error || !data) {
+// Function to get employer rating summary
+export async function getEmployerRatingSummary(employerId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('employer_reviews')
+      .select('rating')
+      .eq('employer_id', employerId)
+      .eq('status', 'approved')
+      .eq('is_hidden', false);
+      
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      return {
+        avgRating: 0,
+        totalReviews: 0,
+        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+      };
+    }
+    
+    // Calculate average rating
+    const ratings = data.map(r => r.rating);
+    const sum = ratings.reduce((acc, curr) => acc + curr, 0);
+    const avg = sum / ratings.length;
+    
+    // Calculate rating distribution
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    ratings.forEach(rating => {
+      distribution[rating as 1|2|3|4|5]++;
+    });
+    
+    return {
+      avgRating: parseFloat(avg.toFixed(1)),
+      totalReviews: ratings.length,
+      ratingDistribution: distribution
+    };
+  } catch (error) {
     console.error('Error fetching employer rating summary:', error);
     return {
       avgRating: 0,
@@ -103,36 +133,29 @@ export async function getEmployerRatingSummary(employerId: string): Promise<Empl
       ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
     };
   }
-
-  // Calculate average rating
-  const ratings = data.map(review => Number(review.rating));
-  const avgRating = ratings.length > 0 
-    ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length 
-    : 0;
-
-  // Calculate rating distribution
-  const ratingDistribution = {
-    1: 0, 2: 0, 3: 0, 4: 0, 5: 0
-  };
-
-  ratings.forEach(rating => {
-    const roundedRating = Math.round(rating) as 1 | 2 | 3 | 4 | 5;
-    ratingDistribution[roundedRating]++;
-  });
-
-  return {
-    avgRating,
-    totalReviews: ratings.length,
-    ratingDistribution
-  };
 }
 
-// Report a review
+// Function to report a review
 export async function reportReview(reviewId: string, reason: string): Promise<boolean> {
-  // Since review_reports table is not in the database yet, we'll just log the report
-  // In a real application, this table would be created through a SQL migration
-  console.log(`Review reported: ${reviewId}, Reason: ${reason}`);
-  
-  // Mock successful report since we can't insert into a non-existent table
-  return true;
+  try {
+    // This would be created in Supabase 
+    // Since it doesn't exist yet, we're implementing a placeholder
+    console.log(`Review ${reviewId} reported for reason: ${reason}`);
+    
+    // In an actual implementation, you would insert into a review_reports table:
+    /*
+    const { error } = await supabase
+      .from('review_reports')
+      .insert([{ 
+        review_id: reviewId, 
+        reason: reason,
+        reported_at: new Date()
+      }]);
+    */
+    
+    return true;
+  } catch (error) {
+    console.error('Error reporting review:', error);
+    return false;
+  }
 }

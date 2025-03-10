@@ -8,13 +8,17 @@ interface EmployerRatingProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   showText?: boolean;
+  interactive?: boolean;
+  onChange?: (rating: number) => void;
 }
 
 const EmployerRating: React.FC<EmployerRatingProps> = ({
   rating,
   size = 'md',
   className,
-  showText = false
+  showText = false,
+  interactive = false,
+  onChange
 }) => {
   // Convert rating to nearest half-star (e.g., 4.3 becomes 4.5, 4.1 becomes 4)
   const roundedRating = Math.round(rating * 2) / 2;
@@ -36,8 +40,12 @@ const EmployerRating: React.FC<EmployerRatingProps> = ({
       stars.push(
         <Star 
           key={`star-${i}`} 
-          className={`${starSize} fill-yellow-400 text-yellow-400`} 
+          className={cn(
+            `${starSize} fill-yellow-400 text-yellow-400`,
+            interactive && "cursor-pointer"
+          )}
           aria-hidden="true"
+          onClick={() => interactive && onChange && onChange(i)}
         />
       );
     }
@@ -47,8 +55,12 @@ const EmployerRating: React.FC<EmployerRatingProps> = ({
       stars.push(
         <StarHalf 
           key="star-half" 
-          className={`${starSize} fill-yellow-400 text-yellow-400`} 
+          className={cn(
+            `${starSize} fill-yellow-400 text-yellow-400`,
+            interactive && "cursor-pointer"
+          )}
           aria-hidden="true"
+          onClick={() => interactive && onChange && onChange(Math.ceil(roundedRating))}
         />
       );
     }
@@ -58,8 +70,12 @@ const EmployerRating: React.FC<EmployerRatingProps> = ({
       stars.push(
         <Star 
           key={`star-empty-${i}`} 
-          className={`${starSize} text-gray-300`} 
+          className={cn(
+            `${starSize} text-gray-300`,
+            interactive && "cursor-pointer"
+          )}
           aria-hidden="true"
+          onClick={() => interactive && onChange && onChange(i + 1)}
         />
       );
     }

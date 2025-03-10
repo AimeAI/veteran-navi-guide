@@ -1,15 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import EmployerRating from '@/components/EmployerRating';
 import { Loader2 } from 'lucide-react';
 import { submitEmployerReview } from '@/services/reviewService';
 import { getCurrentUserId, hasUserReviewedEmployer } from '@/utils/supabaseHelpers';
 import { toast } from 'sonner';
+import ReviewForm from './ReviewForm';
 
 interface EmployerReviewDialogProps {
   employerId: string;
@@ -33,9 +30,10 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasAlreadyReviewed, setHasAlreadyReviewed] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   // Check if user has already reviewed this employer
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       const checkReviewStatus = async () => {
         const hasReviewed = await hasUserReviewedEmployer(employerId);
@@ -49,13 +47,15 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (rating === 0) {
-      toast.error('Please provide a rating');
-      return;
-    }
+    // Validate form
+    const newErrors: {[key: string]: string} = {};
+    if (rating === 0) newErrors.rating = 'Please provide a rating';
+    if (!title.trim()) newErrors.title = 'Please enter a review title';
+    if (!reviewText.trim()) newErrors.comment = 'Please enter review comments';
+    if (!name.trim()) newErrors.name = 'Please enter your name';
     
-    if (!title.trim() || !reviewText.trim() || !name.trim()) {
-      toast.error('Please fill in all required fields');
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
     
@@ -81,10 +81,9 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
         position,
         pros,
         cons,
-        status: 'pending'
+        status: 'pending' as const
       };
       
-      // Convert to snake_case for database submission
       const { success, error } = await submitEmployerReview(reviewData);
       
       if (success) {
@@ -112,6 +111,7 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
     setPosition('');
     setName('');
     setIsSubmitting(false);
+    setErrors({});
     onClose();
   };
   
@@ -129,103 +129,29 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="rating">Overall Rating</Label>
-                <div className="pt-1">
-                  <EmployerRating 
-                    rating={rating}
-                    onChange={setRating} 
-                    size="lg"
-                    interactive
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="title">Review Title</Label>
-                <Input
-                  id="title"
-                  placeholder="Summarize your experience"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                  maxLength={100}
-                />
-              </div>
-              
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="name">Your Name</Label>
-                <Input
-                  id="name"
-                  placeholder="How you want to appear (e.g., John S. or Anonymous Veteran)"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  maxLength={50}
-                />
-              </div>
-              
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="position" className="flex justify-between">
-                  <span>Position (optional)</span>
-                </Label>
-                <Input
-                  id="position"
-                  placeholder="Your role or position at this company"
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
-                  maxLength={100}
-                />
-              </div>
-              
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="review-text">Your Review</Label>
-                <Textarea
-                  id="review-text"
-                  placeholder="Please share your overall experience working with this employer"
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  className="min-h-[100px]"
-                  required
-                  maxLength={2000}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="pros">Pros (optional)</Label>
-                  <Textarea
-                    id="pros"
-                    placeholder="What did you like about working here?"
-                    value={pros}
-                    onChange={(e) => setPros(e.target.value)}
-                    className="min-h-[80px]"
-                    maxLength={500}
-                  />
-                </div>
-                
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="cons">Cons (optional)</Label>
-                  <Textarea
-                    id="cons"
-                    placeholder="What didn't you like about working here?"
-                    value={cons}
-                    onChange={(e) => setCons(e.target.value)}
-                    className="min-h-[80px]"
-                    maxLength={500}
-                  />
-                </div>
-              </div>
-            </div>
+            <ReviewForm
+              rating={rating}
+              setRating={setRating}
+              title={title}
+              setTitle={setTitle}
+              reviewText={reviewText}
+              setReviewText={setReviewText}
+              name={name}
+              setName={setName}
+              position={position}
+              setPosition={setPosition}
+              pros={pros}
+              setPros={setPros}
+              cons={setCons}
+              errors={errors}
+            />
             
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
+            <p className="text-xs text-gray-500 italic mt-6">
+              Your review will be moderated before it appears publicly. Please ensure your review follows our community guidelines.
+            </p>
+            
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting || rating === 0}>

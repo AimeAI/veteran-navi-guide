@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -313,8 +312,9 @@ const EmployerProfilePage = () => {
                   </p>
                   <EmployerReviewDialog 
                     employerId={employerId} 
-                    employerName={companyName} 
-                    onReviewSubmitted={handleNewReview} 
+                    isOpen={false}
+                    onClose={() => {}}
+                    onSuccess={handleNewReview} 
                   />
                 </CardFooter>
               </Card>
