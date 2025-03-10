@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
-import { LmsCourse } from '@/services/lmsService';
+import { LmsCourse } from '@/services/lms/types';
 
 interface UserProfileCoursesProps {
   courses: LmsCourse[];

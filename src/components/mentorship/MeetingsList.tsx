@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Trash, CheckCircle2, X } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MentorshipMeeting } from '@/services/mentorshipService';
+import { MentorshipMeeting } from '@/services/mentorship/types';
 import { format, isBefore, isToday } from 'date-fns';
 
 interface MeetingsListProps {

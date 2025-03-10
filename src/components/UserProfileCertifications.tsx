@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Award, Calendar, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { LmsCertification } from '@/services/lmsService';
+import { LmsCertification } from '@/services/lms/types';
 
 interface UserProfileCertificationsProps {
   certifications: LmsCertification[];

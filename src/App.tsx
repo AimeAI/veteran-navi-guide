@@ -5,7 +5,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { MessageProvider } from '@/context/MessageContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { AppProvider } from '@/context/AppContext';
-import { AppRoutes } from '@/routes';
+import AppRoutes from '@/routes';
 
 function App() {
   return (

@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SendHorizontal } from 'lucide-react';
-import { MentorshipMessage } from '@/services/mentorshipService';
+import { MentorshipMessage } from '@/services/mentorship/types';
 import { useUser } from '@/context/UserContext';
 
 interface MentorshipChatProps {

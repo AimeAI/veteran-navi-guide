@@ -1,12 +1,12 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle, XCircle, MessageCircle } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatDistanceToNow } from 'date-fns';
-import { MentorshipConnection } from '@/services/mentorship';
+import { MentorshipConnection, MentorshipProfile } from '@/services/mentorship/types';
+import { UserRound, Users, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
 interface ConnectionsListProps {
   connections: MentorshipConnection[];
@@ -230,7 +230,7 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({
                                 onAcceptRequest(connection.id);
                               }}
                             >
-                              <CheckCircle className="h-4 w-4 mr-1" />
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
                               Accept
                             </Button>
                           </>
