@@ -85,8 +85,8 @@ const MentorshipDashboardPage: React.FC = () => {
   const getConnectionName = (connection: any) => {
     const userIsMentor = connection.mentor?.user_id === user?.email;
     return userIsMentor 
-      ? connection.mentee?.user_name || 'Mentee'
-      : connection.mentor?.user_name || 'Mentor';
+      ? connection.mentee?.user_name || connection.mentee?.full_name || 'Mentee'
+      : connection.mentor?.user_name || connection.mentor?.full_name || 'Mentor';
   };
 
   if (!user) {
@@ -163,6 +163,7 @@ const MentorshipDashboardPage: React.FC = () => {
           <TabsContent value="connections" className="space-y-6">
             {userProfile ? (
               <ConnectionsList
+                userId={user.email}
                 connections={connections}
                 userIsMentor={userProfile.is_mentor}
                 onSelectConnection={selectConnection}

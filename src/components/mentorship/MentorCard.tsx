@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar, Clock, Award, Briefcase, Users } from 'lucide-react';
-import { MentorshipProfile } from '@/services/mentorship';
+import { MentorshipProfile } from '@/services/mentorship/types';
 
 interface MentorCardProps {
   mentor: MentorshipProfile;
@@ -36,16 +36,19 @@ const MentorCard: React.FC<MentorCardProps> = ({
       .substring(0, 2);
   };
 
+  const displayName = mentor.user_name || mentor.full_name || 'Mentor';
+  const displayAvatar = mentor.user_avatar || mentor.avatar_url;
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-4">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={mentor.user_avatar} alt={mentor.user_name || 'Mentor'} />
-            <AvatarFallback>{getInitials(mentor.user_name)}</AvatarFallback>
+            <AvatarImage src={displayAvatar} alt={displayName} />
+            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle className="text-lg">{mentor.user_name}</CardTitle>
+            <CardTitle className="text-lg">{displayName}</CardTitle>
             <CardDescription>{mentor.industry || 'Veteran Mentor'}</CardDescription>
           </div>
         </div>

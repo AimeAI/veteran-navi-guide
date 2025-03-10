@@ -1,3 +1,4 @@
+
 // Types for the mentorship service
 export interface MentorshipProfile {
   id: string;
@@ -15,6 +16,9 @@ export interface MentorshipProfile {
   full_name?: string;
   avatar_url?: string;
   military_branch?: string;
+  // Alias properties for compatibility
+  user_name?: string;
+  user_avatar?: string;
 }
 
 export interface MentorshipConnection {

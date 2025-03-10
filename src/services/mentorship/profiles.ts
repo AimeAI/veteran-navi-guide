@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { MentorshipProfile } from "./types";
 
@@ -22,12 +23,48 @@ export const getAllProfiles = async (): Promise<MentorshipProfile[]> => {
       ...profile,
       full_name: profile.user?.full_name,
       avatar_url: profile.user?.avatar_url,
-      military_branch: profile.user?.military_branch
+      military_branch: profile.user?.military_branch,
+      user_name: profile.user?.full_name,
+      user_avatar: profile.user?.avatar_url
     }));
     
     return profiles as MentorshipProfile[];
   } catch (error) {
     console.error('Error fetching mentorship profiles:', error);
+    return [];
+  }
+};
+
+// Get all available mentors
+export const getAvailableMentors = async (): Promise<MentorshipProfile[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('mentorship_profiles')
+      .select(`
+        *,
+        user:user_id (
+          full_name,
+          avatar_url,
+          military_branch
+        )
+      `)
+      .eq('is_mentor', true);
+    
+    if (error) throw error;
+    
+    // Map the joined data to our expected format
+    const profiles = data.map(profile => ({
+      ...profile,
+      full_name: profile.user?.full_name,
+      avatar_url: profile.user?.avatar_url,
+      military_branch: profile.user?.military_branch,
+      user_name: profile.user?.full_name,
+      user_avatar: profile.user?.avatar_url
+    }));
+    
+    return profiles as MentorshipProfile[];
+  } catch (error) {
+    console.error('Error fetching mentors:', error);
     return [];
   }
 };
@@ -55,7 +92,9 @@ export const getProfileById = async (profileId: string): Promise<MentorshipProfi
       ...data,
       full_name: data.user?.full_name,
       avatar_url: data.user?.avatar_url,
-      military_branch: data.user?.military_branch
+      military_branch: data.user?.military_branch,
+      user_name: data.user?.full_name,
+      user_avatar: data.user?.avatar_url
     };
     
     return profileData as MentorshipProfile;
@@ -83,12 +122,14 @@ export const getProfileByUserId = async (userId: string): Promise<MentorshipProf
     
     if (error) throw error;
     
-     // Map the joined data to our expected format
+    // Map the joined data to our expected format
     const profileData = {
       ...data,
       full_name: data.user?.full_name,
       avatar_url: data.user?.avatar_url,
-      military_branch: data.user?.military_branch
+      military_branch: data.user?.military_branch,
+      user_name: data.user?.full_name,
+      user_avatar: data.user?.avatar_url
     };
     
     return profileData as MentorshipProfile;
@@ -98,9 +139,36 @@ export const getProfileByUserId = async (userId: string): Promise<MentorshipProf
   }
 };
 
-// Create a new mentorship profile
-export const createProfile = async (profile: Omit<MentorshipProfile, 'id' | 'created_at' | 'updated_at' | 'full_name' | 'avatar_url' | 'military_branch'>): Promise<MentorshipProfile | null> => {
+// Get mentorship profile by email
+export const getMentorshipProfile = async (email: string): Promise<MentorshipProfile | null> => {
   try {
+    // First get the user by email
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .single();
+    
+    if (userError) throw userError;
+    
+    if (!userData) return null;
+    
+    // Then get the mentorship profile by user ID
+    return getProfileByUserId(userData.id);
+  } catch (error) {
+    console.error('Error fetching mentorship profile by email:', error);
+    return null;
+  }
+};
+
+// Create a new mentorship profile
+export const createProfile = async (profile: Omit<MentorshipProfile, 'id' | 'created_at' | 'updated_at' | 'full_name' | 'avatar_url' | 'military_branch' | 'user_name' | 'user_avatar'>): Promise<MentorshipProfile | null> => {
+  try {
+    // Ensure user_id is included
+    if (!profile.user_id) {
+      throw new Error('user_id is required when creating a profile');
+    }
+
     const { data, error } = await supabase
       .from('mentorship_profiles')
       .insert(profile)
@@ -121,7 +189,9 @@ export const createProfile = async (profile: Omit<MentorshipProfile, 'id' | 'cre
       ...data,
       full_name: data.user?.full_name,
       avatar_url: data.user?.avatar_url,
-      military_branch: data.user?.military_branch
+      military_branch: data.user?.military_branch,
+      user_name: data.user?.full_name,
+      user_avatar: data.user?.avatar_url
     };
     
     return profileData as MentorshipProfile;
@@ -131,7 +201,7 @@ export const createProfile = async (profile: Omit<MentorshipProfile, 'id' | 'cre
   }
 };
 
-// Fix the updateProfile function to handle the user_id requirement
+// Update a mentorship profile
 export const updateProfile = async (profileId: string, updates: Partial<MentorshipProfile>): Promise<MentorshipProfile | null> => {
   try {
     // Ensure user_id is included for required field in DB
@@ -145,9 +215,12 @@ export const updateProfile = async (profileId: string, updates: Partial<Mentorsh
       }
     }
 
+    // Remove fields that shouldn't be stored directly
+    const { full_name, avatar_url, military_branch, user_name, user_avatar, ...validUpdates } = updates;
+
     const { data, error } = await supabase
       .from('mentorship_profiles')
-      .update(updates as any)
+      .update(validUpdates)
       .eq('id', profileId)
       .select(`
         *,
@@ -166,12 +239,50 @@ export const updateProfile = async (profileId: string, updates: Partial<Mentorsh
       ...data,
       full_name: data.user?.full_name,
       avatar_url: data.user?.avatar_url,
-      military_branch: data.user?.military_branch
+      military_branch: data.user?.military_branch,
+      user_name: data.user?.full_name,
+      user_avatar: data.user?.avatar_url
     };
     
     return profileData as MentorshipProfile;
   } catch (error) {
     console.error('Error updating mentorship profile:', error);
+    return null;
+  }
+};
+
+// Create or update a profile by email (upsert functionality)
+export const upsertMentorshipProfile = async (profileData: Partial<MentorshipProfile>): Promise<MentorshipProfile | null> => {
+  try {
+    // Get user id from email or use provided user_id
+    let userId = profileData.user_id;
+    if (!userId && typeof window !== 'undefined') {
+      const { data } = await supabase.auth.getSession();
+      userId = data.session?.user.id;
+    }
+    
+    if (!userId) {
+      throw new Error('User ID is required to upsert profile');
+    }
+    
+    // Check if profile exists
+    const existingProfile = await getProfileByUserId(userId);
+    
+    if (existingProfile) {
+      // Update existing profile
+      return updateProfile(existingProfile.id, {
+        ...profileData,
+        user_id: userId
+      });
+    } else {
+      // Create new profile
+      return createProfile({
+        ...profileData,
+        user_id: userId,
+      } as Omit<MentorshipProfile, 'id' | 'created_at' | 'updated_at' | 'full_name' | 'avatar_url' | 'military_branch' | 'user_name' | 'user_avatar'>);
+    }
+  } catch (error) {
+    console.error('Error upserting mentorship profile:', error);
     return null;
   }
 };

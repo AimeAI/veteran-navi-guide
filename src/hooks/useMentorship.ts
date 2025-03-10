@@ -5,14 +5,14 @@ import {
   MentorshipProfile, 
   MentorshipConnection,
   MentorshipMessage,
-  MentorshipMeeting,
+  MentorshipMeeting
+} from '@/services/mentorship/types';
+import {
   getConnectionMessages,
+  getProfileByUserId,
   getMentorshipProfile,
-  getMentorConnections,
-  getMenteeConnections,
-  getUserConnections,
   getAvailableMentors,
-  upsertMentorshipProfile,
+  getUserConnections,
   createConnectionRequest,
   updateConnectionStatus,
   sendMessage,
@@ -20,8 +20,11 @@ import {
   scheduleMeeting,
   getMentorshipMeetings,
   updateMeetingStatus,
-  markMessagesAsRead
-} from '@/services/mentorship';
+  markMessagesAsRead,
+  updateProfile,
+  createProfile,
+  upsertMentorshipProfile
+} from '@/services/mentorship/index';
 
 export const useMentorship = () => {
   const { user } = useUser();
@@ -62,7 +65,7 @@ export const useMentorship = () => {
   }, [user]);
 
   // Create or update user's mentorship profile
-  const updateProfile = useCallback(async (profile: Partial<MentorshipProfile>) => {
+  const updateProfileData = useCallback(async (profile: Partial<MentorshipProfile>) => {
     const updatedProfile = await upsertMentorshipProfile(profile);
     if (updatedProfile) {
       setUserProfile(updatedProfile);
@@ -187,7 +190,7 @@ export const useMentorship = () => {
     loadUserProfile,
     loadMentors,
     loadConnections,
-    updateProfile,
+    updateProfile: updateProfileData,
     requestMentorConnection,
     updateMentorshipStatus,
     selectConnection,

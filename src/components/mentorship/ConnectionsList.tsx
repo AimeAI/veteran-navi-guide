@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,14 +15,31 @@ import {
   UserCheck,
   UserX 
 } from 'lucide-react';
-import { getConnections, MentorshipConnection, MentorshipProfile } from '@/services/mentorshipService';
+import { MentorshipConnection, MentorshipProfile } from '@/services/mentorship/types';
+import { getUserConnections } from '@/services/mentorship/connections';
 import { format } from 'date-fns';
 
 interface ConnectionsListProps {
   userId: string;
+  connections?: MentorshipConnection[];
+  userIsMentor?: boolean;
+  onSelectConnection?: (connection: MentorshipConnection) => void;
+  onAcceptRequest?: (connectionId: string) => Promise<void>;
+  onDeclineRequest?: (connectionId: string) => Promise<void>;
+  selectedConnectionId?: string;
+  isLoading?: boolean;
 }
 
-const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
+const ConnectionsList: React.FC<ConnectionsListProps> = ({ 
+  userId,
+  connections: externalConnections,
+  userIsMentor,
+  onSelectConnection,
+  onAcceptRequest,
+  onDeclineRequest,
+  selectedConnectionId,
+  isLoading: externalLoading
+}) => {
   const [connections, setConnections] = useState<MentorshipConnection[]>([]);
   const [pendingConnections, setPendingConnections] = useState<MentorshipConnection[]>([]);
   const [approvedConnections, setApprovedConnections] = useState<MentorshipConnection[]>([]);
@@ -30,21 +48,29 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    fetchConnections();
-  }, [userId]);
+    if (externalConnections) {
+      setConnections(externalConnections);
+      setPendingConnections(externalConnections.filter(c => c.status === 'pending'));
+      setApprovedConnections(externalConnections.filter(c => c.status === 'active'));
+      setRejectedConnections(externalConnections.filter(c => c.status === 'declined' || c.status === 'completed'));
+      setIsLoading(false);
+    } else {
+      fetchConnections();
+    }
+  }, [userId, externalConnections]);
   
   const fetchConnections = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const connectionsData = await getConnections(userId);
+      const connectionsData = await getUserConnections(userId);
       setConnections(connectionsData);
       
       // Filter connections based on status
       setPendingConnections(connectionsData.filter(c => c.status === 'pending'));
-      setApprovedConnections(connectionsData.filter(c => c.status === 'approved'));
-      setRejectedConnections(connectionsData.filter(c => c.status === 'rejected'));
+      setApprovedConnections(connectionsData.filter(c => c.status === 'active'));
+      setRejectedConnections(connectionsData.filter(c => c.status === 'declined' || c.status === 'completed'));
     } catch (err) {
       setError('Failed to load connections.');
       console.error('Error fetching connections:', err);
@@ -53,7 +79,7 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
     }
   };
   
-  if (isLoading) {
+  if (externalLoading || isLoading) {
     return <div>Loading connections...</div>;
   }
   
@@ -68,7 +94,7 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
         <CardDescription>Manage your mentorship connections</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <Tabs defaultvalue="approved" className="w-full">
+        <Tabs defaultValue="approved" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="approved">Approved <UserCheck className="ml-2 h-4 w-4" /></TabsTrigger>
             <TabsTrigger value="pending">Pending <Clock className="ml-2 h-4 w-4" /></TabsTrigger>
@@ -80,7 +106,13 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
               {approvedConnections.length > 0 ? (
                 <div className="grid gap-4 p-4">
                   {approvedConnections.map(connection => (
-                    <ConnectionCard key={connection.id} connection={connection} />
+                    <ConnectionCard 
+                      key={connection.id} 
+                      connection={connection} 
+                      userIsMentor={userIsMentor}
+                      onSelect={onSelectConnection}
+                      isSelected={selectedConnectionId === connection.id}
+                    />
                   ))}
                 </div>
               ) : (
@@ -94,7 +126,15 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
               {pendingConnections.length > 0 ? (
                 <div className="grid gap-4 p-4">
                   {pendingConnections.map(connection => (
-                    <ConnectionCard key={connection.id} connection={connection} />
+                    <ConnectionCard 
+                      key={connection.id} 
+                      connection={connection} 
+                      userIsMentor={userIsMentor}
+                      onSelect={onSelectConnection}
+                      isSelected={selectedConnectionId === connection.id}
+                      onAccept={onAcceptRequest}
+                      onDecline={onDeclineRequest}
+                    />
                   ))}
                 </div>
               ) : (
@@ -108,7 +148,13 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
               {rejectedConnections.length > 0 ? (
                 <div className="grid gap-4 p-4">
                   {rejectedConnections.map(connection => (
-                    <ConnectionCard key={connection.id} connection={connection} />
+                    <ConnectionCard 
+                      key={connection.id} 
+                      connection={connection} 
+                      userIsMentor={userIsMentor}
+                      onSelect={onSelectConnection}
+                      isSelected={selectedConnectionId === connection.id}
+                    />
                   ))}
                 </div>
               ) : (
@@ -124,53 +170,81 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
 
 interface ConnectionCardProps {
   connection: MentorshipConnection;
+  userIsMentor?: boolean;
+  onSelect?: (connection: MentorshipConnection) => void;
+  onAccept?: (connectionId: string) => Promise<void>;
+  onDecline?: (connectionId: string) => Promise<void>;
+  isSelected?: boolean;
 }
 
-const ConnectionCard: React.FC<ConnectionCardProps> = ({ connection }) => {
-  const [profile, setProfile] = useState<MentorshipProfile | null>(null);
-  const isMentor = connection.mentor_id === connection.mentee_id;
+const ConnectionCard: React.FC<ConnectionCardProps> = ({ 
+  connection, 
+  userIsMentor, 
+  onSelect,
+  onAccept,
+  onDecline,
+  isSelected
+}) => {
+  const profileToShow = userIsMentor ? connection.mentee : connection.mentor;
   
-  useEffect(() => {
-    // Determine the other user's ID based on whether the current user is the mentor or mentee
-    const otherUserId = connection.mentor_id === connection.mentee_id ? connection.mentee_id : connection.mentor_id;
-    
-    if (connection.mentor) {
-      setProfile(connection.mentor);
-    }
-  }, [connection]);
-  
-  if (!profile) {
-    return <div>Loading profile...</div>;
+  if (!profileToShow) {
+    return <div>Missing profile information</div>;
   }
   
+  const handleSelect = () => {
+    if (onSelect) {
+      onSelect(connection);
+    }
+  };
+  
+  const handleAccept = async () => {
+    if (onAccept) {
+      await onAccept(connection.id);
+    }
+  };
+  
+  const handleDecline = async () => {
+    if (onDecline) {
+      await onDecline(connection.id);
+    }
+  };
+  
   return (
-    <Card>
-      <CardHeader>
+    <Card className={isSelected ? 'border-primary' : ''}>
+      <CardHeader className="pb-2">
         <div className="flex items-center">
           <Avatar className="mr-4 h-10 w-10">
-            <AvatarImage src={profile.avatar_url || ""} alt={profile.full_name || "Mentor"} />
-            <AvatarFallback>{profile.full_name?.charAt(0)}</AvatarFallback>
+            <AvatarImage src={profileToShow.avatar_url || profileToShow.user_avatar || ""} alt={profileToShow.full_name || profileToShow.user_name || "User"} />
+            <AvatarFallback>{(profileToShow.full_name || profileToShow.user_name || "User").charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <CardTitle>{profile.full_name}</CardTitle>
-            <CardDescription>{profile.military_branch}</CardDescription>
+            <CardTitle className="text-base">{profileToShow.full_name || profileToShow.user_name}</CardTitle>
+            <CardDescription>{profileToShow.military_branch || profileToShow.industry || 'Veteran'}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="flex space-x-2 text-sm">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleSelect}>
             <MessageCircle className="mr-2 h-4 w-4" />
             Message
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Phone className="mr-2 h-4 w-4" />
-            Call
           </Button>
           <Button variant="ghost" size="sm">
             <Calendar className="mr-2 h-4 w-4" />
             Schedule
           </Button>
+          {connection.status === 'pending' && userIsMentor && (
+            <>
+              <Button variant="outline" size="sm" onClick={handleAccept}>
+                <UserCheck className="mr-2 h-4 w-4" />
+                Accept
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDecline}>
+                <UserX className="mr-2 h-4 w-4" />
+                Decline
+              </Button>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

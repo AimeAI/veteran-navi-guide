@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { AuthRoutes } from './authRoutes';
 import { ResourceRoutes } from './resourceRoutes';
 import { EmployerRoutes } from './employerRoutes';
-import { veteranRoutes as VeteranRoutes } from './veteranRoutes';
+import { veteranRoutes } from './veteranRoutes';
 import { AdminRoutes } from './adminRoutes';
 import { RequireAuth } from '@/components/RequireAuth';
 import NotFound from '@/pages/NotFound';
@@ -41,7 +41,13 @@ const AppRoutes = () => {
         {/* Veteran routes */}
         <Route path="dashboard/*" element={
           <RequireAuth roles={['veteran']}>
-            <VeteranRoutes />
+            {veteranRoutes.map((route) => (
+              <Route 
+                key={route.path} 
+                path={route.path} 
+                element={route.element} 
+              />
+            ))}
           </RequireAuth>
         } />
         
