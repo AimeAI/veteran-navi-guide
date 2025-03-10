@@ -6,25 +6,41 @@ import { toast } from "sonner";
 // Get messages for a connection
 export const getConnectionMessages = async (connectionId: string): Promise<MentorshipMessage[]> => {
   try {
-    const { data, error } = await supabase
+    // First, get the messages
+    const { data: messagesData, error: messagesError } = await supabase
       .from('mentorship_messages')
-      .select(`
-        *,
-        profiles(
-          full_name,
-          avatar_url
-        )
-      `)
+      .select('*')
       .eq('connection_id', connectionId)
       .order('created_at', { ascending: true });
     
-    if (error) throw error;
+    if (messagesError) throw messagesError;
     
-    return data.map(message => ({
-      ...message,
-      sender_name: message.profiles?.full_name || '',
-      sender_avatar: message.profiles?.avatar_url || ''
-    }));
+    // Create a set of unique sender IDs to fetch their profiles
+    const senderIds = [...new Set(messagesData.map(message => message.sender_id))];
+    
+    // Fetch all relevant profiles in a single query
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .in('id', senderIds);
+    
+    if (profilesError) throw profilesError;
+    
+    // Create a map of user_id to profile data for quick lookups
+    const profilesMap = profilesData.reduce((map, profile) => {
+      map[profile.id] = profile;
+      return map;
+    }, {});
+    
+    // Combine messages with sender profile data
+    return messagesData.map(message => {
+      const senderProfile = profilesMap[message.sender_id] || {};
+      return {
+        ...message,
+        sender_name: senderProfile.full_name || '',
+        sender_avatar: senderProfile.avatar_url || ''
+      };
+    });
   } catch (error) {
     console.error('Error fetching messages:', error);
     return [];
