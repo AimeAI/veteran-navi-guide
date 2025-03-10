@@ -7,14 +7,21 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 const EmployerDashboardPage = () => {
-  // You would fetch any employer-specific data here if needed
   const { refetch, isRefetching } = useQuery({
     queryKey: ['employerProfile'],
     queryFn: async () => {
       // This would be replaced with actual Supabase fetch code
       console.log('Fetching employer profile data...');
+      
+      // Add a small delay to simulate loading
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Simulate successful refresh
+      toast.success('Dashboard data refreshed successfully!');
+      
       return {};
     },
     enabled: false, // This query doesn't run automatically
@@ -28,7 +35,7 @@ const EmployerDashboardPage = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
       <main className="flex-grow container mx-auto px-4 py-12 sm:px-6 lg:px-8" id="main-content">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div className="flex items-center">
               <Building className="h-6 w-6 text-primary mr-3" aria-hidden="true" />
               <h1 className="text-3xl font-bold text-gray-900">Employer Dashboard</h1>
@@ -39,7 +46,7 @@ const EmployerDashboardPage = () => {
                 variant="outline" 
                 onClick={handleRefresh} 
                 disabled={isRefetching}
-                className="mr-2"
+                className="whitespace-nowrap"
               >
                 <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
                 {isRefetching ? 'Refreshing...' : 'Refresh Data'}
