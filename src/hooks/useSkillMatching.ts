@@ -1,37 +1,39 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
-import { useUser } from '@/context/UserContext'; // Changed from useAuth to useUser
+import { useUser } from '@/context/UserContext';
 import { getUserSkills, matchJobsWithSkills, SkillMatch } from '@/utils/skillMatching';
 
 export const useSkillMatching = (jobs: Job[]) => {
-  const { user } = useUser(); // Changed from useAuth to useUser
+  const { user, supabaseUser } = useUser(); // Get both user profile and supabaseUser which has the ID
   const [userSkills, setUserSkills] = useState<string[]>([]);
   const [matchedJobs, setMatchedJobs] = useState<SkillMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   
-  // Fetch user skills
-  useEffect(() => {
-    const fetchSkills = async () => {
-      if (user?.id) {
-        setIsLoading(true);
-        try {
-          const skills = await getUserSkills(user.id);
-          setUserSkills(skills);
-        } catch (error) {
-          console.error('Error fetching user skills:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
+  const fetchUserSkills = useCallback(async () => {
+    if (!supabaseUser) return;
     
-    fetchSkills();
-  }, [user]);
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const skills = await getUserSkills(supabaseUser.id);
+      setUserSkills(skills);
+    } catch (err) {
+      console.error('Error fetching user skills:', err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch user skills'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [supabaseUser]);
   
-  // Match jobs with skills
   useEffect(() => {
-    if (jobs.length > 0 && userSkills.length > 0) {
+    fetchUserSkills();
+  }, [fetchUserSkills]);
+  
+  useEffect(() => {
+    if (userSkills.length && jobs.length) {
       const matches = matchJobsWithSkills(jobs, userSkills);
       setMatchedJobs(matches);
     } else {
@@ -39,18 +41,11 @@ export const useSkillMatching = (jobs: Job[]) => {
     }
   }, [jobs, userSkills]);
   
-  // Function to manually match with provided skills
-  const matchWithSkills = useCallback((customSkills: string[]) => {
-    if (jobs.length > 0 && customSkills.length > 0) {
-      return matchJobsWithSkills(jobs, customSkills);
-    }
-    return [];
-  }, [jobs]);
-  
   return {
     userSkills,
     matchedJobs,
     isLoading,
-    matchWithSkills
+    error,
+    refetchSkills: fetchUserSkills
   };
 };

@@ -11,7 +11,7 @@ import { getUserSkills } from '@/utils/skillMatching'; // Import skill matching 
 
 const JobSearch: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useUser(); // Get current user
+  const { user, supabaseUser } = useUser(); // Get both user profile and supabaseUser which has the ID
   
   const {
     jobs,
@@ -59,9 +59,9 @@ const JobSearch: React.FC = () => {
   // Fetch user skills when component mounts if user is logged in
   useEffect(() => {
     const fetchUserSkills = async () => {
-      if (user?.id) {
+      if (supabaseUser?.id) {
         try {
-          const skills = await getUserSkills(user.id);
+          const skills = await getUserSkills(supabaseUser.id);
           if (skills.length > 0) {
             handleSkillsChange(skills);
           }
@@ -72,7 +72,7 @@ const JobSearch: React.FC = () => {
     };
     
     fetchUserSkills();
-  }, [user, handleSkillsChange]);
+  }, [supabaseUser, handleSkillsChange]);
   
   useEffect(() => {
     refreshJobs();
