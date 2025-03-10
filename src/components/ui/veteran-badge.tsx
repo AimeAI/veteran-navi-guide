@@ -1,6 +1,7 @@
 
-import { VeteranBadgeComponent, VeteranBadge, BadgeType } from "./badges";
+import { VeteranBadgeComponent } from "./badges";
+import type { VeteranBadge, BadgeType } from "./badges";
 
 // Re-export for backward compatibility
-export { VeteranBadgeComponent, BadgeType };
-export type { VeteranBadge };
+export { VeteranBadgeComponent };
+export type { VeteranBadge, BadgeType };

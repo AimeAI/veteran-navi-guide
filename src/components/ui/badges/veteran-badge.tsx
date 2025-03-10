@@ -2,13 +2,13 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { BadgeType, VeteranBadge as VeteranBadgeType } from "@/types/badges";
-import { BadgeIcon, BadgeIconType } from "./badge-icons";
+import type { BadgeType, VeteranBadge as VeteranBadgeType } from "@/types/badges";
+import { BadgeIcon } from "./badge-icons";
 import { badgeColors, badgeSizes, iconSizes } from "./badge-styles";
 import { BadgeTooltip } from "./badge-tooltip";
 
-// Re-export the BadgeType for external use
-export type BadgeType = BadgeType;
+// Export the type reference for external use
+export type { BadgeType };
 
 // Re-export the VeteranBadge type from the global types
 export interface VeteranBadge extends VeteranBadgeType {}
