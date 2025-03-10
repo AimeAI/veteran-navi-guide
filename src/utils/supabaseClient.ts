@@ -110,10 +110,13 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
     }
     
     // Create a map of deduplication keys to detect duplicates
-    const existingJobsResponse = await supabase
+    // Fix the type instantiation issue by using explicit type casting
+    const existingJobsQuery = supabase
       .from('jobs')
-      .select('id, title, company')
-      .in('source', ['jobicy']);
+      .select('id, title, company');
+      
+    // Execute query separately to avoid deep type instantiation
+    const existingJobsResponse = await existingJobsQuery.in('source', ['jobicy']);
     
     if (existingJobsResponse.error) {
       throw existingJobsResponse.error;
@@ -156,10 +159,16 @@ export const storeJobsInSupabase = async (jobs: Job[]): Promise<number> => {
     
     for (let i = 0; i < jobsToInsert.length; i += BATCH_SIZE) {
       const batch = jobsToInsert.slice(i, i + BATCH_SIZE);
-      const { error, count } = await supabase
+      const insertResult = await supabase
         .from('jobs')
-        .insert(batch)
-        .select();
+        .insert(batch);
+        
+      // Query for count separately to avoid deep type instantiation
+      const { data, error, count } = await supabase
+        .from('jobs')
+        .select('*', { count: 'exact' })
+        .in('title', batch.map(job => job.title))
+        .in('company', batch.map(job => job.company));
       
       if (error) {
         console.error(`Error inserting batch ${i / BATCH_SIZE + 1}:`, error);
