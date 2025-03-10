@@ -76,6 +76,7 @@ export async function submitEmployerReview(reviewData: Omit<EmployerReview, "id"
 export async function markReviewAsHelpful(reviewId: string): Promise<boolean> {
   try {
     // Call the RPC function we defined in the SQL
+    // Update to use custom name instead of function name directly
     const { error } = await supabase.rpc('increment_review_helpful_count', {
       review_id: reviewId
     });
@@ -138,11 +139,11 @@ export async function getEmployerRatingSummary(employerId: string) {
 // Function to report a review
 export async function reportReview(reviewId: string, reason: string): Promise<boolean> {
   try {
-    // This would be created in Supabase 
-    // Since it doesn't exist yet, we're implementing a placeholder
+    // In a real implementation, you would insert into a review_reports table
+    // Since this isn't implemented in the current database schema, we'll log and return true
     console.log(`Review ${reviewId} reported for reason: ${reason}`);
     
-    // In an actual implementation, you would insert into a review_reports table:
+    // This would be the actual implementation once the table is created:
     /*
     const { error } = await supabase
       .from('review_reports')
@@ -151,6 +152,8 @@ export async function reportReview(reviewId: string, reason: string): Promise<bo
         reason: reason,
         reported_at: new Date()
       }]);
+    
+    if (error) throw error;
     */
     
     return true;
