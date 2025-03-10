@@ -9,6 +9,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import SecurityMonitor from '@/components/security/SecurityMonitor';
 import PageFooter from '@/components/layout/PageFooter';
+import PerformanceMonitor from '@/components/performance/PerformanceMonitor';
 
 // Loading component for suspense fallback
 const PageLoading = () => (
@@ -32,6 +33,7 @@ export const Layout = () => {
       <PageFooter />
       <Toaster position="top-right" />
       <SecurityMonitor />
+      {process.env.NODE_ENV !== 'production' && <PerformanceMonitor />}
     </div>
   );
 };

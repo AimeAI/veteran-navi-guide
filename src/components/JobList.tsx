@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Job } from '@/context/JobContext';
 import JobListing from '@/components/JobListing';
@@ -7,6 +8,8 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
+import { preloadImages } from '@/utils/cacheUtils';
+import { measurePerformance } from '@/utils/performanceUtils';
 
 interface JobListProps {
   jobs: Job[];
@@ -37,6 +40,52 @@ const JobList: React.FC<JobListProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   
+  // Preload next page job images when close to the bottom of the list
+  React.useEffect(() => {
+    if (jobs.length > 0 && currentPage < totalPages) {
+      // Get company logos to preload
+      const companyLogos = jobs
+        .map(job => {
+          // Extract logo URL from company name using a hypothetical function
+          // This would need to be implemented based on how logos are stored
+          return `https://logo.clearbit.com/${job.company.toLowerCase().replace(/\s+/g, '')}.com`;
+        })
+        .filter(Boolean);
+      
+      if (companyLogos.length > 0) {
+        preloadImages(companyLogos);
+      }
+    }
+  }, [jobs, currentPage, totalPages]);
+  
+  // Prefetch next page data when user is close to the end of the current page
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const pageHeight = document.body.offsetHeight;
+      const scrollPercentage = (scrollPosition / pageHeight) * 100;
+      
+      // If user has scrolled more than 75% of the page and there's a next page
+      if (scrollPercentage > 75 && currentPage < totalPages) {
+        // Prefetch next page data
+        const prefetchNextPage = async () => {
+          try {
+            // This would need to be implemented based on how pagination is handled
+            // For demonstration purposes, we're just showing the concept
+            console.log(`Prefetching page ${currentPage + 1} data`);
+          } catch (error) {
+            console.error('Error prefetching next page:', error);
+          }
+        };
+        
+        prefetchNextPage();
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentPage, totalPages]);
+  
   const getPageRange = () => {
     const range = [];
     const maxVisiblePages = 5;
@@ -63,7 +112,7 @@ const JobList: React.FC<JobListProps> = ({
       setIsRefreshing(true);
       toast.info("Refreshing job listings...");
       try {
-        await onRefresh();
+        await measurePerformance('Job refresh', onRefresh);
         toast.success("Job listings refreshed successfully");
       } catch (error) {
         toast.error("Failed to refresh job listings");
@@ -89,6 +138,9 @@ const JobList: React.FC<JobListProps> = ({
   const linkedinCount = jobsBySource['linkedin']?.length || 0;
   const otherSourcesCount = totalJobs - jobBankCount - indeedCount - linkedinCount;
 
+  // Optimize rendering with React.memo for job listings
+  const MemoizedJobListing = React.memo(JobListing);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
@@ -104,12 +156,12 @@ const JobList: React.FC<JobListProps> = ({
             </Badge>
           )}
           {indeedCount > 0 && (
-            <Badge variant="orange" className="flex items-center gap-1">
+            <Badge variant="outline" className="flex items-center gap-1 bg-orange-100">
               Indeed: {indeedCount}
             </Badge>
           )}
           {linkedinCount > 0 && (
-            <Badge variant="purple" className="flex items-center gap-1">
+            <Badge variant="outline" className="flex items-center gap-1 bg-purple-100">
               LinkedIn: {linkedinCount}
             </Badge>
           )}
@@ -144,7 +196,7 @@ const JobList: React.FC<JobListProps> = ({
             {jobs.map(job => {
               const jobWithScore = job as JobWithScore;
               return (
-                <JobListing
+                <MemoizedJobListing
                   key={job.id}
                   jobId={job.id}
                   title={job.title}
@@ -212,4 +264,5 @@ const JobList: React.FC<JobListProps> = ({
   );
 };
 
-export default JobList;
+// Use memo to prevent unnecessary re-renders
+export default React.memo(JobList);

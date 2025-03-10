@@ -1,8 +1,11 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/context/JobContext';
 import { searchJobBankJobs, getNOCCodesForSkill } from '@/utils/jobBankApi';
 import { JobCache } from '@/utils/jobCache';
+import { AdvancedCache, jobSearchCache } from '@/utils/cacheUtils';
 import { toast } from 'sonner';
+import { measurePerformance } from '@/utils/performanceUtils';
 
 export interface JobSearchParams {
   keywords?: string;
@@ -42,6 +45,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     skills: searchParams.skills || [],
   });
 
+  // Generate a cache key based on search parameters
   const getCacheKey = useCallback((params: JobSearchParams, page: number): string => {
     const skillsKey = params.skills && params.skills.length > 0 
       ? params.skills.sort().join(',') 
@@ -50,6 +54,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     return `${params.country || 'canada'}:${params.keywords || ''}:${params.location || ''}:${params.radius || 50}:${params.jobType || ''}:${params.industry || ''}:${skillsKey}:${page}`;
   }, []);
 
+  // Update search parameters when props change
   useEffect(() => {
     setCurrentSearchParams(prevParams => ({
       ...prevParams,
@@ -114,10 +119,16 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
       console.log("Fetching jobs with params:", params);
       
       const cacheKey = getCacheKey(params, currentPage);
-      const cachedResults = JobCache.getSearchResults(cacheKey);
+      
+      // First try the enhanced cache
+      const cachedResults = jobSearchCache.get<{
+        jobs: Job[],
+        totalPages: number,
+        totalJobs: number
+      }>(cacheKey);
       
       if (cachedResults) {
-        console.log("Using cached job results");
+        console.log("Using cached job results from enhanced cache");
         setJobs(cachedResults.jobs);
         setTotalPages(cachedResults.totalPages);
         setTotalJobs(cachedResults.totalJobs);
@@ -125,10 +136,25 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
         return;
       }
       
+      // Fall back to the legacy cache
+      const legacyCachedResults = JobCache.getSearchResults(cacheKey);
+      
+      if (legacyCachedResults) {
+        console.log("Using cached job results from legacy cache");
+        setJobs(legacyCachedResults.jobs);
+        setTotalPages(legacyCachedResults.totalPages);
+        setTotalJobs(legacyCachedResults.totalJobs);
+        setIsLoading(false);
+        
+        // Store in the enhanced cache for future
+        jobSearchCache.set(cacheKey, legacyCachedResults);
+        return;
+      }
+      
       setError(null);
       
       try {
-        console.log("Searching for jobs");
+        console.log("Searching for jobs - no cache hit");
         const jobBankParams = {
           keywords: params.keywords,
           location: params.location,
@@ -137,7 +163,12 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
           skills: params.skills,
         };
         
-        const jobBankResults = await searchJobBankJobs(jobBankParams);
+        // Measure the performance of the job search API call
+        const jobBankResults = await measurePerformance(
+          'Job Bank API Search',
+          searchJobBankJobs,
+          jobBankParams
+        );
         
         if (jobBankResults.jobs && jobBankResults.jobs.length > 0) {
           console.log(`Found ${jobBankResults.jobs.length} jobs`);
@@ -167,7 +198,9 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
           setTotalPages(jobBankResults.totalPages);
           setTotalJobs(jobBankResults.totalJobs);
           
+          // Store in both caches for backward compatibility
           JobCache.saveSearchResults(cacheKey, jobBankResults);
+          jobSearchCache.set(cacheKey, jobBankResults, 15 * 60 * 1000); // 15 minutes TTL
           
           setIsLoading(false);
           return;
@@ -184,6 +217,7 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     }
   }, [currentPage, currentSearchParams, convertMilitarySkillsToKeywords, getCacheKey]);
 
+  // Fetch jobs when dependencies change
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
@@ -194,7 +228,10 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
 
   const refreshJobs = async (): Promise<void> => {
     const cacheKey = getCacheKey(currentSearchParams, currentPage);
+    
+    // Clear from both caches
     JobCache.clearSearchResult(cacheKey);
+    jobSearchCache.delete(cacheKey);
     
     const refreshedParams = {
       ...currentSearchParams,
@@ -206,6 +243,53 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     setIsLoading(true);
     await fetchJobs();
   };
+
+  // Prefetch next page if we're getting close to the end of the current page
+  useEffect(() => {
+    if (currentPage < totalPages) {
+      const prefetchNextPage = async () => {
+        const nextPageParams = {
+          ...currentSearchParams,
+          page: currentPage + 1
+        };
+        
+        const nextPageCacheKey = getCacheKey(nextPageParams, currentPage + 1);
+        
+        // Only prefetch if not already in cache
+        if (!jobSearchCache.get(nextPageCacheKey) && !JobCache.getSearchResults(nextPageCacheKey)) {
+          // Don't block the UI or set loading state for prefetching
+          try {
+            console.log(`Prefetching job data for page ${currentPage + 1}`);
+            const jobBankParams = {
+              keywords: nextPageParams.keywords,
+              location: nextPageParams.location,
+              distance: nextPageParams.radius,
+              page: currentPage + 1,
+              skills: nextPageParams.skills,
+            };
+            
+            const jobBankResults = await searchJobBankJobs(jobBankParams);
+            
+            if (jobBankResults.jobs && jobBankResults.jobs.length > 0) {
+              // Store in both caches
+              JobCache.saveSearchResults(nextPageCacheKey, jobBankResults);
+              jobSearchCache.set(nextPageCacheKey, jobBankResults, 15 * 60 * 1000);
+              console.log(`Prefetched ${jobBankResults.jobs.length} jobs for page ${currentPage + 1}`);
+            }
+          } catch (error) {
+            console.error('Error prefetching next page jobs:', error);
+          }
+        }
+      };
+      
+      // Set a small delay to make sure we don't interfere with current page fetching
+      const timer = setTimeout(() => {
+        prefetchNextPage();
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage, totalPages, currentSearchParams, getCacheKey]);
 
   return {
     jobs,
