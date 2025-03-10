@@ -155,7 +155,8 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
               if (matchingSkills.length > 0) {
                 return {
                   ...job,
-                  matchingSkills
+                  matchingSkills,
+                  matchScore: Math.round((matchingSkills.length / job.requiredSkills.length) * 100)
                 };
               }
               return job;

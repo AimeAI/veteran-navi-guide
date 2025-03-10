@@ -6,9 +6,12 @@ import { useJobSearchState } from '@/hooks/useJobSearchState';
 import { useTranslation } from 'react-i18next';
 import JobSearchHeader from '@/components/job-search/JobSearchHeader';
 import SearchTabs from '@/components/job-search/SearchTabs';
+import { useAuth } from '@/hooks/useAuth'; // Import auth hook
+import { getUserSkills } from '@/utils/skillMatching'; // Import skill matching function
 
 const JobSearch: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth(); // Get current user
   
   const {
     jobs,
@@ -43,7 +46,7 @@ const JobSearch: React.FC = () => {
     handleRemoteToggle,
     handleCountryChange,
     handleMilitarySkillsChange,
-    handleSkillsChange, // New handler
+    handleSkillsChange,
     handleClearFilters,
     handleClearCacheAndRefresh,
   } = useJobSearchState(refreshJobs);
@@ -52,6 +55,24 @@ const JobSearch: React.FC = () => {
     setPage(page);
     window.scrollTo(0, 0);
   };
+  
+  // Fetch user skills when component mounts if user is logged in
+  useEffect(() => {
+    const fetchUserSkills = async () => {
+      if (user?.id) {
+        try {
+          const skills = await getUserSkills(user.id);
+          if (skills.length > 0) {
+            handleSkillsChange(skills);
+          }
+        } catch (error) {
+          console.error("Error fetching user skills:", error);
+        }
+      }
+    };
+    
+    fetchUserSkills();
+  }, [user, handleSkillsChange]);
   
   useEffect(() => {
     refreshJobs();
@@ -65,7 +86,7 @@ const JobSearch: React.FC = () => {
     filters.educationLevel,
     filters.jobType,
     filters.country,
-    filters.skills, // Add skills dependency
+    filters.skills,
   ]);
   
   return (
@@ -91,7 +112,7 @@ const JobSearch: React.FC = () => {
         onClearFilters={handleClearFilters}
         onFilterChange={handleFilterChange}
         onMilitarySkillsChange={handleMilitarySkillsChange}
-        onSkillsChange={handleSkillsChange} // Add this prop
+        onSkillsChange={handleSkillsChange}
         jobs={jobs}
         isLoading={isLoading}
         error={error}
