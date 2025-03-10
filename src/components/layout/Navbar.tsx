@@ -17,8 +17,8 @@ const Navbar = () => {
   return (
     <nav className="bg-nav border-b py-4 sticky top-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center">
-          <Link to="/" className="font-bold text-xl text-primary mr-10">
+        <div className="flex items-center gap-6">
+          <Link to="/" className="font-bold text-xl text-primary">
             VeteranJobBoard
           </Link>
           
@@ -34,7 +34,6 @@ const Navbar = () => {
             <AuthButtons />
           )}
           
-          {/* Mobile menu button */}
           <Button
             variant="ghost"
             size="sm"
@@ -47,7 +46,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile menu */}
       <MobileMenu 
         open={mobileMenuOpen} 
         onOpenChange={setMobileMenuOpen} 
