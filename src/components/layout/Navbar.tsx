@@ -1,135 +1,235 @@
-
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Briefcase, User, BookOpen, Building, ChevronDown, Shield } from 'lucide-react';
-import MobileMenu from '../navigation/MobileMenu';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LanguageSelector from '../language/LanguageSelector';
+import {
+  Menu,
+  User,
+  Bell,
+  MessageSquare,
+  Briefcase,
+  BookmarkCheck,
+  Search,
+  AlarmClock,
+  Calendar,
+  Shield,
+  FileText,
+  ClipboardList,
+  Settings,
+  LogOut,
+  ChevronDown,
+  Building,
+  Link2
+} from 'lucide-react';
+import { useUser } from '@/context/UserContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useUser } from '@/context/UserContext';
-import NavDropdown from '../navigation/NavDropdown';
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { DayPicker } from "react-day-picker"
 
-const Navbar: React.FC = () => {
-  const { t } = useTranslation();
-  const { user } = useUser();
-  
-  // Navigation data
-  const navSections = [
-    {
-      title: t('navigation.jobSearch'),
-      icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
-      items: [
-        { label: t('navigation.jobSearch'), href: '/job-search' },
-        { label: t('navigation.savedJobs'), href: '/saved' },
-        { label: t('navigation.recommendedJobs'), href: '/recommended' },
-        { label: t('navigation.jobAlerts'), href: '/job-alerts' },
-        { label: t('navigation.jobFairs'), href: '/events' },
-        { label: t('navigation.vettedJobs'), href: '/vetted-jobs', icon: <Shield className="h-3 w-3 ml-1 text-primary" /> },
-      ],
-    },
-    {
-      title: t('navigation.profile'),
-      icon: <User className="h-4 w-4" aria-hidden="true" />,
-      items: [
-        { label: t('navigation.profile'), href: '/profile' },
-        { label: t('navigation.resume'), href: '/profile/resume' },
-        { label: t('navigation.applicationHistory'), href: '/history' },
-        { label: t('navigation.settings'), href: '/profile/settings' },
-      ],
-    },
-    {
-      title: t('navigation.resources'),
-      icon: <BookOpen className="h-4 w-4" aria-hidden="true" />,
-      items: [
-        { label: t('navigation.careerCounseling'), href: '/resources/career-counseling' },
-        { label: t('navigation.resumeAssistance'), href: '/resources/resume-assistance' },
-        { label: t('navigation.interviewPrep'), href: '/resources/interview-prep' },
-        { label: t('navigation.militaryTransition'), href: '/resources/military-transition' },
-        { label: t('navigation.communityForums'), href: '/resources/forums' },
-      ],
-    },
-    {
-      title: t('navigation.employers'),
-      icon: <Building className="h-4 w-4" aria-hidden="true" />,
-      items: [
-        { label: t('navigation.postJob'), href: '/employer/post-job' },
-        { label: t('navigation.manageApplications'), href: '/employer/manage-applications' },
-        { label: t('navigation.searchVeterans'), href: '/employer/search-veterans' },
-      ],
-    },
+const Navbar = () => {
+  const { t, i18n } = useTranslation();
+  const { user, logout, supabaseUser } = useUser();
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [date, setDate] = React.useState<Date | undefined>(new Date())
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/auth');
+  };
+
+  const profileMenuItems = [
+    { label: t("navigation.profile"), icon: <User />, href: "/profile" },
+    { label: t("navigation.resume"), icon: <FileText />, href: "/resume-assistance" },
+    { label: t("navigation.applicationHistory"), icon: <ClipboardList />, href: "/application-history" },
+    { label: t("navigation.integrations"), icon: <Link2 />, href: "/integrations" },
+    { label: t("navigation.settings"), icon: <Settings />, href: "/settings" },
+    { label: t("common.logout"), icon: <LogOut />, onClick: handleLogout, },
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full backdrop-blur supports-backdrop-blur:bg-nav/80">
-      <div className="border-b border-nav-border bg-nav/85 backdrop-blur-sm">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center">
-              <Link to="/" className="flex items-center" aria-label="VeteranJobBoard Home">
-                <span className="text-lg sm:text-xl font-semibold tracking-tight truncate">VeteranJobBoard</span>
-              </Link>
+    <nav className="bg-background border-b sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex-shrink-0 font-bold text-xl">
+              VeteranMatch
+            </Link>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-4">
+                <NavLink to="/job-search" className={({ isActive }) => isActive ? "text-primary px-3 py-2 rounded-md text-sm font-medium" : "text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"}>
+                  {t("navigation.jobSearch")}
+                </NavLink>
+                <NavLink to="/saved-jobs" className={({ isActive }) => isActive ? "text-primary px-3 py-2 rounded-md text-sm font-medium" : "text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"}>
+                  {t("navigation.savedJobs")}
+                </NavLink>
+                {/* Add more navigation links here */}
+              </div>
             </div>
-            
-            <nav aria-label="Main Navigation" className="hidden lg:flex lg:items-center lg:space-x-4 xl:space-x-6">
-              {navSections.map((section) => (
-                <div key={section.title} className="relative">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200">
-                      {section.icon}
-                      <span className="ml-2">{section.title}</span>
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-48">
-                      {section.items.map((item) => (
-                        <DropdownMenuItem key={item.label} asChild>
-                          <Link to={item.href} className="flex items-center">
-                            {item.label}
-                            {item.icon && item.icon}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-4 flex items-center md:ml-6">
+              {/* Search Bar - Placeholder */}
+              <div className="mr-4">
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </div>
+                  <input
+                    type="text"
+                    name="search"
+                    id="search"
+                    className="focus:ring-primary focus:border-primary block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                    placeholder={t("common.search")}
+                  />
                 </div>
-              ))}
-              
-              <LanguageSelector />
-            </nav>
+              </div>
 
-            <MobileMenu sections={navSections} />
+              {/* Notification Menu - Placeholder */}
+              <button
+                type="button"
+                className="bg-gray-100 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary mr-4"
+              >
+                <span className="sr-only">View notifications</span>
+                <Bell className="h-6 w-6" aria-hidden="true" />
+              </button>
 
-            <div className="hidden lg:flex lg:items-center lg:space-x-4">
-              {user ? (
-                <NavDropdown />
-              ) : (
+              {/* Profile dropdown */}
+              {!user?.isAuthenticated ? (
                 <>
-                  <Link
-                    to="/auth"
-                    className="px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    aria-label="Log in to your account"
-                  >
-                    {t('common.login')}
-                  </Link>
-                  <Link
-                    to="/auth?tab=signup"
-                    className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    aria-label="Create a new account"
-                  >
-                    {t('common.signup')}
-                  </Link>
+                  <Link to="/auth?tab=login" className="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">{t("common.login")}</Link>
+                  <Link to="/auth?tab=signup" className="text-white bg-primary hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">{t("common.signup")}</Link>
                 </>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                      <span className="sr-only">Open user menu</span>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.profilePicture || `https://avatar.vercel.sh/${user?.email}.png`} alt={user?.name} />
+                        <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="mr-2 w-56">
+                    <DropdownMenuLabel>{user?.name}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {profileMenuItems.map((item, index) => (
+                      <DropdownMenuItem key={index} onClick={item.onClick ? item.onClick : () => navigate(item.href || '')}>
+                        {item.icon} {item.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
+          <div className="-mr-2 flex md:hidden">
+            {/* Mobile menu button */}
+            <button
+              onClick={toggleMenu}
+              type="button"
+              className="bg-background inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              aria-controls="mobile-menu"
+              aria-expanded="false"
+            >
+              <span className="sr-only">Open main menu</span>
+              <Menu className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </div>
-    </header>
+
+      {/* Mobile menu, show/hide based on menu state. */}
+      <div className={isMenuOpen ? "md:hidden block" : "md:hidden hidden"} id="mobile-menu">
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <NavLink to="/job-search" className={({ isActive }) => isActive ? "bg-gray-100 text-primary block px-3 py-2 rounded-md text-base font-medium" : "text-gray-700 hover:bg-gray-100 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"}>
+            {t("navigation.jobSearch")}
+          </NavLink>
+          <NavLink to="/saved-jobs" className={({ isActive }) => isActive ? "bg-gray-100 text-primary block px-3 py-2 rounded-md text-base font-medium" : "text-gray-700 hover:bg-gray-100 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"}>
+            {t("navigation.savedJobs")}
+          </NavLink>
+          {/* Add more mobile navigation links here */}
+        </div>
+        <div className="pt-4 pb-3 border-t border-gray-200">
+          <div className="flex items-center px-5 sm:px-6">
+            <div className="flex-shrink-0">
+              {user?.isAuthenticated ? (
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user?.profilePicture || `https://avatar.vercel.sh/${user?.email}.png`} alt={user?.name} />
+                  <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              ) : (
+                <Shield className="h-10 w-10 text-gray-400" aria-hidden="true" />
+              )}
+            </div>
+            {user?.isAuthenticated ? (
+              <div className="ml-3">
+                <div className="text-base font-medium text-gray-800">{user?.name}</div>
+                <div className="text-sm font-medium text-gray-500">{user?.email}</div>
+              </div>
+            ) : (
+              <div className="ml-3">
+                <div className="text-base font-medium text-gray-800">{t("common.guest")}</div>
+                <div className="text-sm font-medium text-gray-500">{t("common.pleaseLogin")}</div>
+              </div>
+            )}
+          </div>
+          <div className="mt-3 px-2 space-y-1 sm:px-3">
+            {user?.isAuthenticated ? (
+              <>
+                {profileMenuItems.map((item, index) => (
+                  <NavLink key={index} to={item.href || ""} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                    {item.label}
+                  </NavLink>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  {t("common.logout")}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/auth?tab=login"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  {t("common.login")}
+                </Link>
+                <Link
+                  to="/auth?tab=signup"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  {t("common.signup")}
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 };
 

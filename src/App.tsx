@@ -1,19 +1,56 @@
+import React, { Suspense, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import { Toaster } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
-import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/layout/Navbar";
-import LoadingSpinner from "./components/ui/LoadingSpinner";
-import { Toaster } from "./components/ui/sonner";
-import { AppProvider } from "./context/AppContext";
-import "./App.css";
-import EmailVerificationBanner from "./components/EmailVerificationBanner";
-import { MessageProvider } from "./context/MessageContext";
-import { RequireAuth } from "./components/RequireAuth";
-import { LanguageProvider } from "./context/LanguageContext";
-import "./i18n";
-import SecurityMonitor from "./components/security/SecurityMonitor";
-import JobBoardPage from "./pages/JobBoardPage";
-import JobSearch from "./pages/JobSearch";
+// Layout components
+import Navbar from '@/components/layout/Navbar';
+import PageFooter from '@/components/layout/PageFooter';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import EmailVerificationBanner from '@/components/EmailVerificationBanner';
+
+// Pages
+import Index from '@/pages/Index';
+import JobSearch from '@/pages/JobSearch';
+import SavedJobs from '@/pages/SavedJobs';
+import RecommendedJobs from '@/pages/RecommendedJobs';
+import JobAlertsPage from '@/pages/JobAlertsPage';
+import JobFairsEventsPage from '@/pages/JobFairsEventsPage';
+import VettedJobsPage from '@/pages/VettedJobsPage';
+import JobDetailsPage from '@/pages/JobDetailsPage';
+import UserProfile from '@/pages/UserProfile';
+import ResumeAssistance from '@/pages/ResumeAssistance';
+import ApplicationsPage from '@/pages/ApplicationsPage';
+import Settings from '@/pages/Settings';
+import ReferralProgramPage from '@/pages/ReferralProgramPage';
+import CareerCounseling from '@/pages/CareerCounseling';
+import InterviewPreparation from '@/pages/InterviewPreparation';
+import MilitaryTransitionResources from '@/pages/MilitaryTransitionResources';
+import CommunityForums from '@/pages/CommunityForums';
+import TopicDetail from '@/pages/TopicDetail';
+import MessagesPage from '@/pages/MessagesPage';
+import FeedbackSupportPage from '@/pages/FeedbackSupportPage';
+import AuthPage from '@/pages/AuthPage';
+import AuthCallbackPage from '@/pages/AuthCallbackPage';
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
+import VerifyEmailPage from '@/pages/VerifyEmailPage';
+import IntegrationsPage from '@/pages/IntegrationsPage';
+
+// Employer pages
+import EmployerDashboardPage from '@/pages/EmployerDashboardPage';
+import EmployerApplicationsPage from '@/pages/EmployerApplicationsPage';
+import PostJobPage from '@/pages/PostJobPage';
+import EmployerSearchVeteransPage from '@/pages/EmployerSearchVeteransPage';
+import EmployerProfilePage from '@/pages/EmployerProfilePage';
+
+// Admin pages
+import AdminDashboardPage from '@/pages/AdminDashboardPage';
+import AdminContentPage from '@/pages/AdminContentPage';
+import AbTestingPage from '@/pages/AbTestingPage';
+
+// Utility pages
+import NotFound from '@/pages/NotFound';
 
 // Performance optimization: Lazy load pages to reduce initial bundle size
 const Index = lazy(() => import("./pages/Index"));
@@ -46,7 +83,6 @@ const FeedbackSupportPage = lazy(() => import("./pages/FeedbackSupportPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ReferralProgramPage = lazy(() => import("./pages/ReferralProgramPage"));
 const VettedJobsPage = lazy(() => import("./pages/VettedJobsPage"));
-// Add new auth callback page
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
 
 // Loading component for suspense fallback

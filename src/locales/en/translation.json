@@ -1,3 +1,4 @@
+
 {
   "common": {
     "language": "Language",
@@ -43,7 +44,8 @@
     "employers": "Employers",
     "postJob": "Post a Job",
     "manageApplications": "Manage Applications",
-    "searchVeterans": "Search Veteran Profiles"
+    "searchVeterans": "Search Veteran Profiles",
+    "integrations": "External Integrations"
   },
   "auth": {
     "welcomeBack": "Welcome Back",
@@ -63,7 +65,8 @@
     "passwordRequirements": "Password must be at least 8 characters with uppercase, lowercase, and numbers",
     "required": "This field is required",
     "invalidEmail": "Please enter a valid email address",
-    "passwordsDoNotMatch": "Passwords do not match"
+    "passwordsDoNotMatch": "Passwords do not match",
+    "orContinueWith": "or continue with"
   },
   "accessibility": {
     "skipToContent": "Skip to main content",
@@ -107,5 +110,40 @@
     "twitter": "Share on Twitter",
     "linkedin": "Share on LinkedIn",
     "copyLink": "Copy link"
+  },
+  "integrations": {
+    "title": "External Integrations",
+    "description": "Connect your profile to external services to import your data and enhance your job search experience.",
+    "securityNote": "Data Privacy and Security",
+    "securityDescription": "We prioritize your data security. When you connect external services, we only request the minimum necessary permissions and never store your passwords.",
+    
+    "linkedinTitle": "LinkedIn Integration",
+    "linkedinDescription": "Import your professional profile, skills, and experience from LinkedIn.",
+    "linkedinConnected": "LinkedIn Account Connected",
+    "clickToImport": "Your LinkedIn account is connected. Click the button below to import your profile data.",
+    "notConnected": "LinkedIn Account Not Connected",
+    "connectToImport": "Connect your LinkedIn account to import your professional profile and skills.",
+    
+    "connectLinkedin": "Connect LinkedIn",
+    "importProfile": "Import Profile Data",
+    "importing": "Importing...",
+    "imported": "Data Imported",
+    "connecting": "Connecting...",
+    
+    "importSuccessful": "LinkedIn Data Imported",
+    "linkedinDataImported": "Your LinkedIn profile data has been successfully imported and merged with your profile.",
+    "previewImport": "Preview of data to import",
+
+    "indeedTitle": "Indeed Integration",
+    "indeedDescription": "Connect to your Indeed account to sync job applications.",
+    
+    "veteranOrgTitle": "Veteran Organizations",
+    "veteranOrgDescription": "Connect to veteran support organizations for additional resources."
+  },
+  "profile": {
+    "name": "Name",
+    "headline": "Headline",
+    "skills": "Skills",
+    "experience": "Experience"
   }
 }
