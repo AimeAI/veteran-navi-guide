@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,7 +22,7 @@ interface SearchTabsProps {
   onClearFilters: () => void;
   onFilterChange: (name: string, value: any) => void;
   onMilitarySkillsChange: (skills: string[]) => void;
-  onSkillsChange?: (skills: string[]) => void; // Add this prop
+  onSkillsChange?: (skills: string[]) => void;
   jobs: any[];
   isLoading: boolean;
   error: Error | null;

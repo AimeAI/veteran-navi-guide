@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -16,14 +15,14 @@ interface JobListingProps {
   company: string;
   location: string;
   description: string;
-  date?: string; // Make date optional
+  date?: string;
   source?: string;
   url?: string;
   matchScore?: number;
   matchingSkills?: string[];
-  className?: string; // Add className prop
-  salaryRange?: string; // Add salary range
-  companyDescription?: string; // Add company description
+  className?: string;
+  salaryRange?: string;
+  companyDescription?: string;
 }
 
 const JobListing: React.FC<JobListingProps> = ({ 
@@ -52,7 +51,6 @@ const JobListing: React.FC<JobListingProps> = ({
     `${description.substring(0, MAX_DESCRIPTION_LENGTH)}...` : 
     description;
   
-  // Generate a company logo from the first letter of company name
   const companyInitial = company.charAt(0).toUpperCase();
   const bgColors = [
     'bg-blue-100 text-blue-800',
@@ -64,7 +62,6 @@ const JobListing: React.FC<JobListingProps> = ({
     'bg-teal-100 text-teal-800',
   ];
   
-  // Use company name to consistently generate the same color for the same company
   const colorIndex = company.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % bgColors.length;
   const logoColorClass = bgColors[colorIndex];
   
@@ -75,7 +72,7 @@ const JobListing: React.FC<JobListingProps> = ({
       'jobbank': 'default',
       'indeed': 'orange',
       'linkedin': 'purple',
-      'jobicy': 'blue' as "info" // Type cast 'blue' to 'info' which is an allowed variant
+      'jobicy': 'blue' as "info"
     };
     
     return sourceMap[source.toLowerCase()] || "secondary";
@@ -97,8 +94,7 @@ const JobListing: React.FC<JobListingProps> = ({
       company,
       location,
       description,
-      date: date || new Date().toISOString(), // Provide fallback for date
-      // Add required fields from Job interface
+      date: date || new Date().toISOString(),
       category: "other",
       salaryRange: salaryRange || "",
       remote: false,
@@ -123,8 +119,6 @@ const JobListing: React.FC<JobListingProps> = ({
     
     let highlightedText = text;
     
-    // We're doing a simple replacement here, but this could be improved
-    // with a more sophisticated algorithm that respects HTML tags
     matchingSkills.forEach(skill => {
       const regex = new RegExp(`\\b${skill}\\b`, 'gi');
       highlightedText = highlightedText.replace(
@@ -145,7 +139,6 @@ const JobListing: React.FC<JobListingProps> = ({
       <CardHeader className="pb-0">
         <div className="flex justify-between items-start gap-4">
           <div className="flex gap-4 items-start">
-            {/* Company logo */}
             <div className={`flex-shrink-0 h-12 w-12 rounded-md ${logoColorClass} flex items-center justify-center text-lg font-bold`}>
               {companyInitial}
             </div>
@@ -167,7 +160,6 @@ const JobListing: React.FC<JobListingProps> = ({
                 </div>
               </div>
               
-              {/* Salary range */}
               {salaryRange && (
                 <div className="flex items-center text-sm font-medium text-green-600 mt-1">
                   <DollarSign className="h-3.5 w-3.5 mr-1" />
@@ -192,7 +184,6 @@ const JobListing: React.FC<JobListingProps> = ({
           </div>
         </div>
         
-        {/* Company description */}
         {companyDescription && (
           <div className="mt-3 px-2 py-1.5 bg-slate-50 rounded-md text-sm text-slate-600 flex items-start">
             <Info className="h-4 w-4 mr-2 mt-0.5 text-slate-400 flex-shrink-0" />

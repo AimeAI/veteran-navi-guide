@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { JobFilterState } from '@/context/JobContext';
 import { JobCache } from '@/utils/jobCache';
@@ -68,7 +67,6 @@ export function useJobSearchState(refreshJobs: () => Promise<void>) {
     }));
   };
   
-  // New handler for skills change
   const handleSkillsChange = (skills: string[]) => {
     setFilters(prev => ({
       ...prev,
@@ -132,7 +130,7 @@ export function useJobSearchState(refreshJobs: () => Promise<void>) {
     handleRemoteToggle,
     handleCountryChange,
     handleMilitarySkillsChange,
-    handleSkillsChange, // Export this
+    handleSkillsChange,
     handleClearFilters,
     handleClearCacheAndRefresh,
   };
