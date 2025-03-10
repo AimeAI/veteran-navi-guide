@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 import { UserRole, EmployerProfile } from "@/types/application";
@@ -21,6 +20,7 @@ export interface UserProfile {
   role: UserRole;
   employerProfile?: EmployerProfile;
   authProvider?: string; // Add auth provider to track how user is authenticated
+  skills?: string[]; // Add skills property
 }
 
 // Interface for the context
@@ -88,7 +88,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             emailVerified: currentSession.user.email_confirmed_at !== null,
             profilePicture: profileData.avatar_url,
             role: "veteran", // Default to veteran, update based on actual role when implemented
-            authProvider: currentSession.user.app_metadata.provider || "email"
+            authProvider: currentSession.user.app_metadata.provider || "email",
+            skills: profileData.skills || []
           });
         } else {
           // Create basic profile if none exists
@@ -104,7 +105,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             isAuthenticated: true,
             emailVerified: currentSession.user.email_confirmed_at !== null,
             role: "veteran",
-            authProvider: currentSession.user.app_metadata.provider || "email"
+            authProvider: currentSession.user.app_metadata.provider || "email",
+            skills: []
           });
         }
       } else {
@@ -143,7 +145,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 emailVerified: newSession.user.email_confirmed_at !== null,
                 profilePicture: profileData.avatar_url,
                 role: "veteran",
-                authProvider: newSession.user.app_metadata.provider || "email"
+                authProvider: newSession.user.app_metadata.provider || "email",
+                skills: profileData.skills || []
               });
               
               toast.success("Welcome back!");

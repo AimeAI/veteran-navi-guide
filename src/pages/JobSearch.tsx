@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useJobSearch } from '@/hooks/useJobSearch';
@@ -15,6 +14,7 @@ import { AlertCircle, BookOpen, Check, UserCheck, UserPlus } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import ProfileCompletionProgress from '@/components/ProfileCompletionProgress';
 import SkillBadge from '@/components/SkillBadge';
+import { Badge } from '@/components/ui/badge';
 
 const JobSearch: React.FC = () => {
   const { t } = useTranslation();
@@ -65,20 +65,16 @@ const JobSearch: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  // Check if user profile is incomplete to show onboarding
   useEffect(() => {
     if (user && supabaseUser) {
-      // Check if profile is incomplete (less than 70% complete)
       const requiredFields = ['name', 'email', 'location', 'militaryBranch', 'rank', 'yearsOfService', 'bio'];
       const filledFields = requiredFields.filter(field => Boolean((user as any)[field]));
       const completionPercentage = (filledFields.length / requiredFields.length) * 100;
       
-      // Show onboarding if profile is less than 70% complete
       setShowOnboarding(completionPercentage < 70);
     }
   }, [user, supabaseUser]);
   
-  // Fetch user skills when component mounts if user is logged in
   useEffect(() => {
     const fetchUserSkills = async () => {
       if (supabaseUser?.id) {
@@ -114,7 +110,6 @@ const JobSearch: React.FC = () => {
   
   const dismissOnboarding = () => {
     setShowOnboarding(false);
-    // You could store this in localStorage or user preferences in the database
     localStorage.setItem('onboardingDismissed', 'true');
   };
   

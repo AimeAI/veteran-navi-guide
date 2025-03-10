@@ -72,7 +72,7 @@ export const availableBadges: VeteranBadge[] = [
     type: "achievement",
     name: "Onboarding Complete",
     description: "Successfully completed the onboarding process",
-    icon: "check-circle",
+    icon: "check",
     level: 1
   },
   {
