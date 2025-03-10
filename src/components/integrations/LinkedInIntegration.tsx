@@ -1,233 +1,177 @@
+
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Linkedin, Upload, Check, AlertCircle } from "lucide-react";
-import { useUser } from "@/context/UserContext";
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { useUser } from '@/context/UserContext';
+import { Loader2, LinkedinIcon, CheckCircle, XCircle } from 'lucide-react';
 
-interface LinkedInProfileData {
-  firstName?: string;
-  lastName?: string;
-  profilePicture?: string;
-  headline?: string;
-  skills?: string[];
-  experience?: {
-    companyName: string;
-    title: string;
-    description?: string;
-    startDate?: string;
-    endDate?: string;
-  }[];
-}
-
-const LinkedInIntegration = () => {
+const LinkedInIntegration: React.FC = () => {
   const { t } = useTranslation();
-  const { user, updateProfile } = useUser();
+  const { user } = useUser();
+  const [isConnected, setIsConnected] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [importedData, setImportedData] = useState<LinkedInProfileData | null>(null);
-  const [importSuccessful, setImportSuccessful] = useState(false);
-  
-  // Check if user is linked to LinkedIn through their auth provider
-  const isLinkedToLinkedIn = user?.authProvider === 'linkedin_oidc';
-  
-  const handleConnectLinkedIn = () => {
-    setIsConnecting(true);
-    
-    // LinkedIn OAuth configuration
-    const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/auth/callback`;
-    const scope = encodeURIComponent('r_liteprofile r_emailaddress w_member_social');
-    const state = Math.random().toString(36).substring(2);
-    
-    // Save state to localStorage to verify when the user comes back
-    localStorage.setItem('linkedin_oauth_state', state);
-    
-    // Redirect to LinkedIn OAuth page
-    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
-    
-    // If user is authenticated
-    if (user?.isAuthenticated) {
-      toast.info("Redirecting to LinkedIn...");
-      window.location.href = authUrl;
-    } else {
-      toast.error("Please sign in to connect your LinkedIn account");
-      setIsConnecting(false);
-    }
-  };
-  
-  const importLinkedInData = async () => {
-    // In a real implementation, this would be handled by a secure backend
-    // to exchange the auth code for an access token and fetch profile data
-    
-    // For demo, we'll simulate fetching profile data
+  const [importedData, setImportedData] = useState(null);
+
+  // Mock function to simulate LinkedIn OAuth connection
+  const handleConnect = async () => {
     setIsConnecting(true);
     
     try {
-      // Simulate API call
+      // In a real implementation, this would redirect to LinkedIn OAuth
+      // For demo purposes, we'll simulate a successful connection after a delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock profile data
-      const mockProfileData: LinkedInProfileData = {
-        firstName: "John",
-        lastName: "Veteran",
-        headline: "Software Engineer | US Army Veteran",
-        profilePicture: "https://randomuser.me/api/portraits/men/45.jpg",
-        skills: ["Java", "Leadership", "Teamwork", "Problem Solving", "JavaScript"],
-        experience: [
-          {
-            companyName: "US Army",
-            title: "Infantry Team Leader",
-            description: "Led a team of 5 in combat operations",
-            startDate: "2015-06",
-            endDate: "2019-06"
-          },
-          {
-            companyName: "Tech Solutions Inc",
-            title: "Junior Developer",
-            description: "Full-stack development with focus on Java",
-            startDate: "2019-08",
-            endDate: ""
-          }
-        ]
-      };
-      
-      setImportedData(mockProfileData);
-      
-      // Update user profile with imported data
-      if (updateProfile) {
-        await updateProfile({
-          name: `${mockProfileData.firstName} ${mockProfileData.lastName}`,
-          skills: mockProfileData.skills
-        });
-        
-        toast.success("LinkedIn profile data imported successfully!");
-        setImportSuccessful(true);
-      }
+      setIsConnected(true);
+      toast.success("LinkedIn account connected successfully");
     } catch (error) {
-      console.error("Error importing LinkedIn data:", error);
-      toast.error("Failed to import LinkedIn profile data");
+      toast.error("Failed to connect LinkedIn account");
+      console.error(error);
     } finally {
       setIsConnecting(false);
     }
   };
-  
+
+  // Mock function to simulate importing profile data
+  const handleImport = async () => {
+    setIsImporting(true);
+    
+    try {
+      // In a real implementation, this would call an API to import LinkedIn data
+      // For demo purposes, we'll simulate successful data import after a delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock imported data
+      const mockData = {
+        name: user?.name || "John Doe",
+        headline: "Veteran Software Engineer",
+        skills: ["Leadership", "Team Management", "Java", "Python", "Project Management"],
+        experience: [
+          {
+            title: "Software Engineer",
+            company: "Tech Solutions Inc.",
+            duration: "2019 - Present"
+          },
+          {
+            title: "IT Specialist",
+            company: "U.S. Army",
+            duration: "2015 - 2019"
+          }
+        ]
+      };
+      
+      setImportedData(mockData);
+      toast.success(t('integrations.importSuccessful'), {
+        description: t('integrations.linkedinDataImported')
+      });
+    } catch (error) {
+      toast.error("Failed to import LinkedIn data");
+      console.error(error);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Linkedin className="mr-2 h-5 w-5 text-[#0A66C2]" />
-          {t('integrations.linkedinTitle')}
-        </CardTitle>
-        <CardDescription>
-          {t('integrations.linkedinDescription')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {importSuccessful ? (
-          <Alert className="bg-green-50 border-green-200">
-            <Check className="h-4 w-4 text-green-600" />
-            <AlertTitle>{t('integrations.importSuccessful')}</AlertTitle>
-            <AlertDescription>
-              {t('integrations.linkedinDataImported')}
-            </AlertDescription>
-          </Alert>
-        ) : isLinkedToLinkedIn ? (
-          <div className="space-y-4">
-            <Alert>
-              <Check className="h-4 w-4 text-green-600" />
-              <AlertTitle>{t('integrations.linkedinConnected')}</AlertTitle>
-              <AlertDescription>
-                {t('integrations.clickToImport')}
-              </AlertDescription>
-            </Alert>
-            
-            {importedData && (
-              <div className="rounded-md bg-slate-50 p-4 border border-slate-100">
-                <h4 className="font-medium mb-2">{t('integrations.previewImport')}</h4>
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <span className="font-medium">{t('profile.name')}:</span> {importedData.firstName} {importedData.lastName}
-                  </p>
-                  {importedData.headline && (
-                    <p>
-                      <span className="font-medium">{t('profile.headline')}:</span> {importedData.headline}
-                    </p>
-                  )}
-                  {importedData.skills && importedData.skills.length > 0 && (
-                    <div>
-                      <span className="font-medium">{t('profile.skills')}:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {importedData.skills.map(skill => (
-                          <span key={skill} className="px-2 py-1 bg-slate-200 rounded-md text-xs">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-800">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-            <AlertTitle>{t('integrations.notConnected')}</AlertTitle>
-            <AlertDescription>
-              {t('integrations.connectToImport')}
-            </AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-      <CardFooter>
-        {isLinkedToLinkedIn ? (
+    <div className="space-y-4">
+      {!isConnected ? (
+        <div className="flex flex-col gap-4">
+          <p className="text-base">{t('integrations.notConnected')}</p>
+          <p className="text-sm text-muted-foreground">{t('integrations.connectToImport')}</p>
+          
           <Button 
-            variant="default" 
-            onClick={importLinkedInData} 
-            disabled={isConnecting || importSuccessful}
-            className="w-full sm:w-auto"
-          >
-            {isConnecting ? (
-              <>
-                <span className="animate-spin mr-2">⟳</span>
-                {t('integrations.importing')}
-              </>
-            ) : importSuccessful ? (
-              <>
-                <Check className="mr-2 h-4 w-4" />
-                {t('integrations.imported')}
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                {t('integrations.importProfile')}
-              </>
-            )}
-          </Button>
-        ) : (
-          <Button 
-            variant="outline" 
-            onClick={handleConnectLinkedIn} 
+            onClick={handleConnect} 
             disabled={isConnecting}
             className="w-full sm:w-auto"
           >
             {isConnecting ? (
               <>
-                <span className="animate-spin mr-2">⟳</span>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {t('integrations.connecting')}
               </>
             ) : (
               <>
-                <Linkedin className="mr-2 h-4 w-4 text-[#0A66C2]" />
+                <LinkedinIcon className="mr-2 h-4 w-4" />
                 {t('integrations.connectLinkedin')}
               </>
             )}
           </Button>
-        )}
-      </CardFooter>
-    </Card>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 text-green-600">
+            <CheckCircle className="h-5 w-5" />
+            <p className="font-medium">{t('integrations.linkedinConnected')}</p>
+          </div>
+          <p className="text-sm text-muted-foreground">{t('integrations.clickToImport')}</p>
+          
+          <Button 
+            onClick={handleImport} 
+            disabled={isImporting || importedData !== null}
+            className="w-full sm:w-auto"
+          >
+            {isImporting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t('integrations.importing')}
+              </>
+            ) : importedData ? (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                {t('integrations.imported')}
+              </>
+            ) : (
+              <>
+                <LinkedinIcon className="mr-2 h-4 w-4" />
+                {t('integrations.importProfile')}
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+      
+      {importedData && (
+        <div className="mt-8">
+          <h3 className="text-lg font-medium mb-4">{t('integrations.previewImport')}</h3>
+          <Card>
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">{t('profile.name')}</h4>
+                  <p>{(importedData as any).name}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">{t('profile.headline')}</h4>
+                  <p>{(importedData as any).headline}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">{t('profile.skills')}</h4>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(importedData as any).skills.map((skill: string, index: number) => (
+                      <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">{t('profile.experience')}</h4>
+                  <div className="space-y-2 mt-1">
+                    {(importedData as any).experience.map((exp: any, index: number) => (
+                      <div key={index} className="text-sm">
+                        <p className="font-medium">{exp.title}</p>
+                        <p className="text-gray-600">{exp.company} • {exp.duration}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 };
 
