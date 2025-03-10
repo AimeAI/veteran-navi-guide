@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LmsCourse } from '@/services/lmsService';
+import { LmsCourse } from '@/services/lms';
 import { BookOpen, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 

@@ -21,7 +21,7 @@ import {
   getUserCourses,
   getUserCertifications,
   deleteCertification
-} from '@/services/lmsService';
+} from '@/services/lms';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const LmsIntegrationPage: React.FC = () => {

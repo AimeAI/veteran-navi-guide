@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LmsConnection, fetchCanvasCourses } from '@/services/lmsService';
+import { LmsConnection, fetchCanvasCourses } from '@/services/lms';
 import { BookOpen, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistance } from 'date-fns';

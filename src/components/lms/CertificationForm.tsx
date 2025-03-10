@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useUser } from '@/context/UserContext';
 import { toast } from 'sonner';
 import { Loader2, Plus, X } from 'lucide-react';
-import { LmsCertification, addUserCertification } from '@/services/lmsService';
+import { LmsCertification, addUserCertification } from '@/services/lms';
 import { Badge } from '@/components/ui/badge';
 
 interface CertificationFormProps {
