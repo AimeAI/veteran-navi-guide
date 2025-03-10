@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import { Routes, Route, useLocation, BrowserRouter as Router } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -9,7 +10,7 @@ import Navbar from '@/components/layout/Navbar';
 import PageFooter from '@/components/layout/PageFooter';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
-import { SecurityMonitor } from '@/components/security/SecurityMonitor';
+import SecurityMonitor from '@/components/security/SecurityMonitor';
 import { RequireAuth } from '@/components/RequireAuth';
 import { MessageProvider } from '@/context/MessageContext';
 import { LanguageProvider } from '@/context/LanguageContext';
