@@ -77,6 +77,7 @@ export async function markReviewAsHelpful(reviewId: string): Promise<boolean> {
   try {
     // Call the RPC function we defined in the SQL
     // Update to use custom name instead of function name directly
+    // @ts-ignore - Ignoring TypeScript error for RPC function name
     const { error } = await supabase.rpc('increment_review_helpful_count', {
       review_id: reviewId
     });
