@@ -340,6 +340,134 @@ export type Database = {
         }
         Relationships: []
       }
+      lms_certifications: {
+        Row: {
+          created_at: string
+          credential_id: string | null
+          credential_url: string | null
+          description: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string
+          issuer: string
+          name: string
+          skills: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date: string
+          issuer: string
+          name: string
+          skills?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string
+          issuer?: string
+          name?: string
+          skills?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lms_connections: {
+        Row: {
+          access_token: string
+          connected_at: string
+          expires_at: string | null
+          id: string
+          instance_url: string
+          is_active: boolean
+          lms_type: string
+          refresh_token: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          connected_at?: string
+          expires_at?: string | null
+          id?: string
+          instance_url: string
+          is_active?: boolean
+          lms_type: string
+          refresh_token?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          connected_at?: string
+          expires_at?: string | null
+          id?: string
+          instance_url?: string
+          is_active?: boolean
+          lms_type?: string
+          refresh_token?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lms_courses: {
+        Row: {
+          course_code: string | null
+          course_id: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          enrollment_status: string
+          id: string
+          image_url: string | null
+          lms_connection_id: string
+          name: string
+          start_date: string | null
+        }
+        Insert: {
+          course_code?: string | null
+          course_id: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          enrollment_status: string
+          id?: string
+          image_url?: string | null
+          lms_connection_id: string
+          name: string
+          start_date?: string | null
+        }
+        Update: {
+          course_code?: string | null
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          enrollment_status?: string
+          id?: string
+          image_url?: string | null
+          lms_connection_id?: string
+          name?: string
+          start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_courses_lms_connection_id_fkey"
+            columns: ["lms_connection_id"]
+            isOneToOne: false
+            referencedRelation: "lms_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mentorship_connections: {
         Row: {
           created_at: string

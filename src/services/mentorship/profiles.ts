@@ -1,15 +1,78 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { MentorshipProfile } from "./types";
 
-// Get a user's mentorship profile
-export const getMentorshipProfile = async (userId: string): Promise<MentorshipProfile | null> => {
+// Get all mentorship profiles
+export const getAllProfiles = async (): Promise<MentorshipProfile[]> => {
   try {
     const { data, error } = await supabase
       .from('mentorship_profiles')
       .select(`
         *,
-        profiles:user_id (
+        user:user_id (
+          full_name,
+          avatar_url,
+          military_branch
+        )
+      `);
+    
+    if (error) throw error;
+    
+    // Map the joined data to our expected format
+    const profiles = data.map(profile => ({
+      ...profile,
+      full_name: profile.user?.full_name,
+      avatar_url: profile.user?.avatar_url,
+      military_branch: profile.user?.military_branch
+    }));
+    
+    return profiles as MentorshipProfile[];
+  } catch (error) {
+    console.error('Error fetching mentorship profiles:', error);
+    return [];
+  }
+};
+
+// Get a single mentorship profile by ID
+export const getProfileById = async (profileId: string): Promise<MentorshipProfile | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('mentorship_profiles')
+      .select(`
+        *,
+        user:user_id (
+          full_name,
+          avatar_url,
+          military_branch
+        )
+      `)
+      .eq('id', profileId)
+      .single();
+    
+    if (error) throw error;
+    
+    // Map the joined data to our expected format
+    const profileData = {
+      ...data,
+      full_name: data.user?.full_name,
+      avatar_url: data.user?.avatar_url,
+      military_branch: data.user?.military_branch
+    };
+    
+    return profileData as MentorshipProfile;
+  } catch (error) {
+    console.error('Error fetching mentorship profile:', error);
+    return null;
+  }
+};
+
+// Get mentorship profile by user ID
+export const getProfileByUserId = async (userId: string): Promise<MentorshipProfile | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('mentorship_profiles')
+      .select(`
+        *,
+        user:user_id (
           full_name,
           avatar_url,
           military_branch
@@ -17,124 +80,115 @@ export const getMentorshipProfile = async (userId: string): Promise<MentorshipPr
       `)
       .eq('user_id', userId)
       .single();
-
-    if (error) {
-      console.error("Error fetching mentorship profile:", error);
-      return null;
-    }
-
-    if (!data) {
-      return null;
-    }
-
-    const profile = {
-      ...data,
-      user_name: data.profiles?.full_name || '',
-      user_avatar: data.profiles?.avatar_url || '',
-      military_branch: data.profiles?.military_branch || ''
-    } as MentorshipProfile;
-
-    return profile;
-  } catch (error) {
-    console.error("Error in getMentorshipProfile:", error);
-    return null;
-  }
-};
-
-// Create or update a mentorship profile
-export const upsertMentorshipProfile = async (profile: Partial<MentorshipProfile>): Promise<MentorshipProfile | null> => {
-  try {
-    // Check if profile exists
-    const { data: existingProfile } = await supabase
-      .from('mentorship_profiles')
-      .select('id')
-      .eq('user_id', profile.user_id)
-      .single();
-
-    let result;
     
-    if (existingProfile) {
-      // Update existing profile
-      const { data, error } = await supabase
-        .from('mentorship_profiles')
-        .update(profile)
-        .eq('id', existingProfile.id)
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            military_branch
-          )
-        `)
-        .single();
-      
-      if (error) throw error;
-      result = data;
-    } else {
-      // Insert new profile
-      const { data, error } = await supabase
-        .from('mentorship_profiles')
-        .insert(profile)
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            military_branch
-          )
-        `)
-        .single();
-      
-      if (error) throw error;
-      result = data;
-    }
-
-    if (!result) {
-      throw new Error('Failed to create or update profile');
-    }
-
-    const updatedProfile = {
-      ...result,
-      user_name: result.profiles?.full_name || '',
-      user_avatar: result.profiles?.avatar_url || '',
-      military_branch: result.profiles?.military_branch || ''
-    } as MentorshipProfile;
-
-    return updatedProfile;
+    if (error) throw error;
+    
+     // Map the joined data to our expected format
+    const profileData = {
+      ...data,
+      full_name: data.user?.full_name,
+      avatar_url: data.user?.avatar_url,
+      military_branch: data.user?.military_branch
+    };
+    
+    return profileData as MentorshipProfile;
   } catch (error) {
-    console.error("Error in upsertMentorshipProfile:", error);
+    console.error('Error fetching mentorship profile:', error);
     return null;
   }
 };
 
-// Get available mentors
-export const getAvailableMentors = async (): Promise<MentorshipProfile[]> => {
+// Create a new mentorship profile
+export const createProfile = async (profile: Omit<MentorshipProfile, 'id' | 'created_at' | 'updated_at' | 'full_name' | 'avatar_url' | 'military_branch'>): Promise<MentorshipProfile | null> => {
   try {
     const { data, error } = await supabase
       .from('mentorship_profiles')
+      .insert(profile)
       .select(`
         *,
-        profiles:user_id (
+        user:user_id (
           full_name,
           avatar_url,
           military_branch
         )
       `)
-      .eq('is_mentor', true);
+      .single();
     
     if (error) throw error;
     
-    const mentors = data.map(mentor => ({
-      ...mentor,
-      user_name: mentor.profiles?.full_name || '',
-      user_avatar: mentor.profiles?.avatar_url || '',
-      military_branch: mentor.profiles?.military_branch || ''
-    })) as MentorshipProfile[];
+    // Map the joined data to our expected format
+    const profileData = {
+      ...data,
+      full_name: data.user?.full_name,
+      avatar_url: data.user?.avatar_url,
+      military_branch: data.user?.military_branch
+    };
     
-    return mentors;
+    return profileData as MentorshipProfile;
   } catch (error) {
-    console.error("Error in getAvailableMentors:", error);
-    return [];
+    console.error('Error creating mentorship profile:', error);
+    return null;
+  }
+};
+
+// Fix the updateProfile function to handle the user_id requirement
+export const updateProfile = async (profileId: string, updates: Partial<MentorshipProfile>): Promise<MentorshipProfile | null> => {
+  try {
+    // Ensure user_id is included for required field in DB
+    if (!updates.user_id) {
+      // Get the existing profile to get the user_id
+      const profile = await getProfileById(profileId);
+      if (profile) {
+        updates.user_id = profile.user_id;
+      } else {
+        throw new Error('Could not find profile to update');
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('mentorship_profiles')
+      .update(updates as any)
+      .eq('id', profileId)
+      .select(`
+        *,
+        user:user_id (
+          full_name,
+          avatar_url,
+          military_branch
+        )
+      `)
+      .single();
+    
+    if (error) throw error;
+    
+    // Map the joined data to our expected format
+    const profileData = {
+      ...data,
+      full_name: data.user?.full_name,
+      avatar_url: data.user?.avatar_url,
+      military_branch: data.user?.military_branch
+    };
+    
+    return profileData as MentorshipProfile;
+  } catch (error) {
+    console.error('Error updating mentorship profile:', error);
+    return null;
+  }
+};
+
+// Delete a mentorship profile
+export const deleteProfile = async (profileId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('mentorship_profiles')
+      .delete()
+      .eq('id', profileId);
+    
+    if (error) throw error;
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting mentorship profile:', error);
+    return false;
   }
 };

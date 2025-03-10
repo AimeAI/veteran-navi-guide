@@ -1,310 +1,179 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { MentorshipConnection, MentorshipProfile } from '@/services/mentorship/types';
-import { UserRound, Users, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  MessageCircle, 
+  Phone, 
+  Calendar, 
+  Clock, 
+  User, 
+  Shield, 
+  UserCheck,
+  UserX 
+} from 'lucide-react';
+import { getConnections, MentorshipConnection, MentorshipProfile } from '@/services/mentorshipService';
+import { format } from 'date-fns';
 
 interface ConnectionsListProps {
-  connections: MentorshipConnection[];
-  userIsMentor: boolean;
-  onSelectConnection: (connection: MentorshipConnection) => void;
-  onAcceptRequest: (connectionId: string) => void;
-  onDeclineRequest: (connectionId: string) => void;
-  selectedConnectionId?: string;
-  isLoading: boolean;
+  userId: string;
 }
 
-const ConnectionsList: React.FC<ConnectionsListProps> = ({
-  connections,
-  userIsMentor = false,
-  onSelectConnection,
-  onAcceptRequest,
-  onDeclineRequest,
-  selectedConnectionId,
-  isLoading = false,
-}) => {
-  const pendingConnections = connections.filter((c) => c.status === 'pending');
-  const activeConnections = connections.filter((c) => c.status === 'active');
-  const pastConnections = connections.filter((c) => ['completed', 'declined'].includes(c.status));
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200">Pending</Badge>;
-      case 'active':
-        return <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">Active</Badge>;
-      case 'completed':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">Completed</Badge>;
-      case 'declined':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-800 border-gray-200">Declined</Badge>;
-      default:
-        return null;
+const ConnectionsList: React.FC<ConnectionsListProps> = ({ userId }) => {
+  const [connections, setConnections] = useState<MentorshipConnection[]>([]);
+  const [pendingConnections, setPendingConnections] = useState<MentorshipConnection[]>([]);
+  const [approvedConnections, setApprovedConnections] = useState<MentorshipConnection[]>([]);
+  const [rejectedConnections, setRejectedConnections] = useState<MentorshipConnection[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    fetchConnections();
+  }, [userId]);
+  
+  const fetchConnections = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const connectionsData = await getConnections(userId);
+      setConnections(connectionsData);
+      
+      // Filter connections based on status
+      setPendingConnections(connectionsData.filter(c => c.status === 'pending'));
+      setApprovedConnections(connectionsData.filter(c => c.status === 'approved'));
+      setRejectedConnections(connectionsData.filter(c => c.status === 'rejected'));
+    } catch (err) {
+      setError('Failed to load connections.');
+      console.error('Error fetching connections:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const getConnectionName = (connection: MentorshipConnection) => {
-    if (userIsMentor) {
-      return connection.mentee?.full_name || 'Mentee';
-    } else {
-      return connection.mentor?.full_name || 'Mentor';
-    }
-  };
-
-  const getConnectionAvatar = (connection: MentorshipConnection) => {
-    if (userIsMentor) {
-      return connection.mentee?.avatar_url;
-    } else {
-      return connection.mentor?.avatar_url;
-    }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((part) => part.charAt(0))
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
+  
+  if (isLoading) {
+    return <div>Loading connections...</div>;
+  }
+  
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+  
   return (
-    <Tabs defaultValue="active" className="w-full">
-      <TabsList className="grid grid-cols-3 w-full mb-4">
-        <TabsTrigger value="active">
-          Active
-          {activeConnections.length > 0 && (
-            <span className="ml-1 text-xs bg-primary/10 text-primary rounded-full px-2">
-              {activeConnections.length}
-            </span>
-          )}
-        </TabsTrigger>
-        <TabsTrigger value="pending">
-          Pending
-          {pendingConnections.length > 0 && (
-            <span className="ml-1 text-xs bg-primary/10 text-primary rounded-full px-2">
-              {pendingConnections.length}
-            </span>
-          )}
-        </TabsTrigger>
-        <TabsTrigger value="past">Past</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="active">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Active Mentorships</CardTitle>
-            <CardDescription>Your ongoing mentorship connections</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-16 bg-gray-100 rounded-md"></div>
-                  </div>
-                ))}
-              </div>
-            ) : activeConnections.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No active mentorships yet</p>
-              </div>
-            ) : (
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-2">
-                  {activeConnections.map((connection) => (
-                    <div
-                      key={connection.id}
-                      className={`flex items-center justify-between p-3 rounded-md cursor-pointer transition-colors ${
-                        selectedConnectionId === connection.id
-                          ? 'bg-primary/10'
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => onSelectConnection(connection)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          <AvatarImage
-                            src={getConnectionAvatar(connection)}
-                            alt={getConnectionName(connection)}
-                          />
-                          <AvatarFallback>
-                            {getInitials(getConnectionName(connection))}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{getConnectionName(connection)}</p>
-                          <div className="flex space-x-2 text-xs text-gray-500">
-                            <span className="flex items-center">
-                              <MessageCircle className="mr-1 h-3 w-3" />
-                              Message
-                            </span>
-                            <span className="flex items-center">
-                              <Clock className="mr-1 h-3 w-3" />
-                              Schedule
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(connection.status)}
-                    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Your Connections</CardTitle>
+        <CardDescription>Manage your mentorship connections</CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Tabs defaultvalue="approved" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="approved">Approved <UserCheck className="ml-2 h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="pending">Pending <Clock className="ml-2 h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="rejected">Rejected <UserX className="ml-2 h-4 w-4" /></TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="approved" className="p-4">
+            <ScrollArea className="h-[400px] w-full rounded-md border">
+              {approvedConnections.length > 0 ? (
+                <div className="grid gap-4 p-4">
+                  {approvedConnections.map(connection => (
+                    <ConnectionCard key={connection.id} connection={connection} />
                   ))}
                 </div>
-              </ScrollArea>
-            )}
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="pending">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Pending Requests</CardTitle>
-            <CardDescription>
-              {userIsMentor
-                ? 'Mentorship requests waiting for your approval'
-                : 'Your pending mentorship requests'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">
-                {[1, 2].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-20 bg-gray-100 rounded-md"></div>
-                  </div>
-                ))}
-              </div>
-            ) : pendingConnections.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No pending requests</p>
-              </div>
-            ) : (
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-3">
-                  {pendingConnections.map((connection) => (
-                    <div
-                      key={connection.id}
-                      className="flex items-center justify-between p-3 border rounded-md"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          <AvatarImage
-                            src={getConnectionAvatar(connection)}
-                            alt={getConnectionName(connection)}
-                          />
-                          <AvatarFallback>
-                            {getInitials(getConnectionName(connection))}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{getConnectionName(connection)}</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(connection.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        {userIsMentor && onAcceptRequest && onDeclineRequest && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 px-2"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDeclineRequest(connection.id);
-                              }}
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Decline
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-8 px-2"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onAcceptRequest(connection.id);
-                              }}
-                            >
-                              <CheckCircle2 className="h-4 w-4 mr-1" />
-                              Accept
-                            </Button>
-                          </>
-                        )}
-                        {!userIsMentor && getStatusBadge(connection.status)}
-                      </div>
-                    </div>
+              ) : (
+                <div className="p-4 text-sm text-muted-foreground">No approved connections yet.</div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+          
+          <TabsContent value="pending" className="p-4">
+            <ScrollArea className="h-[400px] w-full rounded-md border">
+              {pendingConnections.length > 0 ? (
+                <div className="grid gap-4 p-4">
+                  {pendingConnections.map(connection => (
+                    <ConnectionCard key={connection.id} connection={connection} />
                   ))}
                 </div>
-              </ScrollArea>
-            )}
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="past">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Past Mentorships</CardTitle>
-            <CardDescription>Your completed or declined mentorships</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">
-                {[1, 2].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-16 bg-gray-100 rounded-md"></div>
-                  </div>
-                ))}
-              </div>
-            ) : pastConnections.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No past mentorships</p>
-              </div>
-            ) : (
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-2">
-                  {pastConnections.map((connection) => (
-                    <div
-                      key={connection.id}
-                      className={`flex items-center justify-between p-3 rounded-md cursor-pointer transition-colors ${
-                        selectedConnectionId === connection.id
-                          ? 'bg-primary/10'
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => onSelectConnection(connection)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          <AvatarImage
-                            src={getConnectionAvatar(connection)}
-                            alt={getConnectionName(connection)}
-                          />
-                          <AvatarFallback>
-                            {getInitials(getConnectionName(connection))}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{getConnectionName(connection)}</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(connection.updated_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      {getStatusBadge(connection.status)}
-                    </div>
+              ) : (
+                <div className="p-4 text-sm text-muted-foreground">No pending connections.</div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+          
+          <TabsContent value="rejected" className="p-4">
+            <ScrollArea className="h-[400px] w-full rounded-md border">
+              {rejectedConnections.length > 0 ? (
+                <div className="grid gap-4 p-4">
+                  {rejectedConnections.map(connection => (
+                    <ConnectionCard key={connection.id} connection={connection} />
                   ))}
                 </div>
-              </ScrollArea>
-            )}
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+              ) : (
+                <div className="p-4 text-sm text-muted-foreground">No rejected connections.</div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface ConnectionCardProps {
+  connection: MentorshipConnection;
+}
+
+const ConnectionCard: React.FC<ConnectionCardProps> = ({ connection }) => {
+  const [profile, setProfile] = useState<MentorshipProfile | null>(null);
+  const isMentor = connection.mentor_id === connection.mentee_id;
+  
+  useEffect(() => {
+    // Determine the other user's ID based on whether the current user is the mentor or mentee
+    const otherUserId = connection.mentor_id === connection.mentee_id ? connection.mentee_id : connection.mentor_id;
+    
+    if (connection.mentor) {
+      setProfile(connection.mentor);
+    }
+  }, [connection]);
+  
+  if (!profile) {
+    return <div>Loading profile...</div>;
+  }
+  
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center">
+          <Avatar className="mr-4 h-10 w-10">
+            <AvatarImage src={profile.avatar_url || ""} alt={profile.full_name || "Mentor"} />
+            <AvatarFallback>{profile.full_name?.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <CardTitle>{profile.full_name}</CardTitle>
+            <CardDescription>{profile.military_branch}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex space-x-2 text-sm">
+          <Button variant="ghost" size="sm">
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Message
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Phone className="mr-2 h-4 w-4" />
+            Call
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Calendar className="mr-2 h-4 w-4" />
+            Schedule
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -6,6 +6,7 @@ import { LmsCertification } from "./types";
 // Get user's certifications
 export const getUserCertifications = async (userId: string): Promise<LmsCertification[]> => {
   try {
+    // Use TypeScript type assertion to fix the type error
     const { data, error } = await supabase
       .from('lms_certifications')
       .select('*')
@@ -13,7 +14,7 @@ export const getUserCertifications = async (userId: string): Promise<LmsCertific
     
     if (error) throw error;
     
-    return data as LmsCertification[];
+    return (data as unknown) as LmsCertification[];
   } catch (error) {
     console.error('Error fetching certifications:', error);
     toast.error('Failed to load certifications');
@@ -24,16 +25,17 @@ export const getUserCertifications = async (userId: string): Promise<LmsCertific
 // Add a certification for a user
 export const addUserCertification = async (certification: Omit<LmsCertification, 'id'>): Promise<LmsCertification | null> => {
   try {
+    // Use TypeScript type assertion to fix the type error
     const { data, error } = await supabase
       .from('lms_certifications')
-      .insert(certification)
+      .insert(certification as any)
       .select()
       .single();
     
     if (error) throw error;
     
     toast.success('Certification added successfully');
-    return data as LmsCertification;
+    return (data as unknown) as LmsCertification;
   } catch (error) {
     console.error('Error adding certification:', error);
     toast.error('Failed to add certification');

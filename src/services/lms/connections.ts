@@ -6,6 +6,7 @@ import { LmsConnection } from "./types";
 // Get a user's LMS connections
 export const getUserLmsConnections = async (userId: string): Promise<LmsConnection[]> => {
   try {
+    // Use TypeScript type assertion to fix the type error
     const { data, error } = await supabase
       .from('lms_connections')
       .select('*')
@@ -14,7 +15,7 @@ export const getUserLmsConnections = async (userId: string): Promise<LmsConnecti
     
     if (error) throw error;
     
-    return data as LmsConnection[];
+    return (data as unknown) as LmsConnection[];
   } catch (error) {
     console.error('Error fetching LMS connections:', error);
     toast.error('Failed to load LMS connections');
@@ -25,19 +26,20 @@ export const getUserLmsConnections = async (userId: string): Promise<LmsConnecti
 // Add a new LMS connection
 export const addLmsConnection = async (connection: Omit<LmsConnection, 'id' | 'connected_at'>): Promise<LmsConnection | null> => {
   try {
+    // Use TypeScript type assertion to fix the type error
     const { data, error } = await supabase
       .from('lms_connections')
       .insert({
         ...connection,
         connected_at: new Date().toISOString()
-      })
+      } as any)
       .select()
       .single();
     
     if (error) throw error;
     
     toast.success('LMS connected successfully');
-    return data as LmsConnection;
+    return (data as unknown) as LmsConnection;
   } catch (error) {
     console.error('Error connecting LMS:', error);
     toast.error('Failed to connect LMS');
@@ -50,7 +52,7 @@ export const removeLmsConnection = async (connectionId: string): Promise<boolean
   try {
     const { error } = await supabase
       .from('lms_connections')
-      .update({ is_active: false })
+      .update({ is_active: false } as any)
       .eq('id', connectionId);
     
     if (error) throw error;

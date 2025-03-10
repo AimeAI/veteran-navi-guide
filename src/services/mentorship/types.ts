@@ -1,4 +1,3 @@
-
 // Types for the mentorship service
 export interface MentorshipProfile {
   id: string;
@@ -12,8 +11,9 @@ export interface MentorshipProfile {
   mentor_bio?: string;
   mentoring_topics?: string[];
   availability?: string;
-  user_name?: string;
-  user_avatar?: string;
+  // User profile data from join
+  full_name?: string;
+  avatar_url?: string;
   military_branch?: string;
 }
 

@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { AuthRoutes } from './authRoutes';
 import { ResourceRoutes } from './resourceRoutes';
 import { EmployerRoutes } from './employerRoutes';
-import { VeteranRoutes } from './veteranRoutes';
+import { veteranRoutes as VeteranRoutes } from './veteranRoutes';
 import { AdminRoutes } from './adminRoutes';
 import { RequireAuth } from '@/components/RequireAuth';
 import NotFound from '@/pages/NotFound';
