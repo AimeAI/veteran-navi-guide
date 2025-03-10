@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 import LinkedInIntegration from '@/components/integrations/LinkedInIntegration';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import RequireAuth from '@/components/RequireAuth';
+import { RequireAuth } from '@/components/RequireAuth';
 
 const IntegrationsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ const IntegrationsPage: React.FC = () => {
           </div>
 
           <Alert>
-            <InfoCircle className="h-4 w-4" />
+            <Info className="h-4 w-4" />
             <AlertTitle>{t('integrations.securityNote')}</AlertTitle>
             <AlertDescription>
               {t('integrations.securityDescription')}

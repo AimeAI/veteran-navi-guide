@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { Routes, Route, useLocation, BrowserRouter as Router } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Toaster } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -9,81 +9,45 @@ import Navbar from '@/components/layout/Navbar';
 import PageFooter from '@/components/layout/PageFooter';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmailVerificationBanner from '@/components/EmailVerificationBanner';
+import { SecurityMonitor } from '@/components/security/SecurityMonitor';
+import { RequireAuth } from '@/components/RequireAuth';
+import { MessageProvider } from '@/context/MessageContext';
+import { LanguageProvider } from '@/context/LanguageContext';
+import { AppProvider } from '@/context/AppContext';
 
-// Pages
-import Index from '@/pages/Index';
-import JobSearch from '@/pages/JobSearch';
-import SavedJobs from '@/pages/SavedJobs';
-import RecommendedJobs from '@/pages/RecommendedJobs';
-import JobAlertsPage from '@/pages/JobAlertsPage';
-import JobFairsEventsPage from '@/pages/JobFairsEventsPage';
-import VettedJobsPage from '@/pages/VettedJobsPage';
-import JobDetailsPage from '@/pages/JobDetailsPage';
-import UserProfile from '@/pages/UserProfile';
-import ResumeAssistance from '@/pages/ResumeAssistance';
-import ApplicationsPage from '@/pages/ApplicationsPage';
-import Settings from '@/pages/Settings';
-import ReferralProgramPage from '@/pages/ReferralProgramPage';
-import CareerCounseling from '@/pages/CareerCounseling';
-import InterviewPreparation from '@/pages/InterviewPreparation';
-import MilitaryTransitionResources from '@/pages/MilitaryTransitionResources';
-import CommunityForums from '@/pages/CommunityForums';
-import TopicDetail from '@/pages/TopicDetail';
-import MessagesPage from '@/pages/MessagesPage';
-import FeedbackSupportPage from '@/pages/FeedbackSupportPage';
-import AuthPage from '@/pages/AuthPage';
-import AuthCallbackPage from '@/pages/AuthCallbackPage';
-import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
-import VerifyEmailPage from '@/pages/VerifyEmailPage';
-import IntegrationsPage from '@/pages/IntegrationsPage';
-
-// Employer pages
-import EmployerDashboardPage from '@/pages/EmployerDashboardPage';
-import EmployerApplicationsPage from '@/pages/EmployerApplicationsPage';
-import PostJobPage from '@/pages/PostJobPage';
-import EmployerSearchVeteransPage from '@/pages/EmployerSearchVeteransPage';
-import EmployerProfilePage from '@/pages/EmployerProfilePage';
-
-// Admin pages
-import AdminDashboardPage from '@/pages/AdminDashboardPage';
-import AdminContentPage from '@/pages/AdminContentPage';
-import AbTestingPage from '@/pages/AbTestingPage';
-
-// Utility pages
-import NotFound from '@/pages/NotFound';
-
-// Performance optimization: Lazy load pages to reduce initial bundle size
-const Index = lazy(() => import("./pages/Index"));
-const SavedJobs = lazy(() => import("./pages/SavedJobs"));
-const JobDetailsPage = lazy(() => import("./pages/JobDetailsPage"));
-const UserProfile = lazy(() => import("./pages/UserProfile"));
-const ApplicationsPage = lazy(() => import("./pages/ApplicationsPage"));
-const RecommendedJobs = lazy(() => import("./pages/RecommendedJobs"));
-const MessagesPage = lazy(() => import("./pages/MessagesPage"));
-const CareerCounseling = lazy(() => import("./pages/CareerCounseling"));
-const ResumeAssistance = lazy(() => import("./pages/ResumeAssistance"));
-const InterviewPreparation = lazy(() => import("./pages/InterviewPreparation"));
-const MilitaryTransitionResources = lazy(() => import("./pages/MilitaryTransitionResources"));
-const JobFairsEventsPage = lazy(() => import("./pages/JobFairsEventsPage"));
-const PostJobPage = lazy(() => import("./pages/PostJobPage"));
-const EmployerDashboardPage = lazy(() => import("./pages/EmployerDashboardPage"));
-const EmployerProfilePage = lazy(() => import("./pages/EmployerProfilePage"));
-const EmployerSearchVeteransPage = lazy(() => import("./pages/EmployerSearchVeteransPage"));
-const CommunityForums = lazy(() => import("./pages/CommunityForums"));
-const TopicDetail = lazy(() => import("./pages/TopicDetail"));
-const AuthPage = lazy(() => import("./pages/AuthPage"));
-const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
-const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
-const VeteranDashboardPage = lazy(() => import("./pages/VeteranDashboardPage"));
-const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
-const AdminContentPage = lazy(() => import("./pages/AdminContentPage"));
-const AbTestingPage = lazy(() => import("./pages/AbTestingPage"));
-const NotificationPreferences = lazy(() => import("./components/NotificationPreferences"));
-const FeedbackSupportPage = lazy(() => import("./pages/FeedbackSupportPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const ReferralProgramPage = lazy(() => import("./pages/ReferralProgramPage"));
-const VettedJobsPage = lazy(() => import("./pages/VettedJobsPage"));
-const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+// Dynamic imports
+const Index = React.lazy(() => import("@/pages/Index"));
+const SavedJobs = React.lazy(() => import("@/pages/SavedJobs"));
+const JobSearch = React.lazy(() => import("@/pages/JobSearch"));
+const JobDetailsPage = React.lazy(() => import("@/pages/JobDetailsPage"));
+const UserProfile = React.lazy(() => import("@/pages/UserProfile"));
+const ApplicationsPage = React.lazy(() => import("@/pages/ApplicationsPage"));
+const RecommendedJobs = React.lazy(() => import("@/pages/RecommendedJobs"));
+const MessagesPage = React.lazy(() => import("@/pages/MessagesPage"));
+const CareerCounseling = React.lazy(() => import("@/pages/CareerCounseling"));
+const ResumeAssistance = React.lazy(() => import("@/pages/ResumeAssistance"));
+const InterviewPreparation = React.lazy(() => import("@/pages/InterviewPreparation"));
+const MilitaryTransitionResources = React.lazy(() => import("@/pages/MilitaryTransitionResources"));
+const JobFairsEventsPage = React.lazy(() => import("@/pages/JobFairsEventsPage"));
+const PostJobPage = React.lazy(() => import("@/pages/PostJobPage"));
+const EmployerDashboardPage = React.lazy(() => import("@/pages/EmployerDashboardPage"));
+const EmployerProfilePage = React.lazy(() => import("@/pages/EmployerProfilePage"));
+const EmployerSearchVeteransPage = React.lazy(() => import("@/pages/EmployerSearchVeteransPage"));
+const CommunityForums = React.lazy(() => import("@/pages/CommunityForums"));
+const TopicDetail = React.lazy(() => import("@/pages/TopicDetail"));
+const AuthPage = React.lazy(() => import("@/pages/AuthPage"));
+const ForgotPasswordPage = React.lazy(() => import("@/pages/ForgotPasswordPage"));
+const VerifyEmailPage = React.lazy(() => import("@/pages/VerifyEmailPage"));
+const VeteranDashboardPage = React.lazy(() => import("@/pages/VeteranDashboardPage"));
+const AdminDashboardPage = React.lazy(() => import("@/pages/AdminDashboardPage"));
+const AdminContentPage = React.lazy(() => import("@/pages/AdminContentPage"));
+const AbTestingPage = React.lazy(() => import("@/pages/AbTestingPage"));
+const NotificationPreferences = React.lazy(() => import("@/components/NotificationPreferences"));
+const FeedbackSupportPage = React.lazy(() => import("@/pages/FeedbackSupportPage"));
+const NotFound = React.lazy(() => import("@/pages/NotFound"));
+const ReferralProgramPage = React.lazy(() => import("@/pages/ReferralProgramPage"));
+const VettedJobsPage = React.lazy(() => import("@/pages/VettedJobsPage"));
+const AuthCallbackPage = React.lazy(() => import("@/pages/AuthCallbackPage"));
 
 // Loading component for suspense fallback
 const PageLoading = () => (

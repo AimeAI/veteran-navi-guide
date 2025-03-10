@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Linkedin, Upload, Check, AlertCircle } from "lucide-react";
@@ -37,7 +36,7 @@ const LinkedInIntegration = () => {
     setIsConnecting(true);
     
     // LinkedIn OAuth configuration
-    const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID || "77adzd1m3qyfr6"; // Demo ID, replace with yours
+    const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID;
     const redirectUri = `${window.location.origin}/auth/callback`;
     const scope = encodeURIComponent('r_liteprofile r_emailaddress w_member_social');
     const state = Math.random().toString(36).substring(2);
@@ -48,9 +47,8 @@ const LinkedInIntegration = () => {
     // Redirect to LinkedIn OAuth page
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
     
-    // If using supabase auth with LinkedIn provider
-    if (user?.supabaseUser) {
-      // This is the recommended approach for users already authenticated with Supabase
+    // If user is authenticated
+    if (user?.isAuthenticated) {
       toast.info("Redirecting to LinkedIn...");
       window.location.href = authUrl;
     } else {
