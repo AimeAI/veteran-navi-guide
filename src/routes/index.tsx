@@ -14,16 +14,68 @@ import JobSearch from '@/pages/JobSearch';
 import JobDetailsPage from '@/pages/JobDetailsPage';
 import PostJobPage from '@/pages/PostJobPage';
 import MessagesPage from '@/pages/MessagesPage';
+import FindMentorsPage from '@/pages/FindMentorsPage';
+import MentorshipDashboardPage from '@/pages/MentorshipDashboardPage';
+import SavedJobs from '@/pages/SavedJobs';
+import UserProfile from '@/pages/UserProfile';
+import JobAlertsPage from '@/pages/JobAlertsPage';
+import LmsIntegrationPage from '@/pages/LmsIntegrationPage';
+import VettedJobsPage from '@/pages/VettedJobsPage';
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Index />} />
+        
+        {/* Public routes */}
         <Route path="job-search" element={<JobSearch />} />
         <Route path="job/:id" element={<JobDetailsPage />} />
-        <Route path="post-job" element={<PostJobPage />} />
-        <Route path="messages" element={<MessagesPage />} />
+        <Route path="vetted-jobs" element={<VettedJobsPage />} />
+        <Route path="mentorship" element={<FindMentorsPage />} />
+        
+        {/* Protected routes */}
+        <Route path="messages" element={
+          <RequireAuth roles={['veteran', 'employer']}>
+            <MessagesPage />
+          </RequireAuth>
+        } />
+        
+        <Route path="mentorship-dashboard" element={
+          <RequireAuth roles={['veteran', 'employer']}>
+            <MentorshipDashboardPage />
+          </RequireAuth>
+        } />
+        
+        <Route path="saved-jobs" element={
+          <RequireAuth roles={['veteran']}>
+            <SavedJobs />
+          </RequireAuth>
+        } />
+        
+        <Route path="job-alerts" element={
+          <RequireAuth roles={['veteran']}>
+            <JobAlertsPage />
+          </RequireAuth>
+        } />
+        
+        <Route path="learning" element={
+          <RequireAuth roles={['veteran']}>
+            <LmsIntegrationPage />
+          </RequireAuth>
+        } />
+        
+        <Route path="profile" element={
+          <RequireAuth roles={['veteran', 'employer']}>
+            <UserProfile />
+          </RequireAuth>
+        } />
+        
+        <Route path="post-job" element={
+          <RequireAuth roles={['employer']}>
+            <PostJobPage />
+          </RequireAuth>
+        } />
         
         {/* Auth routes */}
         <Route path="auth/*" element={<AuthRoutes />} />
