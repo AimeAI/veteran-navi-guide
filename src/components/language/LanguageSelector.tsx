@@ -38,7 +38,7 @@ const LanguageSelector: React.FC = () => {
           <span className="hidden md:inline-flex ml-2">{language === 'en' ? 'EN' : 'FR'}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white z-50">
+      <DropdownMenuContent align="end" className="bg-white border shadow-md rounded-md z-50">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}

@@ -31,6 +31,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
           >
             {t('navigation.home', 'Home')}
           </Button>
+          
           <Button
             variant="ghost"
             className="justify-start cursor-pointer"
@@ -41,6 +42,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
           >
             {t('navigation.jobSearch', 'Job Search')}
           </Button>
+          
           <Button
             variant="ghost"
             className="justify-start cursor-pointer"
@@ -51,6 +53,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
           >
             {t('navigation.vettedJobs', 'Vetted Jobs')}
           </Button>
+          
           <Button
             variant="ghost"
             className="justify-start cursor-pointer"
@@ -61,11 +64,12 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
           >
             {t('navigation.mentorship', 'Mentorship')}
           </Button>
+          
           <Button
             variant="ghost"
             className="justify-start cursor-pointer"
             onClick={() => {
-              navigate('/resources');
+              navigate('/resources/career-counseling');
               onOpenChange(false);
             }}
           >

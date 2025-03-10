@@ -29,7 +29,7 @@ const NavLinks = () => {
                 }`
               }
             >
-              {t('navigation.jobSearch')}
+              {t('navigation.jobSearch', 'Job Search')}
             </NavLink>
           </NavigationMenuItem>
 
@@ -42,16 +42,16 @@ const NavLinks = () => {
                 }`
               }
             >
-              {t('navigation.vettedJobs')}
+              {t('navigation.vettedJobs', 'Vetted Jobs')}
             </NavLink>
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-sm font-medium text-nav-foreground hover:text-primary">
+            <NavigationMenuTrigger className="text-sm font-medium text-nav-foreground hover:text-primary bg-transparent">
               {t('navigation.mentorship', 'Mentorship')}
             </NavigationMenuTrigger>
-            <NavigationMenuContent className="bg-white z-50">
-              <ul className="grid gap-3 p-6 w-[400px]">
+            <NavigationMenuContent className="bg-white border shadow-md rounded-md z-50">
+              <ul className="grid gap-3 p-4 w-[250px]">
                 <li>
                   <NavigationMenuLink asChild>
                     <NavLink 
@@ -77,11 +77,11 @@ const NavLinks = () => {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-sm font-medium text-nav-foreground hover:text-primary">
+            <NavigationMenuTrigger className="text-sm font-medium text-nav-foreground hover:text-primary bg-transparent">
               {t('navigation.resources', 'Resources')}
             </NavigationMenuTrigger>
-            <NavigationMenuContent className="bg-white z-50">
-              <ul className="grid gap-3 p-6 w-[400px]">
+            <NavigationMenuContent className="bg-white border shadow-md rounded-md z-50">
+              <ul className="grid gap-3 p-4 w-[250px]">
                 <li>
                   <NavigationMenuLink asChild>
                     <NavLink 
