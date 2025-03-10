@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -32,7 +31,6 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
   const [hasAlreadyReviewed, setHasAlreadyReviewed] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
-  // Check if user has already reviewed this employer
   useEffect(() => {
     if (isOpen) {
       const checkReviewStatus = async () => {
@@ -47,7 +45,6 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     const newErrors: {[key: string]: string} = {};
     if (rating === 0) newErrors.rating = 'Please provide a rating';
     if (!title.trim()) newErrors.title = 'Please enter a review title';
@@ -70,7 +67,6 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
         return;
       }
       
-      // Prepare the review data
       const reviewData = {
         employerId,
         reviewerId: userId,
@@ -102,7 +98,6 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
   };
   
   const handleClose = () => {
-    // Reset form state
     setRating(0);
     setTitle('');
     setReviewText('');
@@ -142,7 +137,8 @@ const EmployerReviewDialog: React.FC<EmployerReviewDialogProps> = ({
               setPosition={setPosition}
               pros={pros}
               setPros={setPros}
-              cons={setCons}
+              cons={cons}
+              setCons={setCons}
               errors={errors}
             />
             
