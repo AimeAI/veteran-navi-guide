@@ -1,5 +1,4 @@
-
-import { SkillLevel, BadgeType, VeteranBadge } from "@/types/badges";
+import { SkillLevel, BadgeType, VeteranBadge, BadgeIconType } from "@/types/badges";
 
 interface BadgeConfig {
   background: string;
@@ -89,7 +88,6 @@ export const getSkillTypeBadgeConfig = (type: BadgeType): BadgeConfig => {
       border: "border-amber-200 dark:border-amber-700",
       icon: "badge"
     },
-    // Add configs for the rest of the badge types
     "achievement": {
       background: "bg-blue-50 dark:bg-blue-900",
       text: "text-blue-800 dark:text-blue-100",
@@ -149,7 +147,6 @@ export const getSkillTypeBadgeConfig = (type: BadgeType): BadgeConfig => {
   return configs[type];
 };
 
-// Define available badges
 export const availableBadges: VeteranBadge[] = [
   {
     id: "profile-complete-1",
@@ -191,7 +188,6 @@ type User = {
   bio?: string;
 };
 
-// Determine earned badges based on user activity
 export const determineEarnedBadges = (
   user: User | null,
   appliedJobs: any[],
@@ -203,7 +199,6 @@ export const determineEarnedBadges = (
 ): VeteranBadge[] => {
   const earnedBadges: VeteranBadge[] = [];
 
-  // Profile completion badge
   if (user && user.name && user.email && user.militaryBranch && user.rank) {
     earnedBadges.push({
       id: "profile-complete-1",
@@ -216,7 +211,6 @@ export const determineEarnedBadges = (
     });
   }
 
-  // First application badge
   if (appliedJobs.length > 0) {
     earnedBadges.push({
       id: "first-application-1",
@@ -229,7 +223,6 @@ export const determineEarnedBadges = (
     });
   }
 
-  // Resume master badge
   if (resumeUploaded) {
     earnedBadges.push({
       id: "resume-master-1",
@@ -244,4 +237,3 @@ export const determineEarnedBadges = (
 
   return earnedBadges;
 };
-

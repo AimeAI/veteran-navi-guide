@@ -20,13 +20,14 @@ export type BadgeType =
   | 'certification'
   | 'special';
 
+export type BadgeIconType = 'badge' | 'award' | 'trophy' | 'check' | 'star' | 'book' | 'briefcase' | 'medal';
+
 export interface VeteranBadge {
   id: string;
   type: BadgeType;
   name: string;
   description: string;
   earnedDate: string;
-  icon: string;
+  icon: BadgeIconType;
   level: number;
 }
-
