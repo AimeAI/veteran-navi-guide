@@ -29,6 +29,14 @@ export interface Job {
   matchingSkills?: string[]; // Added to track matching skills for highlighting
 }
 
+// Define SavedFilter interface
+export interface SavedFilter {
+  id: string;
+  name: string;
+  filters: JobFilterState;
+  dateCreated: string;
+}
+
 // Define job filter state
 export interface JobFilterState {
   keywords: string;
