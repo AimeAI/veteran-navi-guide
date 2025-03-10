@@ -34,14 +34,14 @@ const NavDropdown = () => {
     <DropdownMenuGroup>
       {user.role === 'veteran' ? (
         <DropdownMenuItem asChild>
-          <Link to="/profile">
+          <Link to="/profile" className="cursor-pointer flex items-center">
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </Link>
         </DropdownMenuItem>
       ) : (
         <DropdownMenuItem asChild>
-          <Link to="/employer-profile">
+          <Link to="/employer-profile" className="cursor-pointer flex items-center">
             <Building className="mr-2 h-4 w-4" />
             <span>Company Profile</span>
           </Link>
@@ -83,7 +83,7 @@ const NavDropdown = () => {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link to="/settings">
+            <Link to="/settings" className="cursor-pointer flex items-center">
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </Link>

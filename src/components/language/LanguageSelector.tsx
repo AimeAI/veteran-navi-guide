@@ -20,6 +20,12 @@ const LanguageSelector: React.FC = () => {
     { code: 'fr', name: 'Français' }
   ];
 
+  const handleLanguageChange = (langCode: string) => {
+    if (language !== langCode) {
+      changeLanguage(langCode);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -36,7 +42,7 @@ const LanguageSelector: React.FC = () => {
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => changeLanguage(lang.code)}
+            onClick={() => handleLanguageChange(lang.code)}
             className="cursor-pointer"
           >
             <span>{lang.name}</span>

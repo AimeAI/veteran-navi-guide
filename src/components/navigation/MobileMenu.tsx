@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useUser } from '@/context/UserContext';
 
 export interface MobileMenuProps {
   open: boolean;
@@ -14,6 +15,7 @@ export interface MobileMenuProps {
 const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useUser();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -27,7 +29,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
               onOpenChange(false);
             }}
           >
-            {t('Home')}
+            {t('navigation.home')}
           </Button>
           <Button
             variant="ghost"
@@ -37,7 +39,27 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
               onOpenChange(false);
             }}
           >
-            {t('Find Jobs')}
+            {t('navigation.jobSearch')}
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start cursor-pointer"
+            onClick={() => {
+              navigate('/vetted-jobs');
+              onOpenChange(false);
+            }}
+          >
+            {t('navigation.vettedJobs')}
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start cursor-pointer"
+            onClick={() => {
+              navigate('/mentorship');
+              onOpenChange(false);
+            }}
+          >
+            {t('navigation.mentorship')}
           </Button>
           <Button
             variant="ghost"
@@ -47,18 +69,34 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ open, onOpenChange }) => {
               onOpenChange(false);
             }}
           >
-            {t('Resources')}
+            {t('navigation.resources')}
           </Button>
-          <Button
-            variant="ghost"
-            className="justify-start cursor-pointer"
-            onClick={() => {
-              navigate('/dashboard');
-              onOpenChange(false);
-            }}
-          >
-            {t('Dashboard')}
-          </Button>
+          
+          {user?.role === 'employer' && (
+            <Button
+              variant="ghost"
+              className="justify-start cursor-pointer"
+              onClick={() => {
+                navigate('/post-job');
+                onOpenChange(false);
+              }}
+            >
+              {t('navigation.postJob')}
+            </Button>
+          )}
+          
+          {user?.role === 'veteran' && (
+            <Button
+              variant="ghost"
+              className="justify-start cursor-pointer"
+              onClick={() => {
+                navigate('/learning');
+                onOpenChange(false);
+              }}
+            >
+              {t('navigation.learning')}
+            </Button>
+          )}
         </nav>
       </SheetContent>
     </Sheet>
