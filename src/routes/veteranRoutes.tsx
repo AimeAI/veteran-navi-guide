@@ -1,5 +1,5 @@
 
-import { lazy } from 'react';
+import React from 'react';
 import VeteranDashboardPage from '@/pages/VeteranDashboardPage';
 import JobAlertsPage from '@/pages/JobAlertsPage';
 import SavedJobs from '@/pages/SavedJobs';
@@ -9,43 +9,48 @@ import ReferralProgramPage from '@/pages/ReferralProgramPage';
 import VeteranGamificationPage from '@/pages/VeteranGamificationPage';
 import MentorshipDashboardPage from '@/pages/MentorshipDashboardPage';
 import FindMentorsPage from '@/pages/FindMentorsPage';
+import LmsIntegrationPage from '@/pages/LmsIntegrationPage';
 
 // Routes specific to Veterans (logged in)
 export const veteranRoutes = [
   {
     path: 'dashboard',
-    element: <VeteranDashboardPage />,
+    element: <VeteranDashboardPage />
   },
   {
     path: 'job-alerts',
-    element: <JobAlertsPage />,
+    element: <JobAlertsPage />
   },
   {
     path: 'saved-jobs',
-    element: <SavedJobs />,
+    element: <SavedJobs />
   },
   {
     path: 'applications',
-    element: <ApplicationsPage />,
+    element: <ApplicationsPage />
   },
   {
     path: 'events',
-    element: <JobFairsEventsPage />,
+    element: <JobFairsEventsPage />
   },
   {
     path: 'referrals',
-    element: <ReferralProgramPage />,
+    element: <ReferralProgramPage />
   },
   {
     path: 'gamification',
-    element: <VeteranGamificationPage />,
+    element: <VeteranGamificationPage />
   },
   {
     path: 'mentorship',
-    element: <MentorshipDashboardPage />,
+    element: <MentorshipDashboardPage />
   },
   {
     path: 'mentorship/find',
-    element: <FindMentorsPage />,
+    element: <FindMentorsPage />
+  },
+  {
+    path: 'lms-integration',
+    element: <LmsIntegrationPage />
   }
 ];

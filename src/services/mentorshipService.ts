@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -193,12 +192,12 @@ export const getUserMentorshipConnections = async (userId: string): Promise<Ment
     
     if (error) throw error;
     
-    // Format the connections with profile information
+    // Format the connections with profile information and type cast for safety
     return data.map(connection => {
       // Type assertion to handle status
       const typedStatus = connection.status as 'pending' | 'active' | 'declined' | 'completed';
       
-      return {
+      const formattedConnection: MentorshipConnection = {
         ...connection,
         status: typedStatus,
         mentor: connection.mentor ? {
@@ -214,6 +213,8 @@ export const getUserMentorshipConnections = async (userId: string): Promise<Ment
           military_branch: connection.mentee.profiles?.military_branch || ''
         } : undefined
       };
+      
+      return formattedConnection;
     });
   } catch (error) {
     console.error('Error fetching mentorship connections:', error);
@@ -382,7 +383,7 @@ export const createMentorshipMeeting = async (meeting: Omit<MentorshipMeeting, '
     if (error) throw error;
     
     // Type assertion for status
-    const typedMeeting = {
+    const typedMeeting: MentorshipMeeting = {
       ...data,
       status: data.status as 'scheduled' | 'completed' | 'cancelled'
     };

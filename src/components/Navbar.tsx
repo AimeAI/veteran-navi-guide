@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/context/UserContext';
-import { Briefcase, User, Bell, Menu } from 'lucide-react';
+import { Briefcase, User, Bell, Menu, MessageSquare } from 'lucide-react';
 import NavDropdown from './NavDropdown';
 import MobileMenu from './navigation/MobileMenu';
 import MessageNotificationBadge from './messaging/MessageNotificationBadge';
@@ -70,6 +70,19 @@ const Navbar: React.FC = () => {
                 {t('Post a Job')}
               </NavLink>
             )}
+            
+            {user && user.role === 'veteran' && (
+              <NavLink
+                to="/dashboard/lms-integration"
+                className={({ isActive }) =>
+                  `text-sm font-medium ${
+                    isActive ? 'text-primary' : 'text-gray-600 hover:text-gray-900'
+                  }`
+                }
+              >
+                {t('Learning')}
+              </NavLink>
+            )}
           </div>
         </div>
         
@@ -119,9 +132,8 @@ const Navbar: React.FC = () => {
       
       {/* Mobile menu */}
       <MobileMenu 
-        isOpen={mobileMenuOpen} 
-        onClose={() => setMobileMenuOpen(false)} 
-        user={user}
+        open={mobileMenuOpen} 
+        onOpenChange={setMobileMenuOpen} 
       />
     </nav>
   );
