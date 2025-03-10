@@ -1,4 +1,6 @@
 
+export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+
 export type BadgeType = 
   | 'profile-complete'
   | 'first-application'
@@ -27,3 +29,4 @@ export interface VeteranBadge {
   icon: string;
   level: number;
 }
+
