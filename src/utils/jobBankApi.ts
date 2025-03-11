@@ -1,4 +1,3 @@
-
 import { Job } from "@/context/JobContext";
 
 // Interface for Job Bank search parameters
@@ -9,6 +8,12 @@ export interface JobBankSearchParams {
   sort?: string;
   page?: number;
   refresh?: boolean;
+  skills?: string[];
+  jobType?: string;
+  industry?: string;
+  experienceLevel?: string;
+  educationLevel?: string;
+  salaryRange?: string;
 }
 
 // Military skills to NOC code mapping
@@ -349,14 +354,7 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
 };
 
 // Function to search Job Bank jobs - using generated job URLs that work
-export const searchJobBankJobs = async (params: {
-  keywords?: string;
-  location?: string;
-  distance?: number;
-  page?: number;
-  sort?: string;
-  refresh?: boolean;
-}): Promise<{
+export const searchJobBankJobs = async (params: JobBankSearchParams): Promise<{
   jobs: Job[];
   totalJobs: number;
   currentPage: number;

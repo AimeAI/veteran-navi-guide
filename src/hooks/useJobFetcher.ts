@@ -4,6 +4,7 @@ import { Job } from '@/types/job';
 import { JobCache } from '@/utils/jobCache';
 import { searchJobBankJobs } from '@/utils/jobBankApi';
 import { convertMilitarySkillsToKeywords, getCacheKey, matchSkillsWithJobRequirements } from '@/utils/jobSearchUtils';
+import { JobSearchParams } from '@/types/jobSearch';
 
 /**
  * Hook for fetching job data with advanced filtering and caching
@@ -19,21 +20,7 @@ export const useJobFetcher = () => {
    * @param setIsLoading - Function to set loading state
    */
   const fetchJobs = useCallback(async (
-    params: {
-      keywords?: string;
-      location?: string;
-      radius?: number;
-      remote?: boolean;
-      skills?: string[];
-      jobType?: string;
-      industry?: string;
-      experienceLevel?: string;
-      educationLevel?: string;
-      salaryRange?: string;
-      page: number;
-      country?: "us" | "canada";
-      sortBy?: string;
-    }, 
+    params: JobSearchParams & { page: number }, 
     setJobs: (jobs: Job[]) => void,
     setTotalPages: (pages: number) => void,
     setTotalJobs: (total: number) => void,
