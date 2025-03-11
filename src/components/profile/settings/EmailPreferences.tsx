@@ -9,7 +9,7 @@ interface EmailPreferencesProps {
     jobAlerts: boolean;
     applicationUpdates: boolean;
   };
-  handleEmailPreferenceChange: (preference: keyof typeof props.emailPreferences) => void;
+  handleEmailPreferenceChange: (preference: keyof EmailPreferencesProps["emailPreferences"]) => void;
 }
 
 const EmailPreferences: React.FC<EmailPreferencesProps> = (props) => {

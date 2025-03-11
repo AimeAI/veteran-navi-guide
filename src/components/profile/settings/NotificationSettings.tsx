@@ -10,7 +10,7 @@ interface NotificationSettingsProps {
     jobRecommendations: boolean;
     newJobMatches: boolean;
   };
-  handleNotificationChange: (setting: keyof typeof props.notificationSettings) => void;
+  handleNotificationChange: (setting: keyof NotificationSettingsProps["notificationSettings"]) => void;
 }
 
 const NotificationSettings: React.FC<NotificationSettingsProps> = (props) => {
