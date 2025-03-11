@@ -65,7 +65,7 @@ export const useJobFetcher = () => {
         console.log("Searching for jobs with new parameters");
         const jobBankParams = {
           keywords: searchParams.keywords,
-          location: searchParams.location,
+          location: searchParams.location, // Ensure location is properly passed
           distance: searchParams.radius,
           page: searchParams.page,
           skills: searchParams.skills,
@@ -74,6 +74,7 @@ export const useJobFetcher = () => {
           experienceLevel: searchParams.experienceLevel,
           educationLevel: searchParams.educationLevel,
           salaryRange: searchParams.salaryRange,
+          refresh: searchParams.refresh,
         };
         
         const jobBankResults = await searchJobBankJobs(jobBankParams);
@@ -83,6 +84,16 @@ export const useJobFetcher = () => {
           
           // Apply filters to search results
           let filteredJobs = jobBankResults.jobs;
+          
+          // Filter by location if specified (add more strict location filtering)
+          if (searchParams.location && searchParams.location.trim() !== '') {
+            const locationLower = searchParams.location.toLowerCase();
+            filteredJobs = filteredJobs.filter(job => {
+              const jobLocationLower = job.location.toLowerCase();
+              return jobLocationLower.includes(locationLower);
+            });
+            console.log(`Filtered to ${filteredJobs.length} jobs matching location: ${searchParams.location}`);
+          }
           
           // Filter by job type if specified
           if (searchParams.jobType) {

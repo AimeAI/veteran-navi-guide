@@ -155,12 +155,22 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
       "Kingston, ON", "Windsor, ON", "Mississauga, ON", "Brampton, ON"
     ];
     
-    if (paramLocation) {
-      // If location param exists, prioritize it and nearby cities
+    if (paramLocation && paramLocation.trim() !== '') {
+      // If location param exists, prioritize it and nearby locations
+      const locationLower = paramLocation.toLowerCase();
+      
+      // Create a new array with preferred locations first
+      const prioritizedLocations = [
+        ...locations.filter(loc => loc.toLowerCase().includes(locationLower)), // Exact matches first
+        ...locations.filter(loc => !loc.toLowerCase().includes(locationLower)) // Then others
+      ];
+      
+      // Add some variations of the requested location
       return [
-        paramLocation,
-        `Near ${paramLocation}`,
-        ...locations.filter(loc => !loc.includes(paramLocation))
+        paramLocation, // The exact search term
+        `Near ${paramLocation}`, // Near the search term
+        `${paramLocation} Area`, // Area around the search term
+        ...prioritizedLocations
       ];
     }
     
@@ -284,10 +294,22 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
     }
   };
   
+  // The percentage of jobs that should match the location search
+  const locationMatchPercentage = params.location ? 0.8 : 0.5; // 80% if location specified, otherwise normal distribution
+  
   for (let i = 0; i < numJobs; i++) {
     const titleIndex = Math.floor(Math.random() * sectorTitles.length);
     const companyIndex = Math.floor(Math.random() * sectorCompanies.length);
-    const locationIndex = Math.floor(Math.random() * locations.length);
+    
+    // If location is specified, use it more often to ensure search relevance
+    let locationIndex;
+    if (params.location && Math.random() < locationMatchPercentage) {
+      // Use one of the first few locations which should be the location-specific ones
+      locationIndex = Math.floor(Math.random() * Math.min(5, locations.length));
+    } else {
+      // Use any location
+      locationIndex = Math.floor(Math.random() * locations.length);
+    }
     
     const title = sectorTitles[titleIndex];
     const company = sectorCompanies[companyIndex];
