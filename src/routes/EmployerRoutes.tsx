@@ -13,23 +13,23 @@ export const EmployerRoutes: React.FC = () => {
   return (
     <Routes>
       <Route 
-        path="/post-job" 
+        path="post-job" 
         element={<RequireAuth roles={["employer", "admin"]}><PostJobPage /></RequireAuth>} 
       />
       <Route 
-        path="/manage-applications" 
+        path="manage-applications" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerDashboardPage /></RequireAuth>} 
       />
       <Route 
-        path="/profile" 
+        path="profile" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerProfilePage /></RequireAuth>} 
       />
       <Route 
-        path="/search-veterans" 
+        path="search-veterans" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerSearchVeteransPage /></RequireAuth>} 
       />
       <Route 
-        path="/employer-profile" 
+        path="employer-profile" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerProfilePage /></RequireAuth>} 
       />
     </Routes>

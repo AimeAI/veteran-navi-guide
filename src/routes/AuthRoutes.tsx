@@ -12,9 +12,9 @@ export const AuthRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<AuthPage />} />
-      <Route path="/callback" element={<AuthCallbackPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="callback" element={<AuthCallbackPage />} />
+      <Route path="forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="verify-email" element={<VerifyEmailPage />} />
     </Routes>
   );
 };
