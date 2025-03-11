@@ -16,7 +16,7 @@ const AbTestingPage = lazy(() => import("../pages/AbTestingPage"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const AllRoutes = lazy(() => import("../pages/AllRoutes"));
 
-// Import route components as named exports
+// Import route components
 import { AuthRoutes } from "./AuthRoutes";
 import { UserRoutes } from "./UserRoutes";
 import { EmployerRoutes } from "./EmployerRoutes";
