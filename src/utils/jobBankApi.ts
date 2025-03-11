@@ -159,19 +159,38 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
       // If location param exists, prioritize it and nearby locations
       const locationLower = paramLocation.toLowerCase();
       
+      // Generate exact and similar matches for the requested location
+      const exactLocation = paramLocation; // The exact search term
+      const nearbyLocation = `Near ${paramLocation}`; // Near the search term
+      const areaLocation = `${paramLocation} Area`; // Area around search term
+      
+      // Create variations of the requested location
+      const locationParts = locationLower.split(/[ ,]+/).filter(part => part.length > 1);
+      const locationVariants = [];
+      
+      // Generate location variations based on individual parts
+      for (const part of locationParts) {
+        if (part.length > 3) { // Only use meaningful parts
+          for (const baseLocation of locations) {
+            if (baseLocation.toLowerCase().includes(part)) {
+              locationVariants.push(baseLocation);
+            }
+          }
+        }
+      }
+      
       // Create a new array with preferred locations first
       const prioritizedLocations = [
-        ...locations.filter(loc => loc.toLowerCase().includes(locationLower)), // Exact matches first
+        exactLocation, // Exact match first
+        ...locations.filter(loc => loc.toLowerCase().includes(locationLower)), // Then partial matches
+        nearbyLocation, 
+        areaLocation,
+        ...locationVariants, // Location variants
         ...locations.filter(loc => !loc.toLowerCase().includes(locationLower)) // Then others
       ];
       
-      // Add some variations of the requested location
-      return [
-        paramLocation, // The exact search term
-        `Near ${paramLocation}`, // Near the search term
-        `${paramLocation} Area`, // Area around the search term
-        ...prioritizedLocations
-      ];
+      // Remove duplicates
+      return Array.from(new Set(prioritizedLocations));
     }
     
     return locations;
@@ -295,7 +314,7 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
   };
   
   // The percentage of jobs that should match the location search
-  const locationMatchPercentage = params.location ? 0.8 : 0.5; // 80% if location specified, otherwise normal distribution
+  const locationMatchPercentage = params.location ? 0.95 : 0.5; // 95% if location specified, otherwise normal distribution
   
   for (let i = 0; i < numJobs; i++) {
     const titleIndex = Math.floor(Math.random() * sectorTitles.length);
@@ -305,7 +324,7 @@ const generateRealisticJobs = (params: JobBankSearchParams): {
     let locationIndex;
     if (params.location && Math.random() < locationMatchPercentage) {
       // Use one of the first few locations which should be the location-specific ones
-      locationIndex = Math.floor(Math.random() * Math.min(5, locations.length));
+      locationIndex = Math.floor(Math.random() * Math.min(3, locations.length));
     } else {
       // Use any location
       locationIndex = Math.floor(Math.random() * locations.length);

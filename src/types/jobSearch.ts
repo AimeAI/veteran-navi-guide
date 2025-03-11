@@ -18,7 +18,7 @@ export interface JobSearchParams {
   skills?: string[];
   salaryRange?: string;
   sortBy?: string;
-  refresh?: boolean;  // Added refresh property to fix type error
+  refresh?: boolean;  // Needed for refreshing search results
 }
 
 /**

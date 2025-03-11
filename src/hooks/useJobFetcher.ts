@@ -65,7 +65,7 @@ export const useJobFetcher = () => {
         console.log("Searching for jobs with new parameters");
         const jobBankParams = {
           keywords: searchParams.keywords,
-          location: searchParams.location, // Ensure location is properly passed
+          location: searchParams.location, 
           distance: searchParams.radius,
           page: searchParams.page,
           skills: searchParams.skills,
@@ -85,14 +85,48 @@ export const useJobFetcher = () => {
           // Apply filters to search results
           let filteredJobs = jobBankResults.jobs;
           
-          // Filter by location if specified (add more strict location filtering)
+          // Enhanced location filtering - more precise matching
           if (searchParams.location && searchParams.location.trim() !== '') {
-            const locationLower = searchParams.location.toLowerCase();
+            const locationTerms = searchParams.location.toLowerCase().split(/[ ,]+/).filter(term => term.length > 1);
+            console.log(`Filtering by location terms: ${locationTerms.join(', ')}`);
+            
+            // Apply stricter location filtering
             filteredJobs = filteredJobs.filter(job => {
               const jobLocationLower = job.location.toLowerCase();
-              return jobLocationLower.includes(locationLower);
+              
+              // Check if the job location contains all the terms from the search
+              const allTermsMatch = locationTerms.every(term => 
+                jobLocationLower.includes(term)
+              );
+              
+              // If exact matching is too strict, we can fallback to partial matching
+              if (!allTermsMatch && locationTerms.length > 1) {
+                // Consider it a match if at least half of the terms match
+                const matchingTermCount = locationTerms.filter(term => 
+                  jobLocationLower.includes(term)
+                ).length;
+                
+                const matchPercentage = matchingTermCount / locationTerms.length;
+                return matchPercentage >= 0.5; // Match if 50% or more terms match
+              }
+              
+              return allTermsMatch;
             });
+            
             console.log(`Filtered to ${filteredJobs.length} jobs matching location: ${searchParams.location}`);
+            
+            // If strict filtering yields few results, apply a more lenient filter
+            if (filteredJobs.length < 5 && jobBankResults.jobs.length > 10) {
+              console.log("Few location matches found, applying more lenient filtering");
+              filteredJobs = jobBankResults.jobs.filter(job => {
+                const jobLocationLower = job.location.toLowerCase();
+                return locationTerms.some(term => 
+                  jobLocationLower.includes(term) || 
+                  (term.length > 3 && jobLocationLower.includes(term.substring(0, term.length - 1)))
+                );
+              });
+              console.log(`Lenient filtering found ${filteredJobs.length} jobs`);
+            }
           }
           
           // Filter by job type if specified
