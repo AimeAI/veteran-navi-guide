@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { defaultFilters } from '../utils/jobUtils';
 import { useJobOperations } from '../hooks/useJobOperations';
-import { useJobSearchOperations } from '../hooks/useJobSearch';
 import { Job, JobFilterState, JobContextProps } from '../types/job';
 
 // Create the context
@@ -11,8 +10,37 @@ const JobContext = createContext<JobContextProps | undefined>(undefined);
 // Context Provider component
 export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [filters, setFilters] = useState<JobFilterState>(defaultFilters);
-  const { jobs, loading, error, searchJobs } = useJobSearchOperations();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const { savedJobs, appliedJobs, saveJob, unsaveJob, applyToJob } = useJobOperations();
+
+  // Function to search for jobs
+  const searchJobs = async (searchFilters: JobFilterState) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // For now, we'll use the mock job fetching function from jobUtils
+      const response = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(searchFilters),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch jobs');
+      }
+      
+      const jobData = await response.json();
+      setJobs(jobData);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Function to clear filters
   const clearFilters = () => {
