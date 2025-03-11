@@ -35,9 +35,9 @@ const UserProfile = () => {
     } else if (path.includes('/job-alerts')) {
       setActiveTab("alerts");
       setShowCreateAlert(true);
-    } else if (path.includes('resume-parser')) {
+    } else if (path.includes('/profile/resume-parser')) {
       setActiveTab("resume-parser");
-    } else if (path.includes('applications')) {
+    } else if (path.includes('/profile/applications')) {
       setActiveTab("applications");
     } else {
       setActiveTab("profile");
