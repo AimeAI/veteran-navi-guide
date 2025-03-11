@@ -27,6 +27,10 @@ const AppRoutes: React.FC = () => {
   return (
     <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
       <Routes>
+        {/* Development Routes - No auth required */}
+        <Route path="/routes" element={<AllRoutes />} />
+        <Route path="/ab-testing" element={<AbTestingPage />} />
+
         {/* General Routes */}
         <Route path="/" element={<Index />} />
         <Route path="/job-search" element={<JobSearch />} />
@@ -37,8 +41,6 @@ const AppRoutes: React.FC = () => {
         <Route path="/events" element={<JobFairsEventsPage />} />
         <Route path="/resources/forums" element={<CommunityForums />} />
         <Route path="/topic/:topicId" element={<TopicDetail />} />
-        <Route path="/ab-testing" element={<AbTestingPage />} />
-        <Route path="/routes" element={<AllRoutes />} />
         
         {/* Nested Routes */}
         <Route path="/auth/*" element={<AuthRoutes />} />
