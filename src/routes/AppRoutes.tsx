@@ -41,11 +41,11 @@ const AppRoutes: React.FC = () => {
         <Route path="/routes" element={<AllRoutes />} />
         
         {/* Nested Routes */}
-        <Route path="auth/*" element={<AuthRoutes />} />
-        <Route path="user/*" element={<UserRoutes />} />
-        <Route path="employer/*" element={<EmployerRoutes />} />
-        <Route path="resources/*" element={<ResourceRoutes />} />
-        <Route path="admin/*" element={<AdminRoutes />} />
+        <Route path="/auth/*" element={<AuthRoutes />} />
+        <Route path="/user/*" element={<UserRoutes />} />
+        <Route path="/employer/*" element={<EmployerRoutes />} />
+        <Route path="/resources/*" element={<ResourceRoutes />} />
+        <Route path="/admin/*" element={<AdminRoutes />} />
         
         {/* 404 catch-all route */}
         <Route path="*" element={<NotFound />} />

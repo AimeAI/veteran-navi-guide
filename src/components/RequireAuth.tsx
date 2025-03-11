@@ -3,7 +3,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useUser } from '@/context/UserContext';
 import { Button } from './ui/button';
-import { LogIn, Facebook, Github, Linkedin } from 'lucide-react';
+import { LogIn, Facebook, Github } from 'lucide-react';
 
 interface RequireAuthProps {
   children: React.ReactNode;

@@ -20,8 +20,10 @@ export const UserRoutes: React.FC = () => {
   return (
     <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
       <Routes>
-        {/* Main user profile route - will show different tabs based on URL */}
-        <Route path="/" element={<RequireAuth><UserProfile /></RequireAuth>} />
+        {/* Main user dashboard route */}
+        <Route path="/" element={<RequireAuth><VeteranDashboardPage /></RequireAuth>} />
+        
+        {/* Profile routes with tabs */}
         <Route path="/profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
         <Route path="/profile/resume" element={<RequireAuth><UserProfile /></RequireAuth>} />
         <Route path="/profile/resume-parser" element={<RequireAuth><UserProfile /></RequireAuth>} />
@@ -31,7 +33,6 @@ export const UserRoutes: React.FC = () => {
         {/* Standalone pages */}
         <Route path="/saved" element={<RequireAuth><SavedJobs /></RequireAuth>} />
         <Route path="/history" element={<RequireAuth><ApplicationsPage /></RequireAuth>} />
-        <Route path="/recommendations" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
         <Route path="/recommended" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
         <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
         <Route path="/dashboard" element={<RequireAuth><VeteranDashboardPage /></RequireAuth>} />
