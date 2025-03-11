@@ -24,7 +24,8 @@ export interface Job {
   companyRating?: number;
   benefits?: string[];
   requiredMosCodes?: string[];
-  matchingSkills?: string[]; // Added to track matching skills for highlighting
+  matchingSkills?: string[]; // Skills that match user's search
+  matchScore?: number; // Relevance score for sorting (0-100)
 }
 
 // Define job filter state

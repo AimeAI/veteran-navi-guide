@@ -1,6 +1,9 @@
 
 import { Job } from './job';
 
+/**
+ * Parameters for job search operations
+ */
 export interface JobSearchParams {
   keywords?: string;
   location?: string;
@@ -13,8 +16,14 @@ export interface JobSearchParams {
   country?: "us" | "canada";
   page?: number;
   skills?: string[];
+  salaryRange?: string;
+  sortBy?: string;
+  refresh?: boolean;
 }
 
+/**
+ * Results from job search operations
+ */
 export interface JobSearchResults {
   jobs: Job[];
   isLoading: boolean;
