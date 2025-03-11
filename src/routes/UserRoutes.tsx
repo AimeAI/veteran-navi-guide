@@ -19,12 +19,12 @@ export const UserRoutes: React.FC = () => {
     <Routes>
       <Route path="saved" element={<RequireAuth><SavedJobs /></RequireAuth>} />
       <Route path="profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
+      <Route path="profile/settings" element={<RequireAuth><UserProfile /></RequireAuth>} />
+      <Route path="profile/resume" element={<RequireAuth><UserProfile /></RequireAuth>} />
       <Route path="history" element={<RequireAuth><ApplicationsPage /></RequireAuth>} />
       <Route path="recommendations" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
       <Route path="messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
       <Route path="dashboard" element={<RequireAuth><VeteranDashboardPage /></RequireAuth>} />
-      <Route path="profile/settings" element={<RequireAuth><UserProfile /></RequireAuth>} />
-      <Route path="profile/resume" element={<RequireAuth><UserProfile /></RequireAuth>} />
       <Route path="job-alerts" element={<RequireAuth><UserProfile /></RequireAuth>} />
       <Route path="recommended" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
       <Route path="settings/notifications" element={<RequireAuth><NotificationPreferences /></RequireAuth>} />
