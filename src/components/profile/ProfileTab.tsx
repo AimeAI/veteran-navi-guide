@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,7 +12,11 @@ import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import VeteranBadges from "@/components/VeteranBadges";
 import ProfileCompletionProgress from "@/components/ProfileCompletionProgress";
 
-const ProfileTab = () => {
+interface ProfileTabProps {
+  earnedBadges: any[];
+}
+
+const ProfileTab: React.FC<ProfileTabProps> = ({ earnedBadges = [] }) => {
   const { user, updateProfile } = useUser();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -208,7 +213,7 @@ const ProfileTab = () => {
         </div>
         
         <div className="mt-8">
-          <VeteranBadges earnedBadges={[]} />
+          <VeteranBadges earnedBadges={earnedBadges} />
         </div>
       </CardContent>
       {isEditing && (

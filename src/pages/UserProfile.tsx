@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/context/UserContext";
 import { useJobs } from "@/context/JobContext";
 import { determineEarnedBadges } from "@/utils/badgeUtils";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Import Tab Components
 import ProfileTab from "@/components/profile/ProfileTab";
@@ -16,6 +17,8 @@ import SettingsTab from "@/components/profile/settings/SettingsTab";
 const UserProfile = () => {
   const { user } = useUser();
   const { appliedJobs } = useJobs();
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState("profile");
@@ -23,6 +26,18 @@ const UserProfile = () => {
   const [earnedBadges, setEarnedBadges] = useState([]);
 
   useEffect(() => {
+    // Set the active tab based on the URL path
+    if (location.pathname.includes('/profile/resume')) {
+      setActiveTab("resume");
+    } else if (location.pathname.includes('/profile/settings')) {
+      setActiveTab("settings");
+    } else if (location.pathname.includes('/job-alerts')) {
+      setActiveTab("alerts");
+      setShowCreateAlert(true);
+    } else {
+      setActiveTab("profile");
+    }
+
     const handleHashChange = () => {
       if (window.location.hash === "#create-alert") {
         setActiveTab("alerts");
@@ -36,7 +51,7 @@ const UserProfile = () => {
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (user) {
@@ -56,12 +71,20 @@ const UserProfile = () => {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     
-    if (value !== "alerts") {
+    // Update the URL to match the tab without reloading
+    if (value === "resume") {
+      navigate("/user/profile/resume", { replace: true });
+    } else if (value === "settings") {
+      navigate("/user/profile/settings", { replace: true });
+    } else if (value === "alerts") {
+      navigate("/user/job-alerts", { replace: true });
       setShowCreateAlert(false);
       
       if (window.location.hash === "#create-alert") {
         window.history.pushState("", document.title, window.location.pathname + window.location.search);
       }
+    } else {
+      navigate("/user/profile", { replace: true });
     }
   };
 
@@ -78,7 +101,7 @@ const UserProfile = () => {
         </TabsList>
         
         <TabsContent value="profile">
-          <ProfileTab />
+          <ProfileTab earnedBadges={earnedBadges} />
         </TabsContent>
         
         <TabsContent value="resume">
