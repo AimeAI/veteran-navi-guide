@@ -14,7 +14,7 @@ const VeteranDashboardPage = lazy(() => import("../pages/VeteranDashboardPage"))
 const ReferralProgramPage = lazy(() => import("../pages/ReferralProgramPage"));
 const NotificationPreferences = lazy(() => import("../components/NotificationPreferences"));
 const FeedbackSupportPage = lazy(() => import("../pages/FeedbackSupportPage"));
-const JobAlertsPage = lazy(() => import("../pages/JobAlertsPage")); // Make sure JobAlertsPage is imported
+const JobAlertsPage = lazy(() => import("../pages/JobAlertsPage"));
 
 export const UserRoutes: React.FC = () => {
   return (
@@ -28,11 +28,11 @@ export const UserRoutes: React.FC = () => {
         <Route path="/profile/applications" element={<RequireAuth><UserProfile /></RequireAuth>} />
         <Route path="/profile/resume-parser" element={<RequireAuth><UserProfile /></RequireAuth>} />
         <Route path="/history" element={<RequireAuth><ApplicationsPage /></RequireAuth>} />
+        <Route path="/recommended" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
         <Route path="/recommendations" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
         <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
         <Route path="/dashboard" element={<RequireAuth><VeteranDashboardPage /></RequireAuth>} />
-        <Route path="/job-alerts" element={<RequireAuth><UserProfile /></RequireAuth>} />
-        <Route path="/recommended" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
+        <Route path="/job-alerts" element={<RequireAuth><JobAlertsPage /></RequireAuth>} />
         <Route path="/settings/notifications" element={<RequireAuth><NotificationPreferences /></RequireAuth>} />
         <Route path="/feedback" element={<RequireAuth><FeedbackSupportPage /></RequireAuth>} />
         <Route path="/referral-program" element={<RequireAuth><ReferralProgramPage /></RequireAuth>} />
