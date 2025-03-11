@@ -19,6 +19,7 @@ export const UserRoutes: React.FC = () => {
   return (
     <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
       <Routes>
+        <Route path="/" element={<RequireAuth><UserProfile /></RequireAuth>} />
         <Route path="/saved" element={<RequireAuth><SavedJobs /></RequireAuth>} />
         <Route path="/profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
         <Route path="/profile/settings" element={<RequireAuth><UserProfile /></RequireAuth>} />

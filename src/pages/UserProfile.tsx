@@ -23,17 +23,22 @@ const UserProfile = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState("profile");
   const [showCreateAlert, setShowCreateAlert] = useState(false);
-  const [earnedBadges, setEarnedBadges] = useState([]);
+  const [earnedBadges, setEarnedBadges] = useState<any[]>([]);
 
   useEffect(() => {
     // Set the active tab based on the URL path
-    if (location.pathname.includes('/profile/resume')) {
+    const path = location.pathname;
+    if (path.includes('/profile/resume')) {
       setActiveTab("resume");
-    } else if (location.pathname.includes('/profile/settings')) {
+    } else if (path.includes('/profile/settings')) {
       setActiveTab("settings");
-    } else if (location.pathname.includes('/job-alerts')) {
+    } else if (path.includes('/job-alerts')) {
       setActiveTab("alerts");
       setShowCreateAlert(true);
+    } else if (path.includes('resume-parser')) {
+      setActiveTab("resume-parser");
+    } else if (path.includes('applications')) {
+      setActiveTab("applications");
     } else {
       setActiveTab("profile");
     }
@@ -73,18 +78,22 @@ const UserProfile = () => {
     
     // Update the URL to match the tab without reloading
     if (value === "resume") {
-      navigate("/user/profile/resume", { replace: true });
+      navigate("/profile/resume", { replace: true });
     } else if (value === "settings") {
-      navigate("/user/profile/settings", { replace: true });
+      navigate("/profile/settings", { replace: true });
     } else if (value === "alerts") {
-      navigate("/user/job-alerts", { replace: true });
+      navigate("/job-alerts", { replace: true });
       setShowCreateAlert(false);
       
       if (window.location.hash === "#create-alert") {
         window.history.pushState("", document.title, window.location.pathname + window.location.search);
       }
+    } else if (value === "resume-parser") {
+      navigate("/profile/resume-parser", { replace: true });
+    } else if (value === "applications") {
+      navigate("/profile/applications", { replace: true });
     } else {
-      navigate("/user/profile", { replace: true });
+      navigate("/profile", { replace: true });
     }
   };
 

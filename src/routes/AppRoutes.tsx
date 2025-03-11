@@ -39,6 +39,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/topic/:topicId" element={<TopicDetail />} />
         <Route path="/ab-testing" element={<AbTestingPage />} />
         <Route path="/routes" element={<AllRoutes />} />
+        <Route path="/profile" element={<UserRoutes />} />
+        <Route path="/profile/*" element={<UserRoutes />} />
         
         {/* Nested Routes */}
         <Route path="auth/*" element={<AuthRoutes />} />
