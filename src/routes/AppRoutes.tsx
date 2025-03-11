@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { lazy } from "react";
@@ -15,12 +16,12 @@ const AbTestingPage = lazy(() => import("../pages/AbTestingPage"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const AllRoutes = lazy(() => import("../pages/AllRoutes"));
 
-// Import route components from other route files
-import { AuthRoutes } from "./AuthRoutes";
-import { UserRoutes } from "./UserRoutes";
-import { EmployerRoutes } from "./EmployerRoutes";
-import { ResourceRoutes } from "./ResourceRoutes";
-import { AdminRoutes } from "./AdminRoutes";
+// Import route components
+import AuthRoutes from "./AuthRoutes";
+import UserRoutes from "./UserRoutes";
+import EmployerRoutes from "./EmployerRoutes";
+import ResourceRoutes from "./ResourceRoutes";
+import AdminRoutes from "./AdminRoutes";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -29,6 +30,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Index />} />
       <Route path="/job-search" element={<JobSearch />} />
       <Route path="/jobs/search" element={<JobSearch />} />
+      <Route path="/job-board" element={<JobBoardPage />} />
       <Route path="/job/:id" element={<JobDetailsPage />} />
       <Route path="/vetted-jobs" element={<VettedJobsPage />} />
       <Route path="/events" element={<JobFairsEventsPage />} />
@@ -37,12 +39,12 @@ const AppRoutes: React.FC = () => {
       <Route path="/ab-testing" element={<AbTestingPage />} />
       <Route path="/routes" element={<AllRoutes />} />
       
-      {/* Other route groups */}
-      <AuthRoutes />
-      <UserRoutes />
-      <EmployerRoutes />
-      <ResourceRoutes />
-      <AdminRoutes />
+      {/* Render Route components returned by these functions */}
+      <Route path="/auth/*" element={<AuthRoutes />} />
+      <Route path="/user/*" element={<UserRoutes />} />
+      <Route path="/employer/*" element={<EmployerRoutes />} />
+      <Route path="/resources/*" element={<ResourceRoutes />} />
+      <Route path="/admin/*" element={<AdminRoutes />} />
       
       {/* 404 catch-all route */}
       <Route path="*" element={<NotFound />} />
