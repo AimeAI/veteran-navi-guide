@@ -42,13 +42,13 @@ const AllRoutes: React.FC = () => {
       title: "User Profile",
       icon: <User className="h-5 w-5" />,
       routes: [
-        { path: "/profile", label: "User Profile", requiresAuth: true },
-        { path: "/profile/settings", label: "Profile Settings", requiresAuth: true },
-        { path: "/profile/resume", label: "Resume", requiresAuth: true },
-        { path: "/history", label: "Application History", requiresAuth: true },
-        { path: "/job-alerts", label: "Job Alerts", requiresAuth: true },
-        { path: "/saved", label: "Saved Jobs", requiresAuth: true },
-        { path: "/recommended", label: "Recommended Jobs", requiresAuth: true },
+        { path: "/user/profile", label: "User Profile", requiresAuth: true },
+        { path: "/user/profile/settings", label: "Profile Settings", requiresAuth: true },
+        { path: "/user/profile/resume", label: "Resume", requiresAuth: true },
+        { path: "/user/history", label: "Application History", requiresAuth: true },
+        { path: "/user/job-alerts", label: "Job Alerts", requiresAuth: true },
+        { path: "/user/saved", label: "Saved Jobs", requiresAuth: true },
+        { path: "/user/recommended", label: "Recommended Jobs", requiresAuth: true },
       ]
     },
     {
@@ -78,22 +78,22 @@ const AllRoutes: React.FC = () => {
       routes: [
         { path: "/auth", label: "Login/Signup" },
         { path: "/auth/callback", label: "Auth Callback" },
-        { path: "/forgot-password", label: "Forgot Password" },
-        { path: "/verify-email", label: "Verify Email" },
-        { path: "/messages", label: "Messages", requiresAuth: true },
-        { path: "/feedback", label: "Feedback & Support", requiresAuth: true },
-        { path: "/settings/notifications", label: "Notification Settings", requiresAuth: true },
+        { path: "/auth/forgot-password", label: "Forgot Password" },
+        { path: "/auth/verify-email", label: "Verify Email" },
+        { path: "/user/messages", label: "Messages", requiresAuth: true },
+        { path: "/user/feedback", label: "Feedback & Support", requiresAuth: true },
+        { path: "/user/settings/notifications", label: "Notification Settings", requiresAuth: true },
       ]
     },
     {
       title: "Dashboard & Admin",
       icon: <LineChart className="h-5 w-5" />,
       routes: [
-        { path: "/dashboard", label: "Veteran Dashboard", requiresAuth: true },
+        { path: "/user/dashboard", label: "Veteran Dashboard", requiresAuth: true },
         { path: "/admin", label: "Admin Dashboard", requiresAuth: true },
         { path: "/admin/content", label: "Admin Content", requiresAuth: true },
         { path: "/ab-testing", label: "A/B Testing" },
-        { path: "/referral-program", label: "Referral Program", requiresAuth: true },
+        { path: "/user/referral-program", label: "Referral Program", requiresAuth: true },
       ]
     }
   ];
