@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { JobFilterState } from '@/context/JobContext';
+import { JobFilterState } from '@/types/job';
 import { JobCache } from '@/utils/jobCache';
 import { toast } from 'sonner';
 

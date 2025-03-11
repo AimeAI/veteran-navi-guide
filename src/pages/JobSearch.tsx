@@ -91,7 +91,7 @@ const JobSearch: React.FC = () => {
         onClearFilters={handleClearFilters}
         onFilterChange={handleFilterChange}
         onMilitarySkillsChange={handleMilitarySkillsChange}
-        onSkillsChange={handleSkillsChange} // Add this prop
+        onSkillsChange={handleSkillsChange}
         jobs={jobs}
         isLoading={isLoading}
         error={error}
