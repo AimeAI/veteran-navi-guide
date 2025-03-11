@@ -1,6 +1,6 @@
 
 import React, { lazy } from "react";
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { RequireAuth } from "../components/RequireAuth";
 
 // Lazy-loaded components
@@ -14,9 +14,9 @@ const ReferralProgramPage = lazy(() => import("../pages/ReferralProgramPage"));
 const NotificationPreferences = lazy(() => import("../components/NotificationPreferences"));
 const FeedbackSupportPage = lazy(() => import("../pages/FeedbackSupportPage"));
 
-export const UserRoutes = () => {
+export const UserRoutes: React.FC = () => {
   return (
-    <>
+    <Routes>
       <Route path="/saved" element={<RequireAuth><SavedJobs /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
       <Route path="/history" element={<RequireAuth><ApplicationsPage /></RequireAuth>} />
@@ -30,6 +30,6 @@ export const UserRoutes = () => {
       <Route path="/settings/notifications" element={<RequireAuth><NotificationPreferences /></RequireAuth>} />
       <Route path="/feedback" element={<RequireAuth><FeedbackSupportPage /></RequireAuth>} />
       <Route path="/referral-program" element={<RequireAuth><ReferralProgramPage /></RequireAuth>} />
-    </>
+    </Routes>
   );
 };

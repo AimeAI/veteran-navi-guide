@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import JobSearch from "../pages/JobSearch";
 import JobBoardPage from "../pages/JobBoardPage";
 
@@ -39,12 +39,12 @@ const AppRoutes: React.FC = () => {
       <Route path="/ab-testing" element={<AbTestingPage />} />
       <Route path="/routes" element={<AllRoutes />} />
       
-      {/* Render Route components returned by these functions */}
-      <Route path="/auth/*" element={<AuthRoutes />} />
-      <Route path="/user/*" element={<UserRoutes />} />
-      <Route path="/employer/*" element={<EmployerRoutes />} />
-      <Route path="/resources/*" element={<ResourceRoutes />} />
-      <Route path="/admin/*" element={<AdminRoutes />} />
+      {/* Nested Routes */}
+      <Route path="auth/*" element={<Suspense fallback={<div>Loading...</div>}><AuthRoutes /></Suspense>} />
+      <Route path="user/*" element={<Suspense fallback={<div>Loading...</div>}><UserRoutes /></Suspense>} />
+      <Route path="employer/*" element={<Suspense fallback={<div>Loading...</div>}><EmployerRoutes /></Suspense>} />
+      <Route path="resources/*" element={<Suspense fallback={<div>Loading...</div>}><ResourceRoutes /></Suspense>} />
+      <Route path="admin/*" element={<Suspense fallback={<div>Loading...</div>}><AdminRoutes /></Suspense>} />
       
       {/* 404 catch-all route */}
       <Route path="*" element={<NotFound />} />

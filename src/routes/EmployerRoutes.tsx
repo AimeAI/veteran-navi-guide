@@ -1,6 +1,6 @@
 
 import React, { lazy } from "react";
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { RequireAuth } from "../components/RequireAuth";
 
 // Lazy-loaded components
@@ -9,29 +9,29 @@ const EmployerDashboardPage = lazy(() => import("../pages/EmployerDashboardPage"
 const EmployerProfilePage = lazy(() => import("../pages/EmployerProfilePage"));
 const EmployerSearchVeteransPage = lazy(() => import("../pages/EmployerSearchVeteransPage"));
 
-export const EmployerRoutes = () => {
+export const EmployerRoutes: React.FC = () => {
   return (
-    <>
+    <Routes>
       <Route 
-        path="/employer/post-job" 
+        path="/post-job" 
         element={<RequireAuth roles={["employer", "admin"]}><PostJobPage /></RequireAuth>} 
       />
       <Route 
-        path="/employer/manage-applications" 
+        path="/manage-applications" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerDashboardPage /></RequireAuth>} 
       />
       <Route 
-        path="/employer/profile" 
+        path="/profile" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerProfilePage /></RequireAuth>} 
       />
       <Route 
-        path="/employer/search-veterans" 
+        path="/search-veterans" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerSearchVeteransPage /></RequireAuth>} 
       />
       <Route 
         path="/employer-profile" 
         element={<RequireAuth roles={["employer", "admin"]}><EmployerProfilePage /></RequireAuth>} 
       />
-    </>
+    </Routes>
   );
 };
