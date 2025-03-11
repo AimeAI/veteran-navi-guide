@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { RequireAuth } from "../components/RequireAuth";
 import { lazy, Suspense } from "react";
 
@@ -40,6 +40,9 @@ export const UserRoutes: React.FC = () => {
         <Route path="/settings/notifications" element={<RequireAuth><NotificationPreferences /></RequireAuth>} />
         <Route path="/feedback" element={<RequireAuth><FeedbackSupportPage /></RequireAuth>} />
         <Route path="/referral-program" element={<RequireAuth><ReferralProgramPage /></RequireAuth>} />
+        
+        {/* Handle /profile route for backward compatibility */}
+        <Route path="profile" element={<Navigate to="/user/profile" replace />} />
       </Routes>
     </Suspense>
   );

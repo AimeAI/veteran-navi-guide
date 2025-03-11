@@ -34,7 +34,7 @@ export default function NavDropdown() {
     <DropdownMenuGroup>
       {user.role === 'veteran' ? (
         <DropdownMenuItem asChild>
-          <Link to="/profile">
+          <Link to="/user/profile">
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </Link>
@@ -83,7 +83,7 @@ export default function NavDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link to="/settings">
+            <Link to="/user/settings/notifications">
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </Link>

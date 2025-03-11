@@ -71,9 +71,6 @@ const UserProfile = () => {
       case "applications":
         navigate("/user/profile/applications", { replace: true });
         break;
-      case "alerts":
-        navigate("/user/job-alerts", { replace: true });
-        break;
       default:
         navigate("/user/profile", { replace: true });
         break;

@@ -47,6 +47,9 @@ const AppRoutes: React.FC = () => {
         <Route path="/resources/*" element={<ResourceRoutes />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
         
+        {/* Direct profile route for backward compatibility */}
+        <Route path="/profile" element={<UserRoutes />} />
+        
         {/* 404 catch-all route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
