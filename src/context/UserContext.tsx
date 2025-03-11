@@ -1,43 +1,12 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { toast } from "sonner";
-import { UserRole, EmployerProfile } from "@/types/application";
-import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-
-// Define types for our user profile
-export interface UserProfile {
-  name: string;
-  email: string;
-  phone: string;
-  location: string;
-  militaryBranch: string;
-  yearsOfService: string;
-  rank: string;
-  bio: string;
-  isAuthenticated: boolean;
-  emailVerified: boolean;
-  profilePicture?: string;
-  role: UserRole;
-  employerProfile?: EmployerProfile;
-  authProvider?: string; // Add auth provider to track how user is authenticated
-}
-
-// Interface for the context
-interface UserContextType {
-  user: UserProfile | null;
-  supabaseUser: User | null;
-  session: Session | null;
-  isLoading: boolean;
-  login: (email: string, password: string, isEmployer?: boolean) => Promise<void>;
-  signup: (email: string, password: string, militaryBranch: string, isEmployer?: boolean, companyName?: string) => Promise<void>;
-  logout: () => Promise<void>;
-  updateProfile: (updatedProfile: Partial<UserProfile>) => void;
-  updateEmployerProfile: (updatedProfile: Partial<EmployerProfile>) => void;
-  resendVerificationEmail: () => Promise<void>;
-  uploadProfilePicture: (file: File) => Promise<string>;
-  socialLogin: (provider: string, isEmployer?: boolean) => Promise<void>; // Add new social login method
-}
+import { supabase } from "@/integrations/supabase/client";
+import { userAuthService } from "@/services/userAuthService";
+import { userProfileService } from "@/services/userProfileService";
+import { UserProfile, UserContextType } from "./UserTypes";
+import { EmployerProfile } from "@/types/application";
+import { toast } from "sonner";
 
 // Create the context with initial values
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -61,51 +30,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (currentSession?.user) {
         setSupabaseUser(currentSession.user);
         
-        // Fetch profile data from profiles table
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentSession.user.id)
-          .single();
+        // Fetch user profile
+        const { profile, error } = await userProfileService.fetchUserProfile(currentSession.user);
         
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error("Error fetching profile:", profileError);
-          toast.error("Failed to load user profile");
-        }
-        
-        // Transform the data to match our UserProfile structure
-        if (profileData) {
-          setUser({
-            name: profileData.full_name || currentSession.user.email?.split('@')[0] || '',
-            email: currentSession.user.email || '',
-            phone: profileData.phone || '',
-            location: profileData.location || '',
-            militaryBranch: profileData.military_branch || '',
-            yearsOfService: profileData.years_of_service || '',
-            rank: profileData.rank || '',
-            bio: profileData.bio || '',
-            isAuthenticated: true,
-            emailVerified: currentSession.user.email_confirmed_at !== null,
-            profilePicture: profileData.avatar_url,
-            role: "veteran", // Default to veteran, update based on actual role when implemented
-            authProvider: currentSession.user.app_metadata.provider || "email"
-          });
-        } else {
-          // Create basic profile if none exists
-          setUser({
-            name: currentSession.user.email?.split('@')[0] || '',
-            email: currentSession.user.email || '',
-            phone: '',
-            location: '',
-            militaryBranch: '',
-            yearsOfService: '',
-            rank: '',
-            bio: '',
-            isAuthenticated: true,
-            emailVerified: currentSession.user.email_confirmed_at !== null,
-            role: "veteran",
-            authProvider: currentSession.user.app_metadata.provider || "email"
-          });
+        if (profile) {
+          setUser(profile);
         }
       } else {
         setUser(null);
@@ -122,32 +51,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setSupabaseUser(newSession?.user || null);
           
           if (event === 'SIGNED_IN' && newSession?.user) {
-            // Similar logic as above for handling sign in
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', newSession.user.id)
-              .single();
+            setIsLoading(true);
+            // Fetch user profile on sign in
+            const { profile } = await userProfileService.fetchUserProfile(newSession.user);
             
-            if (profileData) {
-              setUser({
-                name: profileData.full_name || newSession.user.email?.split('@')[0] || '',
-                email: newSession.user.email || '',
-                phone: profileData.phone || '',
-                location: profileData.location || '',
-                militaryBranch: profileData.military_branch || '',
-                yearsOfService: profileData.years_of_service || '',
-                rank: profileData.rank || '',
-                bio: profileData.bio || '',
-                isAuthenticated: true,
-                emailVerified: newSession.user.email_confirmed_at !== null,
-                profilePicture: profileData.avatar_url,
-                role: "veteran",
-                authProvider: newSession.user.app_metadata.provider || "email"
-              });
-              
+            if (profile) {
+              setUser(profile);
               toast.success("Welcome back!");
             }
+            setIsLoading(false);
           } else if (event === 'SIGNED_OUT') {
             setUser(null);
             toast.info("You have been logged out");
@@ -168,11 +80,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
+      const { error } = await userAuthService.login(email, password);
       if (error) throw error;
       
       // User data is handled by the onAuthStateChange listener
@@ -186,19 +94,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       toast.success("Login successful!");
     } catch (error) {
-      console.error("Login error:", error);
-      
-      // Show appropriate error message
-      if (error instanceof Error) {
-        toast.error("Login failed", {
-          description: error.message || "Please try again"
-        });
-      } else {
-        toast.error("Login failed", {
-          description: "An unexpected error occurred. Please try again."
-        });
-      }
-      
+      // Error handling is done in the service
       throw error;
     } finally {
       setIsLoading(false);
@@ -224,37 +120,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         metadata.companyName = companyName;
       }
       
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata,
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-      
+      const { error } = await userAuthService.signup(email, password, metadata);
       if (error) throw error;
       
       // Profile will be created automatically through the trigger
-      
-      // Show success message
-      toast.success("Account created successfully!", {
-        description: "Please check your email for a verification link."
-      });
     } catch (error) {
-      console.error("Signup error:", error);
-      
-      // Show appropriate error message
-      if (error instanceof Error) {
-        toast.error("Sign up failed", {
-          description: error.message || "Please try again"
-        });
-      } else {
-        toast.error("Sign up failed", {
-          description: "An unexpected error occurred. Please try again."
-        });
-      }
-      
+      // Error handling is done in the service
       throw error;
     } finally {
       setIsLoading(false);
@@ -264,13 +135,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await userAuthService.logout();
       if (error) throw error;
       
       // State will be cleared by the auth listener
     } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Failed to log out. Please try again.");
+      // Error handling is done in the service
     } finally {
       setIsLoading(false);
     }
@@ -282,170 +152,77 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     
     try {
-      // Map from our UserProfile to the database profile
-      const profileUpdate: { [key: string]: any } = {};
-      
-      if (updatedProfile.name) profileUpdate.full_name = updatedProfile.name;
-      if (updatedProfile.phone) profileUpdate.phone = updatedProfile.phone;
-      if (updatedProfile.location) profileUpdate.location = updatedProfile.location;
-      if (updatedProfile.militaryBranch) profileUpdate.military_branch = updatedProfile.militaryBranch;
-      if (updatedProfile.yearsOfService) profileUpdate.years_of_service = updatedProfile.yearsOfService;
-      if (updatedProfile.rank) profileUpdate.rank = updatedProfile.rank;
-      if (updatedProfile.bio) profileUpdate.bio = updatedProfile.bio;
-      
-      // Update the profile in the database
-      const { error } = await supabase
-        .from('profiles')
-        .update(profileUpdate)
-        .eq('id', supabaseUser.id);
-      
+      const { error } = await userProfileService.updateProfile(supabaseUser.id, updatedProfile);
       if (error) throw error;
       
       // Update local state
       setUser({ ...user, ...updatedProfile });
-      
-      toast.success("Profile updated successfully!");
     } catch (error) {
-      console.error("Profile update error:", error);
-      toast.error("Failed to update profile", {
-        description: "Please try again later."
-      });
+      // Error handling is done in the service
     } finally {
       setIsLoading(false);
     }
   };
 
-  const updateEmployerProfile = (updatedProfile: Partial<EmployerProfile>) => {
-    if (user && user.role === "employer" && user.employerProfile) {
-      try {
-        // This will need to be implemented with actual Supabase calls
-        // when we add the employers table
-        
-        // For now, just update the local state
+  const updateEmployerProfile = async (updatedProfile: Partial<EmployerProfile>) => {
+    if (!supabaseUser || !user || user.role !== "employer") return;
+    
+    try {
+      await userProfileService.updateEmployerProfile(supabaseUser.id, updatedProfile);
+      
+      if (user.employerProfile) {
+        // Update local state
         const newEmployerProfile = { ...user.employerProfile, ...updatedProfile };
         setUser({
           ...user,
           employerProfile: newEmployerProfile
         });
-        
-        toast.success("Company profile updated successfully!");
-      } catch (error) {
-        console.error("Employer profile update error:", error);
-        toast.error("Failed to update company profile", {
-          description: "Please try again later."
-        });
       }
+    } catch (error) {
+      // Error handling is done in the service
     }
   };
 
   const resendVerificationEmail = async () => {
     if (!user?.email) return;
     
+    setIsLoading(true);
+    
     try {
-      setIsLoading(true);
-      
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: user.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-      
+      const { error } = await userAuthService.resendVerificationEmail(user.email);
       if (error) throw error;
-      
-      toast.success("Verification email sent!", {
-        description: "Please check your inbox for the verification link."
-      });
     } catch (error) {
-      console.error("Error resending verification email:", error);
-      toast.error("Failed to resend verification email", {
-        description: "Please try again later."
-      });
+      // Error handling is done in the service
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Function to handle profile picture uploads
   const uploadProfilePicture = async (file: File): Promise<string> => {
     if (!supabaseUser) throw new Error("User not authenticated");
     
     setIsLoading(true);
     
     try {
-      // Validate file
-      if (!file) {
-        throw new Error("No file selected");
-      }
+      const { url, error } = await userProfileService.uploadProfilePicture(supabaseUser.id, file);
       
-      // Check file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-      if (!validTypes.includes(file.type)) {
-        throw new Error("Invalid file type. Please upload a JPEG, PNG, or GIF image.");
-      }
-      
-      // Check file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-      if (file.size > maxSize) {
-        throw new Error("File is too large. Maximum size is 5MB.");
-      }
-      
-      // Generate a unique file name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${supabaseUser.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-      
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('profiles')
-        .upload(filePath, file);
-      
-      if (uploadError) throw uploadError;
-      
-      // Get public URL
-      const { data } = supabase.storage
-        .from('profiles')
-        .getPublicUrl(filePath);
-      
-      const publicUrl = data.publicUrl;
-      
-      // Update profile with new avatar URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', supabaseUser.id);
-      
-      if (updateError) throw updateError;
+      if (error) throw error;
+      if (!url) throw new Error("Failed to get profile picture URL");
       
       // Update local state
       if (user) {
-        setUser({ ...user, profilePicture: publicUrl });
+        setUser({ ...user, profilePicture: url });
       }
       
-      toast.success("Profile picture updated successfully!");
-      return publicUrl;
+      return url;
     } catch (error) {
-      console.error("Profile picture upload error:", error);
-      
-      // Show appropriate error message
-      if (error instanceof Error) {
-        toast.error("Upload failed", {
-          description: error.message || "Please try again"
-        });
-      } else {
-        toast.error("Upload failed", {
-          description: "An unexpected error occurred. Please try again."
-        });
-      }
-      
+      // Error handling is done in the service
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Implement the socialLogin method
   const socialLogin = async (provider: string, isEmployer = false) => {
     setIsLoading(true);
     
@@ -466,29 +243,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           throw new Error(`Unsupported provider: ${provider}`);
       }
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: providerName,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            // Pass the employer role if needed
-            isEmployer: isEmployer ? 'true' : 'false'
-          }
-        }
-      });
+      const options = isEmployer ? { isEmployer: 'true' } : { isEmployer: 'false' };
       
+      const { error } = await userAuthService.socialLogin(providerName, options);
       if (error) throw error;
       
       // The redirect happens automatically
       // State will be handled by the auth listener when redirected back
     } catch (error) {
-      console.error(`Social login error with ${provider}:`, error);
-      
-      // Show appropriate error message
-      toast.error(`${provider} login failed`, {
-        description: "An unexpected error occurred. Please try again."
-      });
-      
+      // Error handling is done in the service
       throw error;
     } finally {
       setIsLoading(false);
