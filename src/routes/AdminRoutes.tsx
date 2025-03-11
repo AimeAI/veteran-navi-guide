@@ -1,23 +1,23 @@
 
 import React, { lazy } from "react";
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { RequireAuth } from "../components/RequireAuth";
 
 // Lazy-loaded components
 const AdminDashboardPage = lazy(() => import("../pages/AdminDashboardPage"));
 const AdminContentPage = lazy(() => import("../pages/AdminContentPage"));
 
-export const AdminRoutes = () => {
+export const AdminRoutes: React.FC = () => {
   return (
-    <>
+    <Routes>
       <Route 
-        path="/admin" 
+        path="/" 
         element={<RequireAuth roles={["admin"]}><AdminDashboardPage /></RequireAuth>} 
       />
       <Route 
-        path="/admin/content" 
+        path="content" 
         element={<RequireAuth roles={["admin"]}><AdminContentPage /></RequireAuth>} 
       />
-    </>
+    </Routes>
   );
 };

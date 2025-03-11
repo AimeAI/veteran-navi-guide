@@ -25,30 +25,32 @@ import { AdminRoutes } from "./AdminRoutes";
 
 const AppRoutes: React.FC = () => {
   return (
-    <Routes>
-      {/* General Routes */}
-      <Route path="/" element={<Index />} />
-      <Route path="/job-search" element={<JobSearch />} />
-      <Route path="/jobs/search" element={<JobSearch />} />
-      <Route path="/job-board" element={<JobBoardPage />} />
-      <Route path="/job/:id" element={<JobDetailsPage />} />
-      <Route path="/vetted-jobs" element={<VettedJobsPage />} />
-      <Route path="/events" element={<JobFairsEventsPage />} />
-      <Route path="/resources/forums" element={<CommunityForums />} />
-      <Route path="/topic/:topicId" element={<TopicDetail />} />
-      <Route path="/ab-testing" element={<AbTestingPage />} />
-      <Route path="/routes" element={<AllRoutes />} />
-      
-      {/* Nested Routes */}
-      <Route path="auth/*" element={<Suspense fallback={<div>Loading...</div>}><AuthRoutes /></Suspense>} />
-      <Route path="user/*" element={<Suspense fallback={<div>Loading...</div>}><UserRoutes /></Suspense>} />
-      <Route path="employer/*" element={<Suspense fallback={<div>Loading...</div>}><EmployerRoutes /></Suspense>} />
-      <Route path="resources/*" element={<Suspense fallback={<div>Loading...</div>}><ResourceRoutes /></Suspense>} />
-      <Route path="admin/*" element={<Suspense fallback={<div>Loading...</div>}><AdminRoutes /></Suspense>} />
-      
-      {/* 404 catch-all route */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+      <Routes>
+        {/* General Routes */}
+        <Route path="/" element={<Index />} />
+        <Route path="/job-search" element={<JobSearch />} />
+        <Route path="/jobs/search" element={<JobSearch />} />
+        <Route path="/job-board" element={<JobBoardPage />} />
+        <Route path="/job/:id" element={<JobDetailsPage />} />
+        <Route path="/vetted-jobs" element={<VettedJobsPage />} />
+        <Route path="/events" element={<JobFairsEventsPage />} />
+        <Route path="/resources/forums" element={<CommunityForums />} />
+        <Route path="/topic/:topicId" element={<TopicDetail />} />
+        <Route path="/ab-testing" element={<AbTestingPage />} />
+        <Route path="/routes" element={<AllRoutes />} />
+        
+        {/* Nested Routes */}
+        <Route path="auth/*" element={<AuthRoutes />} />
+        <Route path="user/*" element={<UserRoutes />} />
+        <Route path="employer/*" element={<EmployerRoutes />} />
+        <Route path="resources/*" element={<ResourceRoutes />} />
+        <Route path="admin/*" element={<AdminRoutes />} />
+        
+        {/* 404 catch-all route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 

@@ -19,6 +19,12 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
   const { user, isLoading, session } = useUser();
   const location = useLocation();
 
+  // In development mode, bypass authentication
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  if (isDevelopment) {
+    return <>{children}</>;
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
