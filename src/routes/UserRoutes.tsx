@@ -41,8 +41,12 @@ export const UserRoutes: React.FC = () => {
         <Route path="/feedback" element={<RequireAuth><FeedbackSupportPage /></RequireAuth>} />
         <Route path="/referral-program" element={<RequireAuth><ReferralProgramPage /></RequireAuth>} />
         
-        {/* Handle /profile route for backward compatibility */}
+        {/* Handle old routes for backward compatibility */}
         <Route path="profile" element={<Navigate to="/user/profile" replace />} />
+        <Route path="profile/resume" element={<Navigate to="/user/profile/resume" replace />} />
+        <Route path="profile/resume-parser" element={<Navigate to="/user/profile/resume-parser" replace />} />
+        <Route path="profile/applications" element={<Navigate to="/user/profile/applications" replace />} />
+        <Route path="profile/settings" element={<Navigate to="/user/profile/settings" replace />} />
       </Routes>
     </Suspense>
   );

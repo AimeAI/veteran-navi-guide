@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, User, BookOpen, Building, ChevronDown, Shield } from 'lucide-react';
@@ -25,9 +26,9 @@ const Navbar: React.FC = () => {
       icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
       items: [
         { label: t('navigation.jobSearch'), href: '/job-search' },
-        { label: t('navigation.savedJobs'), href: '/saved' },
-        { label: t('navigation.recommendedJobs'), href: '/recommended' },
-        { label: t('navigation.jobAlerts'), href: '/job-alerts' },
+        { label: t('navigation.savedJobs'), href: '/user/saved' },
+        { label: t('navigation.recommendedJobs'), href: '/user/recommended' },
+        { label: t('navigation.jobAlerts'), href: '/user/job-alerts' },
         { label: t('navigation.jobFairs'), href: '/events' },
         { label: t('navigation.vettedJobs'), href: '/vetted-jobs', icon: <Shield className="h-3 w-3 ml-1 text-primary" /> },
       ],
@@ -36,10 +37,10 @@ const Navbar: React.FC = () => {
       title: t('navigation.profile'),
       icon: <User className="h-4 w-4" aria-hidden="true" />,
       items: [
-        { label: t('navigation.profile'), href: '/profile' },
-        { label: t('navigation.resume'), href: '/profile/resume' },
-        { label: t('navigation.applicationHistory'), href: '/history' },
-        { label: t('navigation.settings'), href: '/profile/settings' },
+        { label: t('navigation.profile'), href: '/user/profile' },
+        { label: t('navigation.resume'), href: '/user/profile/resume' },
+        { label: t('navigation.applicationHistory'), href: '/user/history' },
+        { label: t('navigation.settings'), href: '/user/profile/settings' },
       ],
     },
     {

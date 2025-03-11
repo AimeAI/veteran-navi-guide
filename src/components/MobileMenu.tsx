@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ChevronRight, Shield } from 'lucide-react';
@@ -144,25 +143,23 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
                 </div>
               ))}
               
-              {/* Add language selector to mobile menu */}
               <div className="py-2">
                 <LanguageSelector />
               </div>
             </nav>
 
-            {/* Mobile login/signup buttons */}
             <div className="mt-8 pt-4 border-t border-nav-border">
               {user ? (
                 <div className="flex flex-col space-y-3">
                   <Link
-                    to="/profile"
+                    to="/user/profile"
                     className="w-full py-2.5 px-4 text-center text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 border border-gray-200"
                     onClick={toggleMenu}
                   >
                     Profile
                   </Link>
                   <Link
-                    to="/dashboard"
+                    to="/user/dashboard"
                     className="w-full py-2.5 px-4 text-center text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
                     onClick={toggleMenu}
                   >

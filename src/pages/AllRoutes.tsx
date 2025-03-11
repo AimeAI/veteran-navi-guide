@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -43,12 +42,15 @@ const AllRoutes: React.FC = () => {
       icon: <User className="h-5 w-5" />,
       routes: [
         { path: "/user/profile", label: "User Profile", requiresAuth: true },
-        { path: "/user/profile/settings", label: "Profile Settings", requiresAuth: true },
         { path: "/user/profile/resume", label: "Resume", requiresAuth: true },
+        { path: "/user/profile/resume-parser", label: "Resume Parser", requiresAuth: true },
+        { path: "/user/profile/applications", label: "Profile Applications", requiresAuth: true },
+        { path: "/user/profile/settings", label: "Profile Settings", requiresAuth: true },
         { path: "/user/history", label: "Application History", requiresAuth: true },
         { path: "/user/job-alerts", label: "Job Alerts", requiresAuth: true },
         { path: "/user/saved", label: "Saved Jobs", requiresAuth: true },
         { path: "/user/recommended", label: "Recommended Jobs", requiresAuth: true },
+        { path: "/user/settings/notifications", label: "Notification Settings", requiresAuth: true },
       ]
     },
     {
