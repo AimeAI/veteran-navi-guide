@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import JobSearch from "../pages/JobSearch";
 import JobBoardPage from "../pages/JobBoardPage";
+import DevRouteWrapper from "../components/DevRouteWrapper";
 
 // Lazy-loaded components from GeneralRoutes
 const Index = lazy(() => import("../pages/Index"));
@@ -28,8 +29,8 @@ const AppRoutes: React.FC = () => {
     <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
       <Routes>
         {/* Development Routes - No auth required */}
-        <Route path="/routes" element={<AllRoutes />} />
-        <Route path="/ab-testing" element={<AbTestingPage />} />
+        <Route path="/routes" element={<DevRouteWrapper><AllRoutes /></DevRouteWrapper>} />
+        <Route path="/ab-testing" element={<DevRouteWrapper><AbTestingPage /></DevRouteWrapper>} />
 
         {/* General Routes */}
         <Route path="/" element={<Index />} />
