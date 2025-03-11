@@ -9,13 +9,12 @@ interface EmailPreferencesProps {
     jobAlerts: boolean;
     applicationUpdates: boolean;
   };
-  handleEmailPreferenceChange: (preference: keyof typeof emailPreferences) => void;
+  handleEmailPreferenceChange: (preference: keyof typeof props.emailPreferences) => void;
 }
 
-const EmailPreferences: React.FC<EmailPreferencesProps> = ({
-  emailPreferences,
-  handleEmailPreferenceChange
-}) => {
+const EmailPreferences: React.FC<EmailPreferencesProps> = (props) => {
+  const { emailPreferences, handleEmailPreferenceChange } = props;
+
   return (
     <div className="space-y-4 pt-4">
       <div className="flex items-center gap-2">

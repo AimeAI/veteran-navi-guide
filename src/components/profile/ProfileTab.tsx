@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
@@ -209,7 +208,7 @@ const ProfileTab = () => {
         </div>
         
         <div className="mt-8">
-          <VeteranBadges earnedBadges={user?.earnedBadges || []} />
+          <VeteranBadges earnedBadges={[]} />
         </div>
       </CardContent>
       {isEditing && (

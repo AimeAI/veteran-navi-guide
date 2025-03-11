@@ -10,13 +10,12 @@ interface NotificationSettingsProps {
     jobRecommendations: boolean;
     newJobMatches: boolean;
   };
-  handleNotificationChange: (setting: keyof typeof notificationSettings) => void;
+  handleNotificationChange: (setting: keyof typeof props.notificationSettings) => void;
 }
 
-const NotificationSettings: React.FC<NotificationSettingsProps> = ({
-  notificationSettings,
-  handleNotificationChange
-}) => {
+const NotificationSettings: React.FC<NotificationSettingsProps> = (props) => {
+  const { notificationSettings, handleNotificationChange } = props;
+
   return (
     <div className="space-y-4 pt-4">
       <div className="flex items-center gap-2">
