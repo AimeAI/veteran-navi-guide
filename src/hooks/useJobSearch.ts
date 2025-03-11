@@ -1,10 +1,11 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/types/job';
 import { JobCache } from '@/utils/jobCache';
 import { toast } from 'sonner';
 import { useJobFetcher } from './useJobFetcher';
 import { JobSearchParams, JobSearchResults } from '@/types/jobSearch';
+
+export type { JobSearchParams, JobSearchResults };
 
 export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -90,5 +91,4 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
   };
 };
 
-// Import getCacheKey here to avoid circular dependency issues
 import { getCacheKey } from '@/utils/jobSearchUtils';

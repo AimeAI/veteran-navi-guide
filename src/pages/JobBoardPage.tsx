@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Filter, ChevronDown, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import JobList from '@/components/JobList';
-import { useJobSearch, JobSearchParams } from '@/hooks/useJobSearch';
+import { useJobSearch } from '@/hooks/useJobSearch';
+import type { JobSearchParams } from '@/types/jobSearch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { JobCache } from '@/utils/jobCache';
@@ -75,9 +75,7 @@ const JobBoardPage: React.FC = () => {
     }
   };
   
-  // Search for initial results on component mount
   useEffect(() => {
-    // Only run once on initial mount
     const hasInitialData = sessionStorage.getItem('hasInitialJobData');
     if (!hasInitialData) {
       toast.info("Loading initial job listings...");
@@ -175,7 +173,6 @@ const JobBoardPage: React.FC = () => {
                 
                 {isFiltersOpen && (
                   <div className="bg-white p-6 rounded-md shadow-sm border border-gray-100 animate-fade-in">
-                    {/* Add advanced filters here */}
                     <p className="text-sm text-gray-500">Advanced filters coming soon</p>
                   </div>
                 )}
