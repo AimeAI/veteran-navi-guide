@@ -196,6 +196,7 @@ function App() {
                         </RequireAuth>
                       }
                     />
+                    {/* Making All Routes accessible without authentication for dev purposes */}
                     <Route path="/routes" element={<AllRoutes />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
