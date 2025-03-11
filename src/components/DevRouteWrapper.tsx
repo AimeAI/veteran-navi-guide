@@ -12,6 +12,10 @@ interface DevRouteWrapperProps {
 const DevRouteWrapper: React.FC<DevRouteWrapperProps> = ({ children }) => {
   // Always render the children without any authentication checks
   console.log('DEV ROUTE: Bypassing all authentication checks');
+  
+  // In a real production app, we might want to add some security here
+  // to ensure these routes are only accessible in non-production environments
+  
   return <>{children}</>;
 };
 
