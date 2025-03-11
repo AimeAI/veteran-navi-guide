@@ -2,10 +2,10 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User } from "@/context/UserContext";
+import { UserProfile } from "@/context/UserContext";
 
 interface ProfileViewModeProps {
-  user: User | null;
+  user: UserProfile | null;
 }
 
 const ProfileViewMode: React.FC<ProfileViewModeProps> = ({ user }) => {
