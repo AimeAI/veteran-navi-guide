@@ -19,10 +19,12 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
   const { user, isLoading, session } = useUser();
   const location = useLocation();
 
-  // Check if current route is a development route
-  const isDevelopmentRoute = location.pathname === '/routes' || location.pathname === '/ab-testing';
+  // Enhanced development mode checking
+  const isDevelopmentRoute = location.pathname.startsWith('/routes') || 
+                            location.pathname.startsWith('/ab-testing') || 
+                            location.pathname.startsWith('/dev/');
   
-  // Bypass authentication for development routes or in development mode
+  // Always bypass authentication for development routes
   if (isDevelopmentRoute || process.env.NODE_ENV === 'development') {
     console.log('DEV MODE: Authentication bypassed for route:', location.pathname);
     return <>{children}</>;

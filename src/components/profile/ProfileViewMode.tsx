@@ -2,7 +2,7 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { UserProfile } from "@/context/UserContext";
+import { UserProfile } from "@/context/UserTypes";
 
 interface ProfileViewModeProps {
   user: UserProfile | null;

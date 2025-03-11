@@ -31,6 +31,7 @@ const AppRoutes: React.FC = () => {
         {/* Development Routes - No auth required */}
         <Route path="/routes" element={<DevRouteWrapper><AllRoutes /></DevRouteWrapper>} />
         <Route path="/ab-testing" element={<DevRouteWrapper><AbTestingPage /></DevRouteWrapper>} />
+        <Route path="/dev/*" element={<DevRouteWrapper><AllRoutes /></DevRouteWrapper>} />
 
         {/* General Routes */}
         <Route path="/" element={<Index />} />
