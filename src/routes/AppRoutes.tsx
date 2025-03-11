@@ -16,12 +16,12 @@ const AbTestingPage = lazy(() => import("../pages/AbTestingPage"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const AllRoutes = lazy(() => import("../pages/AllRoutes"));
 
-// Import route components
-import AuthRoutes from "./AuthRoutes";
-import UserRoutes from "./UserRoutes";
-import EmployerRoutes from "./EmployerRoutes";
-import ResourceRoutes from "./ResourceRoutes";
-import AdminRoutes from "./AdminRoutes";
+// Import route components as named exports
+import { AuthRoutes } from "./AuthRoutes";
+import { UserRoutes } from "./UserRoutes";
+import { EmployerRoutes } from "./EmployerRoutes";
+import { ResourceRoutes } from "./ResourceRoutes";
+import { AdminRoutes } from "./AdminRoutes";
 
 const AppRoutes: React.FC = () => {
   return (
