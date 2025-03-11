@@ -60,22 +60,22 @@ const UserProfile = () => {
     // Update the URL to match the tab without reloading
     switch (value) {
       case "resume":
-        navigate("/profile/resume", { replace: true });
+        navigate("/user/profile/resume", { replace: true });
         break;
       case "settings":
-        navigate("/profile/settings", { replace: true });
+        navigate("/user/profile/settings", { replace: true });
         break;
       case "resume-parser":
-        navigate("/profile/resume-parser", { replace: true });
+        navigate("/user/profile/resume-parser", { replace: true });
         break;
       case "applications":
-        navigate("/profile/applications", { replace: true });
+        navigate("/user/profile/applications", { replace: true });
         break;
       case "alerts":
-        navigate("/job-alerts", { replace: true });
+        navigate("/user/job-alerts", { replace: true });
         break;
       default:
-        navigate("/profile", { replace: true });
+        navigate("/user/profile", { replace: true });
         break;
     }
   };
