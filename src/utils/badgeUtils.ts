@@ -1,6 +1,6 @@
 
 import { VeteranBadge, BadgeType } from "@/components/ui/veteran-badge";
-import { UserProfile } from "@/context/UserContext";
+import { UserProfile } from "@/context/UserTypes";
 
 // Pre-defined badges with their criteria
 export const availableBadges: VeteranBadge[] = [
