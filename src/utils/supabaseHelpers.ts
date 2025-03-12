@@ -1,22 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// This RPC function will be used by the review service
-// We'll create it in Supabase using the SQL below:
-/*
-CREATE OR REPLACE FUNCTION increment_review_helpful_count(review_id UUID)
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-BEGIN
-  UPDATE public.employer_reviews
-  SET helpful_count = helpful_count + 1
-  WHERE id = review_id;
-END;
-$$;
-*/
-
 // Helper function to check if a user is authenticated
 export async function isUserAuthenticated(): Promise<boolean> {
   const { data } = await supabase.auth.getSession();
@@ -49,3 +33,4 @@ export async function hasUserReviewedEmployer(employerId: string): Promise<boole
   
   return (data?.length || 0) > 0;
 }
+
