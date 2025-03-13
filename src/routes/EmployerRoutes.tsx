@@ -9,6 +9,7 @@ const EmployerDashboardPage = lazy(() => import("../pages/EmployerDashboardPage"
 const EmployerProfilePage = lazy(() => import("../pages/EmployerProfilePage"));
 const EmployerSearchVeteransPage = lazy(() => import("../pages/EmployerSearchVeteransPage"));
 const EmployerApplicationsPage = lazy(() => import("../pages/EmployerApplicationsPage"));
+const MessagesPage = lazy(() => import("../pages/MessagesPage"));
 
 export const EmployerRoutes: React.FC = () => {
   return (
@@ -32,6 +33,10 @@ export const EmployerRoutes: React.FC = () => {
       <Route 
         path="employer-profile" 
         element={<RequireEmployerAuth><EmployerProfilePage /></RequireEmployerAuth>}
+      />
+      <Route 
+        path="messages" 
+        element={<RequireEmployerAuth><MessagesPage /></RequireEmployerAuth>}
       />
     </Routes>
   );

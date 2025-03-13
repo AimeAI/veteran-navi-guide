@@ -3,12 +3,17 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { UserProfile } from "@/context/UserTypes";
+import MessageButton from "@/components/messaging/MessageButton";
+import { useUser } from "@/context/UserContext";
 
 interface ProfileViewModeProps {
   user: UserProfile | null;
 }
 
 const ProfileViewMode: React.FC<ProfileViewModeProps> = ({ user }) => {
+  const { user: currentUser } = useUser();
+  const showMessageButton = user && currentUser && user.email !== currentUser.email;
+
   return (
     <div className="grid gap-6">
       <div className="grid gap-2">
@@ -41,6 +46,16 @@ const ProfileViewMode: React.FC<ProfileViewModeProps> = ({ user }) => {
         <Label className="text-sm font-medium text-muted-foreground">Bio</Label>
         <p className="text-base">{user?.bio}</p>
       </div>
+      
+      {showMessageButton && (
+        <div className="mt-4">
+          <MessageButton 
+            recipientId={user.email} 
+            recipientName={user.name || user.email}
+            variant="outline"
+          />
+        </div>
+      )}
     </div>
   );
 };
