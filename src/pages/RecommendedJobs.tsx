@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import JobListing from '@/components/JobListing';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import JobRecommendationsLoading from '@/components/JobRecommendationsLoading';
 import { mockJobs } from '@/data/mockJobs';
-import { currentUserProfile, getJobRecommendations, RecommendationResult } from '@/utils/recommendationAlgorithm';
+import { currentUserProfile, getJobRecommendations, RecommendationResult } from '@/utils/recommendations';
 
 const RecommendedJobs = () => {
   const [recommendedJobs, setRecommendedJobs] = useState<RecommendationResult[]>([]);

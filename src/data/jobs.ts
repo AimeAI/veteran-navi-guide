@@ -1,6 +1,5 @@
-
 import { Job } from '@/types/job';
-import { JobListing, getJobRecommendations } from '@/utils/recommendationAlgorithm';
+import { JobListing, getJobRecommendations } from '@/utils/recommendations';
 import { supabase } from '@/integrations/supabase/client';
 
 // Create mock data for development
