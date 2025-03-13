@@ -1,7 +1,30 @@
 
 import { Job } from '@/types/job';
-import { mockJobs as typedMockJobs } from '@/utils/recommendationAlgorithm';
+import { JobListing, getJobRecommendations } from '@/utils/recommendationAlgorithm';
 import { supabase } from '@/integrations/supabase/client';
+
+// Create mock data for development
+const typedMockJobs: JobListing[] = Array.from({ length: 20 }, (_, index) => ({
+  id: `job-${index + 1}`,
+  title: `Mock Job ${index + 1}`,
+  company: `Company ${index % 5 + 1}`,
+  location: ['Toronto, ON', 'Vancouver, BC', 'Ottawa, ON', 'Montreal, QC', 'Remote - Canada'][index % 5],
+  description: `This is a detailed description for mock job ${index + 1}. It includes information about responsibilities and qualifications.`,
+  requiredSkills: ['Communication', 'Leadership', 'Problem Solving', 'Teamwork'].slice(0, (index % 4) + 1),
+  preferredSkills: ['Project Management', 'Strategic Planning', 'Technical Writing'].slice(0, (index % 3) + 1),
+  securityClearanceRequired: ['None', 'Secret', 'Top Secret'][index % 3],
+  remote: index % 3 === 0,
+  jobType: ['full-time', 'part-time', 'contract'][index % 3],
+  industry: ['Technology', 'Defense', 'Healthcare', 'Government', 'Education'][index % 5],
+  experienceLevel: ['Entry Level', 'Mid Level', 'Senior Level'][index % 3],
+  educationLevel: ['High School', 'Bachelor\'s', 'Master\'s', 'PhD'][index % 4],
+  requiredMosCodes: [['11B', '12B', '25B'][index % 3]],
+  salary: `$${60 + (index * 5)}k - $${80 + (index * 5)}k`,
+  salaryRange: `$${60 + (index * 5)}k - $${80 + (index * 5)}k`,
+  postedDate: new Date(Date.now() - (index * 24 * 60 * 60 * 1000)).toISOString(),
+  clearanceLevel: ['None', 'Secret', 'Top Secret'][index % 3],
+  url: 'https://example.com/job'
+}));
 
 // Helper function to convert JobListing to Job type
 const convertToJobType = (job: any): Job => ({
