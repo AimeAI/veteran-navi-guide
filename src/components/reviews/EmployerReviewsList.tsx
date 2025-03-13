@@ -2,7 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { EmployerReview } from '@/types/review';
 import { toast } from 'sonner';
-import { getEmployerReviews, markReviewAsHelpful, reportReview } from '@/services/reviewService';
+import { 
+  getEmployerReviewsOptimized,
+  markReviewAsHelpfulOptimized, 
+  executeWithRetry 
+} from '@/utils/supabaseHelpers';
+import { reportReview } from '@/services/reviewService';
 import ReviewCard from './ReviewCard';
 import EmptyReviewsState from './EmptyReviewsState';
 import ReviewsLoadingSkeleton from './ReviewsLoadingSkeleton';
@@ -22,12 +27,16 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [helpfulClicks, setHelpfulClicks] = useState<Record<string, boolean>>({});
 
-  // Fetch reviews on component mount
+  // Fetch reviews on component mount using our optimized function
   useEffect(() => {
     const fetchReviews = async () => {
       setIsLoading(true);
       try {
-        const fetchedReviews = await getEmployerReviews(employerId);
+        // Use the executeWithRetry utility for better connection handling
+        const fetchedReviews = await executeWithRetry(() => 
+          getEmployerReviewsOptimized(employerId)
+        );
+        
         setReviews(fetchedReviews);
         if (onReviewsLoaded) {
           onReviewsLoaded(fetchedReviews);
@@ -50,7 +59,11 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
     setHelpfulClicks(prev => ({ ...prev, [reviewId]: true }));
     
     try {
-      const success = await markReviewAsHelpful(reviewId);
+      // Use our optimized markReviewAsHelpful function
+      const success = await executeWithRetry(() => 
+        markReviewAsHelpfulOptimized(reviewId)
+      );
+      
       if (success) {
         // Update the local state to increment the helpful count
         setReviews(reviews.map(review => 
@@ -70,7 +83,10 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
 
   const handleReport = async (reviewId: string) => {
     try {
-      const success = await reportReview(reviewId, 'Reported by user');
+      const success = await executeWithRetry(() => 
+        reportReview(reviewId, 'Reported by user')
+      );
+      
       if (success) {
         toast.success('Review reported to moderators', {
           description: 'Thank you for helping to maintain the quality of our community.'

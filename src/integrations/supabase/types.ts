@@ -806,6 +806,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      find_matching_jobs_efficient: {
+        Args: {
+          user_id: string
+          min_match_percentage?: number
+          max_results?: number
+        }
+        Returns: {
+          job_id: string
+          job_title: string
+          company: string
+          location: string
+          match_percentage: number
+          created_at: string
+        }[]
+      }
       get_matching_jobs: {
         Args: {
           user_id: string
@@ -820,11 +835,23 @@ export type Database = {
           match_percentage: number
         }[]
       }
+      get_unread_message_count: {
+        Args: {
+          user_id: string
+        }
+        Returns: number
+      }
       get_user_role: {
         Args: {
           user_id: string
         }
         Returns: string
+      }
+      increment_review_helpful_count: {
+        Args: {
+          review_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
