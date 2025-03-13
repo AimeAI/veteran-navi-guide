@@ -6,6 +6,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 // This would be used with Supabase to get the user's badges
 export const fetchUserBadges = async (userId: string): Promise<VeteranBadge[]> => {
+  console.log('DEV MODE: fetchUserBadges returns mock badges');
+  
+  // Mock data for development
+  return availableBadges.slice(0, 3).map(badge => ({
+    ...badge,
+    earned_date: new Date().toISOString()
+  })) as VeteranBadge[];
+  
+  /* Real implementation commented out during development
   try {
     const { data, error } = await supabase
       .from('badges')
@@ -22,10 +31,15 @@ export const fetchUserBadges = async (userId: string): Promise<VeteranBadge[]> =
     console.error('Error fetching badges:', error);
     return [];
   }
+  */
 };
 
 // This would be used to award a new badge to a user in Supabase
 export const awardBadge = async (userId: string, badgeType: BadgeType): Promise<boolean> => {
+  console.log('DEV MODE: awardBadge always returns true');
+  return true;
+  
+  /* Real implementation commented out during development
   try {
     const badge = availableBadges.find(b => b.type === badgeType);
     if (!badge) return false;
@@ -52,5 +66,5 @@ export const awardBadge = async (userId: string, badgeType: BadgeType): Promise<
     console.error('Error awarding badge:', error);
     return false;
   }
+  */
 };
-

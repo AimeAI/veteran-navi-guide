@@ -12,11 +12,11 @@ export const AdminRoutes: React.FC = () => {
     <Routes>
       <Route 
         path="/" 
-        element={<RequireAuth roles={["admin"]}><AdminDashboardPage /></RequireAuth>} 
+        element={<AdminDashboardPage />}  // Removed RequireAuth wrapper
       />
       <Route 
         path="content" 
-        element={<RequireAuth roles={["admin"]}><AdminContentPage /></RequireAuth>} 
+        element={<AdminContentPage />}  // Removed RequireAuth wrapper
       />
     </Routes>
   );

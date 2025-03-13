@@ -91,6 +91,42 @@ export type Database = {
           },
         ]
       }
+      badges: {
+        Row: {
+          badge_type: string
+          created_at: string | null
+          description: string | null
+          earned_date: string | null
+          icon: string | null
+          id: string
+          level: number | null
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          badge_type: string
+          created_at?: string | null
+          description?: string | null
+          earned_date?: string | null
+          icon?: string | null
+          id?: string
+          level?: number | null
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          badge_type?: string
+          created_at?: string | null
+          description?: string | null
+          earned_date?: string | null
+          icon?: string | null
+          id?: string
+          level?: number | null
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       employer_leads: {
         Row: {
           company_name: string

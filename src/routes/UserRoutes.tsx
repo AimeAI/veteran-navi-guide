@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { RequireAuth } from "../components/RequireAuth";
 import { lazy, Suspense } from "react";
 
 // Lazy-loaded components
@@ -21,25 +20,25 @@ export const UserRoutes: React.FC = () => {
     <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
       <Routes>
         {/* Main user dashboard route */}
-        <Route path="/" element={<RequireAuth><VeteranDashboardPage /></RequireAuth>} />
+        <Route path="/" element={<VeteranDashboardPage />} />
         
         {/* Profile routes with tabs */}
-        <Route path="/profile" element={<RequireAuth><UserProfile /></RequireAuth>} />
-        <Route path="/profile/resume" element={<RequireAuth><UserProfile /></RequireAuth>} />
-        <Route path="/profile/resume-parser" element={<RequireAuth><UserProfile /></RequireAuth>} />
-        <Route path="/profile/applications" element={<RequireAuth><UserProfile /></RequireAuth>} />
-        <Route path="/profile/settings" element={<RequireAuth><UserProfile /></RequireAuth>} />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/profile/resume" element={<UserProfile />} />
+        <Route path="/profile/resume-parser" element={<UserProfile />} />
+        <Route path="/profile/applications" element={<UserProfile />} />
+        <Route path="/profile/settings" element={<UserProfile />} />
         
         {/* Standalone pages */}
-        <Route path="/saved" element={<RequireAuth><SavedJobs /></RequireAuth>} />
-        <Route path="/history" element={<RequireAuth><ApplicationsPage /></RequireAuth>} />
-        <Route path="/recommended" element={<RequireAuth><RecommendedJobs /></RequireAuth>} />
-        <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
-        <Route path="/dashboard" element={<RequireAuth><VeteranDashboardPage /></RequireAuth>} />
-        <Route path="/job-alerts" element={<RequireAuth><JobAlertsPage /></RequireAuth>} />
-        <Route path="/settings/notifications" element={<RequireAuth><NotificationPreferences /></RequireAuth>} />
-        <Route path="/feedback" element={<RequireAuth><FeedbackSupportPage /></RequireAuth>} />
-        <Route path="/referral-program" element={<RequireAuth><ReferralProgramPage /></RequireAuth>} />
+        <Route path="/saved" element={<SavedJobs />} />
+        <Route path="/history" element={<ApplicationsPage />} />
+        <Route path="/recommended" element={<RecommendedJobs />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/dashboard" element={<VeteranDashboardPage />} />
+        <Route path="/job-alerts" element={<JobAlertsPage />} />
+        <Route path="/settings/notifications" element={<NotificationPreferences />} />
+        <Route path="/feedback" element={<FeedbackSupportPage />} />
+        <Route path="/referral-program" element={<ReferralProgramPage />} />
         
         {/* Handle old routes for backward compatibility */}
         <Route path="profile" element={<Navigate to="/user/profile" replace />} />
