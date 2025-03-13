@@ -58,7 +58,7 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
       // Use executeWithRetry for better connection handling with performance measurement
       const result = await measurePerformance('Fetch employer reviews', () => 
         executeWithRetry(() => 
-          // Fix: Pass only the employerId parameter and move the pagination to options
+          // Fix: Pass only the employerId parameter to avoid the type error
           getEmployerReviewsOptimized(employerId, {
             page, 
             pageSize

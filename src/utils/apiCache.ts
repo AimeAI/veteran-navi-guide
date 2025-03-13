@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { QueryCache } from './batchOperations';
 
@@ -116,7 +115,7 @@ export async function paginatedQuery<T>(
 }> {
   const fetchData = async () => {
     // First, get the total count
-    // Fix: Use explicit type-safe version for Supabase table names
+    // Fix: Use type assertion for table name to avoid the TypeScript error
     const countQuery = supabase
       .from(tableName as any)
       .select('*', { count: 'exact', head: true });
