@@ -4,9 +4,11 @@ import { NavLink } from 'react-router-dom';
 import { MessageSquare } from 'lucide-react';
 import MessageNotificationBadge from './MessageNotificationBadge';
 import { useUser } from '@/context/UserContext';
+import { useMessages } from '@/context/MessageContext';
 
 const MessageNavItem: React.FC = () => {
   const { user } = useUser();
+  const { getTotalUnreadCount } = useMessages();
   
   // Determine the correct messages path based on user role
   const messagesPath = user?.role === 'employer' ? '/employer/messages' : '/messages';

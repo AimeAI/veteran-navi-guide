@@ -16,6 +16,18 @@ const ProfileViewMode: React.FC<ProfileViewModeProps> = ({ user }) => {
 
   return (
     <div className="grid gap-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Profile Information</h2>
+        {showMessageButton && (
+          <MessageButton 
+            recipientId={user!.email} 
+            recipientName={user!.name || user!.email}
+            variant="default"
+            size="default"
+          />
+        )}
+      </div>
+
       <div className="grid gap-2">
         <Label className="text-sm font-medium text-muted-foreground">Name</Label>
         <p className="text-base">{user?.name}</p>
@@ -48,11 +60,12 @@ const ProfileViewMode: React.FC<ProfileViewModeProps> = ({ user }) => {
       </div>
       
       {showMessageButton && (
-        <div className="mt-4">
+        <div className="mt-6">
           <MessageButton 
-            recipientId={user.email} 
-            recipientName={user.name || user.email}
+            recipientId={user!.email} 
+            recipientName={user!.name || user!.email}
             variant="outline"
+            className="w-full"
           />
         </div>
       )}
