@@ -10,6 +10,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Cache results to reduce API calls and improve performance
+const resultsCache = new Map();
+const CACHE_EXPIRY = 3 * 60 * 1000; // 3 minutes in milliseconds
+
+// Rate limiting - requests per IP per minute
+const rateLimit = new Map();
+const MAX_REQUESTS_PER_MINUTE = 30;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+
+// Clean up cache periodically (every 10 minutes)
+setInterval(() => {
+  const now = Date.now();
+  
+  // Clean up rate limiting
+  for (const [ip, timestamps] of rateLimit.entries()) {
+    const validTimestamps = timestamps.filter(time => now - time < RATE_LIMIT_WINDOW_MS);
+    if (validTimestamps.length === 0) {
+      rateLimit.delete(ip);
+    } else {
+      rateLimit.set(ip, validTimestamps);
+    }
+  }
+  
+  // Clean up cache
+  for (const [key, data] of resultsCache.entries()) {
+    if (now - data.timestamp > CACHE_EXPIRY) {
+      resultsCache.delete(key);
+    }
+  }
+}, 10 * 60 * 1000);
+
+// Check if a request is rate limited
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimit.get(ip) || [];
+  
+  // Filter out old requests
+  const recentRequests = timestamps.filter(time => now - time < RATE_LIMIT_WINDOW_MS);
+  
+  if (recentRequests.length >= MAX_REQUESTS_PER_MINUTE) {
+    return true;
+  }
+  
+  // Add this request to the tracking
+  rateLimit.set(ip, [...recentRequests, now]);
+  return false;
+}
+
 async function searchJobBankCanada(params: {
   keywords?: string;
   location?: string;
@@ -231,10 +279,6 @@ function generateSampleJobs(params: any) {
   };
 }
 
-// Cache the results to reduce API calls and improve performance
-const resultsCache = new Map();
-const CACHE_EXPIRY = 3 * 60 * 1000; // 3 minutes in milliseconds
-
 serve(async (req) => {
   // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
@@ -251,6 +295,21 @@ serve(async (req) => {
       'Content-Type': 'application/json'
     };
 
+    // Check rate limiting
+    const clientIP = req.headers.get('x-forwarded-for') || 'unknown-ip';
+    if (isRateLimited(clientIP)) {
+      return new Response(JSON.stringify({
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please try again later.',
+      }), {
+        headers: { 
+          ...responseHeaders,
+          'Retry-After': '60'  // Try again after 60 seconds
+        },
+        status: 429
+      });
+    }
+
     const url = new URL(req.url);
     
     // Parse query parameters
@@ -260,6 +319,9 @@ serve(async (req) => {
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const forceRefresh = url.searchParams.get('refresh') === 'true';
     
+    // Add pagination data to response headers
+    responseHeaders['X-Page'] = String(page);
+    
     // Create a cache key
     const cacheKey = `${keywords}:${location}:${distance}:${page}`;
     
@@ -267,6 +329,11 @@ serve(async (req) => {
     const cachedResult = resultsCache.get(cacheKey);
     if (!forceRefresh && cachedResult && (Date.now() - cachedResult.timestamp < CACHE_EXPIRY)) {
       console.log('Returning cached results for:', cacheKey);
+      
+      // Add cache information to headers
+      responseHeaders['X-Cache'] = 'HIT';
+      responseHeaders['X-Cache-Age'] = String(Math.floor((Date.now() - cachedResult.timestamp) / 1000));
+      
       return new Response(JSON.stringify(cachedResult.data), {
         headers: responseHeaders,
         status: 200,
@@ -305,10 +372,15 @@ serve(async (req) => {
       console.log(`Generated ${results.jobs.length} realistic job listings`);
     }
     
+    // Add pagination metadata and response headers
+    responseHeaders['X-Total-Count'] = String(results.totalJobs);
+    responseHeaders['X-Total-Pages'] = String(results.totalPages);
+    responseHeaders['X-Cache'] = 'MISS';
+    
     // Cache the results with timestamp - even if they're sample data
     if (resultsCache.size > 100) {
       // Clear oldest entries if cache gets too large
-      const oldestKey = resultsCache.keys().next().value;
+      const oldestKey = Array.from(resultsCache.keys())[0];
       resultsCache.delete(oldestKey);
     }
     

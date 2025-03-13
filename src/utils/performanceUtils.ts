@@ -99,16 +99,21 @@ export const enhancedFetch = async (
   const cachedResponse = sessionStorage.getItem(cacheKey);
   
   if (cachedResponse) {
-    const { data, expiry } = JSON.parse(cachedResponse);
-    if (expiry > Date.now()) {
-      console.log(`📦 Using cached response for ${url}`);
-      return new Response(new Blob([JSON.stringify(data)]), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    try {
+      const { data, expiry } = JSON.parse(cachedResponse);
+      if (expiry > Date.now()) {
+        console.log(`📦 Using cached response for ${url}`);
+        return new Response(new Blob([JSON.stringify(data)]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      console.log(`📦 Cache expired for ${url}`);
+      sessionStorage.removeItem(cacheKey);
+    } catch (error) {
+      console.error('Error parsing cached data:', error);
+      sessionStorage.removeItem(cacheKey);
     }
-    console.log(`📦 Cache expired for ${url}`);
-    sessionStorage.removeItem(cacheKey);
   }
 
   // Create an AbortController for timeout
@@ -145,5 +150,77 @@ export const enhancedFetch = async (
     throw err;
   } finally {
     clearTimeout(timeoutId);
+  }
+};
+
+// Performance monitoring for React components using React DevTools
+export function usePerfMonitor(componentName: string) {
+  if (process.env.NODE_ENV === 'development') {
+    console.time(`⏱️ ${componentName} render`);
+    return () => console.timeEnd(`⏱️ ${componentName} render`);
+  }
+  return () => {};
+}
+
+// Generate key for caching based on query parameters
+export function generateCacheKey(
+  baseName: string,
+  params: Record<string, any>,
+  includeKeys: string[] = []
+): string {
+  // If includeKeys is empty, use all keys
+  const keys = includeKeys.length > 0 
+    ? includeKeys.filter(k => k in params)
+    : Object.keys(params);
+  
+  // Sort keys for consistent cache keys
+  keys.sort();
+  
+  // Create key-value pairs for the cache key
+  const parts = keys
+    .filter(key => params[key] !== undefined && params[key] !== null && params[key] !== '')
+    .map(key => `${key}=${typeof params[key] === 'object' ? JSON.stringify(params[key]) : params[key]}`);
+  
+  return `${baseName}:${parts.join(':')}`;
+}
+
+// Measure render performance with requestAnimationFrame
+export function measureRenderPerformance(callback: () => void): void {
+  const startTime = performance.now();
+  
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const endTime = performance.now();
+      console.log(`🎨 Render completed in ${(endTime - startTime).toFixed(2)}ms`);
+      if (callback) callback();
+    });
+  });
+}
+
+// Connection health monitor for network requests
+export const connectionHealthMonitor = {
+  failedRequests: 0,
+  lastCheckTime: Date.now(),
+  maxFailedRequests: 3,
+  checkInterval: 30000, // 30 seconds
+  
+  recordSuccess() {
+    this.failedRequests = 0;
+    this.lastCheckTime = Date.now();
+  },
+  
+  recordFailure() {
+    this.failedRequests++;
+    this.lastCheckTime = Date.now();
+    
+    if (this.failedRequests >= this.maxFailedRequests) {
+      console.warn('⚠️ Multiple network requests are failing, possible connection issues');
+      // Could trigger an app-wide notification here
+    }
+  },
+  
+  isHealthy() {
+    const timeSinceLastCheck = Date.now() - this.lastCheckTime;
+    return this.failedRequests < this.maxFailedRequests && timeSinceLastCheck < this.checkInterval;
   }
 };

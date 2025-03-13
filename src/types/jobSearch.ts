@@ -15,6 +15,7 @@ export interface JobSearchParams {
   educationLevel?: string;
   country?: "us" | "canada";
   page?: number;
+  pageSize?: number;  // Number of results per page
   skills?: string[];
   salaryRange?: string;
   sortBy?: string;
@@ -31,6 +32,37 @@ export interface JobSearchResults {
   currentPage: number;
   totalPages: number;
   totalJobs: number;
+  pageSize: number;
   setPage: (page: number) => void;
+  setPageSize: (size: number) => void;
   refreshJobs: () => Promise<void>;
+}
+
+/**
+ * Pagination metadata for API responses
+ */
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+/**
+ * Paginated API response
+ */
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}
+
+/**
+ * Rate limit information for API responses
+ */
+export interface RateLimitInfo {
+  limit: number;
+  remaining: number;
+  reset: number; // Unix timestamp
 }

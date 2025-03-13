@@ -117,3 +117,107 @@ export class QueryCache<K, V> {
     }
   }
 }
+
+// Class for API rate limiting to prevent overloading
+export class RateLimiter {
+  private requests: Map<string, number[]> = new Map();
+  private maxRequests: number;
+  private timeWindowMs: number;
+  
+  constructor(maxRequests: number = 50, timeWindowMs: number = 60000) {
+    this.maxRequests = maxRequests;
+    this.timeWindowMs = timeWindowMs;
+    
+    // Set up automatic cleanup every minute
+    setInterval(() => this.cleanup(), 60000);
+  }
+  
+  public isRateLimited(identifier: string): boolean {
+    const now = Date.now();
+    
+    // Get or initialize the requests array for this identifier
+    if (!this.requests.has(identifier)) {
+      this.requests.set(identifier, []);
+    }
+    
+    const requestTimes = this.requests.get(identifier)!;
+    
+    // Filter out expired timestamps
+    const validRequests = requestTimes.filter(time => now - time < this.timeWindowMs);
+    this.requests.set(identifier, validRequests);
+    
+    // Check if rate limit is exceeded
+    if (validRequests.length >= this.maxRequests) {
+      return true;
+    }
+    
+    // Add current timestamp and return false (not rate limited)
+    validRequests.push(now);
+    this.requests.set(identifier, validRequests);
+    return false;
+  }
+  
+  public getRemainingRequests(identifier: string): number {
+    if (!this.requests.has(identifier)) return this.maxRequests;
+    
+    const now = Date.now();
+    const requestTimes = this.requests.get(identifier)!;
+    const validRequests = requestTimes.filter(time => now - time < this.timeWindowMs);
+    
+    return Math.max(0, this.maxRequests - validRequests.length);
+  }
+  
+  private cleanup(): void {
+    const now = Date.now();
+    for (const [identifier, times] of this.requests.entries()) {
+      const validTimes = times.filter(time => now - time < this.timeWindowMs);
+      
+      if (validTimes.length === 0) {
+        this.requests.delete(identifier);
+      } else {
+        this.requests.set(identifier, validTimes);
+      }
+    }
+  }
+}
+
+// Pagination utility for API responses
+export class PaginatedResponse<T> {
+  private items: T[];
+  private pageSize: number;
+  private totalItems: number;
+  
+  constructor(items: T[], pageSize: number = 10, totalItems?: number) {
+    this.items = items;
+    this.pageSize = pageSize;
+    this.totalItems = totalItems ?? items.length;
+  }
+  
+  public getPage(page: number = 1): { 
+    data: T[]; 
+    pagination: { 
+      currentPage: number; 
+      totalPages: number; 
+      totalItems: number; 
+      pageSize: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    } 
+  } {
+    const startIndex = (page - 1) * this.pageSize;
+    const paginatedItems = this.items.slice(startIndex, startIndex + this.pageSize);
+    const totalPages = Math.ceil(this.totalItems / this.pageSize);
+    
+    return {
+      data: paginatedItems,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: this.totalItems,
+        pageSize: this.pageSize,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
+      }
+    };
+  }
+}
