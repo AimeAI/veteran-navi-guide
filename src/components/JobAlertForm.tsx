@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { useJobAlerts } from "@/context/JobAlertContext";
 import { searchJobs } from "@/data/jobs";
-import { Job } from "@/context/JobContext";
+import { Job } from "@/types/job";
 
 export interface JobAlertFormProps {
   onSuccess?: () => void;
@@ -118,11 +118,7 @@ const JobAlertForm: React.FC<JobAlertFormProps> = ({ onSuccess, initialData }) =
       const matchingJobs = await searchJobs({
         keywords: formData.keywords,
         locations: formData.locations,
-        jobType: formData.jobType,
-        mosCodes: [],
-        clearanceLevel: [],
-        remote: false,
-        useLightcastApi: true
+        jobType: formData.jobType
       });
       
       const jobMatches = matchingJobs || [];

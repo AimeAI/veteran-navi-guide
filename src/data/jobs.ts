@@ -1,11 +1,35 @@
+
 import { Job } from '@/types/job';
-import { mockJobs } from './mockJobs';
+import { mockJobs as typedMockJobs } from '@/utils/recommendationAlgorithm';
 import { supabase } from '@/integrations/supabase/client';
+
+// Helper function to convert JobListing to Job type
+const convertToJobType = (job: any): Job => ({
+  id: job.id,
+  title: job.title,
+  company: job.company,
+  location: job.location,
+  description: job.description,
+  category: job.industry || 'Technology',
+  salaryRange: job.salaryRange || job.salary || 'Competitive',
+  remote: job.remote || false,
+  clearanceLevel: job.securityClearanceRequired || job.clearanceLevel || 'None',
+  mosCode: job.requiredMosCodes ? job.requiredMosCodes[0] : '',
+  requiredSkills: job.requiredSkills || [],
+  preferredSkills: job.preferredSkills || [],
+  jobType: job.jobType || 'full-time',
+  date: job.postedDate || new Date().toISOString(),
+  url: job.url || '',
+  industry: job.industry || '',
+  experienceLevel: job.experienceLevel || '',
+  educationLevel: job.educationLevel || '',
+  source: job.source || 'Internal'
+});
 
 // Function to fetch all jobs
 export const getAllJobs = async (): Promise<Job[]> => {
   console.log('DEV MODE: getAllJobs returning mock data');
-  return mockJobs;
+  return typedMockJobs.map(convertToJobType);
   
   /* Real implementation commented out during development
   try {
@@ -19,7 +43,7 @@ export const getAllJobs = async (): Promise<Job[]> => {
       return [];
     }
     
-    return data || [];
+    return data.map(convertToJobType) || [];
   } catch (error) {
     console.error('Error in getAllJobs:', error);
     return [];
@@ -30,7 +54,8 @@ export const getAllJobs = async (): Promise<Job[]> => {
 // Function to fetch a single job by ID
 export const getJobById = async (id: string): Promise<Job | null> => {
   console.log('DEV MODE: getJobById returning mock data');
-  return mockJobs.find(job => job.id === id) || null;
+  const job = typedMockJobs.find(job => job.id === id);
+  return job ? convertToJobType(job) : null;
   
   /* Real implementation commented out during development
   try {
@@ -45,7 +70,7 @@ export const getJobById = async (id: string): Promise<Job | null> => {
       return null;
     }
     
-    return data || null;
+    return data ? convertToJobType(data) : null;
   } catch (error) {
     console.error('Error in getJobById:', error);
     return null;
@@ -56,7 +81,7 @@ export const getJobById = async (id: string): Promise<Job | null> => {
 // Function to fetch featured jobs
 export const getFeaturedJobs = async (): Promise<Job[]> => {
   console.log('DEV MODE: getFeaturedJobs returning mock data');
-  return mockJobs.slice(0, 3);
+  return typedMockJobs.slice(0, 3).map(convertToJobType);
   
   /* Real implementation commented out during development
   try {
@@ -71,7 +96,7 @@ export const getFeaturedJobs = async (): Promise<Job[]> => {
       return [];
     }
     
-    return data || [];
+    return data.map(convertToJobType) || [];
   } catch (error) {
     console.error('Error in getFeaturedJobs:', error);
     return [];
@@ -86,8 +111,7 @@ export const createJob = async (jobData: Omit<Job, 'id'>): Promise<Job | null> =
   // Create a mock job with the provided data and a random ID
   const mockJob: Job = {
     ...jobData,
-    id: `mock-${Date.now()}`,
-    company_logo: jobData.company_logo || '/placeholder.svg'
+    id: `mock-${Date.now()}`
   };
   
   return mockJob;
@@ -105,7 +129,7 @@ export const createJob = async (jobData: Omit<Job, 'id'>): Promise<Job | null> =
       return null;
     }
     
-    return data;
+    return convertToJobType(data);
   } catch (error) {
     console.error('Error in createJob:', error);
     return null;
@@ -118,7 +142,7 @@ export const updateJob = async (id: string, jobData: Partial<Job>): Promise<Job 
   console.log('DEV MODE: updateJob returning mock data');
   
   // Find the index of the job to update in the mockJobs array
-  const jobIndex = mockJobs.findIndex(job => job.id === id);
+  const jobIndex = typedMockJobs.findIndex(job => job.id === id);
   
   if (jobIndex === -1) {
     console.error('Job not found in mock data');
@@ -126,9 +150,12 @@ export const updateJob = async (id: string, jobData: Partial<Job>): Promise<Job 
   }
   
   // Update the job with the provided data
-  mockJobs[jobIndex] = { ...mockJobs[jobIndex], ...jobData };
+  const updatedJob = {
+    ...convertToJobType(typedMockJobs[jobIndex]),
+    ...jobData
+  };
   
-  return mockJobs[jobIndex];
+  return updatedJob;
   
   /* Real implementation commented out during development
   try {
@@ -144,7 +171,7 @@ export const updateJob = async (id: string, jobData: Partial<Job>): Promise<Job 
       return null;
     }
     
-    return data;
+    return convertToJobType(data);
   } catch (error) {
     console.error('Error in updateJob:', error);
     return null;
@@ -157,15 +184,12 @@ export const deleteJob = async (id: string): Promise<boolean> => {
   console.log('DEV MODE: deleteJob returning mock data');
   
   // Find the index of the job to delete in the mockJobs array
-  const jobIndex = mockJobs.findIndex(job => job.id === id);
+  const jobIndex = typedMockJobs.findIndex(job => job.id === id);
   
   if (jobIndex === -1) {
     console.error('Job not found in mock data');
     return false;
   }
-  
-  // Remove the job from the mockJobs array
-  mockJobs.splice(jobIndex, 1);
   
   return true;
   
@@ -185,6 +209,72 @@ export const deleteJob = async (id: string): Promise<boolean> => {
   } catch (error) {
     console.error('Error in deleteJob:', error);
     return false;
+  }
+  */
+};
+
+// Function to search for jobs based on filter criteria
+export const searchJobs = async (filters: any): Promise<Job[]> => {
+  console.log('DEV MODE: searchJobs returning filtered mock data', filters);
+  
+  // Simple filtering logic for mock data
+  let filteredJobs = typedMockJobs.map(convertToJobType);
+  
+  // Filter by keywords (in title or description)
+  if (filters.keywords && filters.keywords.length > 0) {
+    const keywords = Array.isArray(filters.keywords) 
+      ? filters.keywords 
+      : [filters.keywords];
+      
+    filteredJobs = filteredJobs.filter(job => {
+      return keywords.some(keyword => 
+        job.title.toLowerCase().includes(keyword.toLowerCase()) || 
+        job.description.toLowerCase().includes(keyword.toLowerCase())
+      );
+    });
+  }
+  
+  // Filter by location
+  if (filters.locations && filters.locations.length > 0) {
+    const locations = Array.isArray(filters.locations) 
+      ? filters.locations 
+      : [filters.locations];
+      
+    filteredJobs = filteredJobs.filter(job => {
+      return locations.some(location => 
+        job.location.toLowerCase().includes(location.toLowerCase())
+      );
+    });
+  }
+  
+  // Filter by job type
+  if (filters.jobType) {
+    filteredJobs = filteredJobs.filter(job => 
+      job.jobType.toLowerCase() === filters.jobType.toLowerCase()
+    );
+  }
+  
+  // Return a random subset of the filtered jobs (for demo purposes)
+  return filteredJobs.slice(0, 5);
+  
+  /* Real implementation commented out during development
+  try {
+    // Build Supabase query with filters
+    let query = supabase.from('jobs').select('*');
+    
+    // Apply filters...
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error searching jobs:', error);
+      return [];
+    }
+    
+    return data.map(convertToJobType) || [];
+  } catch (error) {
+    console.error('Error in searchJobs:', error);
+    return [];
   }
   */
 };

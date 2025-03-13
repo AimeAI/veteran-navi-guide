@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Job } from '@/types/job';
 import { supabase } from '@/integrations/supabase/client';
-import { parseJobicyRssFeed } from '@/utils/jobicyRssParser';
+import { parseJobicyRss } from '@/utils/jobicyRssParser';
 
 const useJobicyJobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -19,19 +19,22 @@ const useJobicyJobs = () => {
         const mockJobs: Job[] = Array.from({ length: 15 }, (_, index) => ({
           id: `jobicy-${index}`,
           title: `Jobicy Mock Job ${index + 1}`,
-          company_name: `Jobicy Employer ${Math.floor(index / 3) + 1}`,
+          company: `Jobicy Employer ${Math.floor(index / 3) + 1}`,
           location: ['Remote', 'New York, NY', 'San Francisco, CA'][index % 3],
-          job_type: ['Full-time', 'Part-time', 'Contract'][index % 3],
-          salary_range: `$${70 + index * 5}k - $${90 + index * 5}k`,
           description: `This is a mock Jobicy job description for testing purposes. This would contain details about the job requirements and responsibilities.`,
-          requirements: `Bachelor's degree in related field. ${2 + (index % 5)} years of experience required.`,
-          posted_date: new Date(Date.now() - index * 86400000).toISOString(),
-          application_url: 'https://example.com/apply',
-          company_logo: '/placeholder.svg',
-          skills: ['JavaScript', 'React', 'Node.js'].slice(0, (index % 3) + 1),
-          categories: ['Technology', 'Development'],
-          employment_type: ['Full-time', 'Part-time', 'Contract'][index % 3],
-          experience_level: ['Entry Level', 'Mid Level', 'Senior Level'][index % 3],
+          category: ['Technology', 'Development'][index % 2],
+          salaryRange: `$${70 + index * 5}k - $${90 + index * 5}k`,
+          remote: [true, false][index % 2],
+          clearanceLevel: ['None', 'Secret', 'Top Secret'][index % 3],
+          mosCode: `MOS-${index % 5}`,
+          requiredSkills: ['JavaScript', 'React', 'Node.js'].slice(0, (index % 3) + 1),
+          preferredSkills: ['TypeScript', 'AWS', 'Docker'].slice(0, (index % 3) + 1),
+          jobType: ['full-time', 'part-time', 'contract'][index % 3],
+          date: new Date(Date.now() - index * 86400000).toISOString(),
+          url: 'https://example.com/apply',
+          industry: ['Technology', 'Healthcare', 'Finance'][index % 3],
+          experienceLevel: ['Entry Level', 'Mid Level', 'Senior Level'][index % 3],
+          educationLevel: ["Bachelor's Degree", "Master's Degree", "High School"][index % 3],
           source: 'Jobicy'
         }));
         
@@ -45,7 +48,8 @@ const useJobicyJobs = () => {
         }
 
         if (data) {
-          const parsedJobs = parseJobicyRssFeed(data.feedContent);
+          const parsedJobs = await parseJobicyRss(data.feedContent);
+          // Ensure the parsedJobs match the Job type
           setJobs(parsedJobs);
         }
         */
