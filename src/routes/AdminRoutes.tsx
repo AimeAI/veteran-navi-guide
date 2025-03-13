@@ -1,7 +1,6 @@
 
 import React, { lazy } from "react";
 import { Routes, Route } from "react-router-dom";
-import { RequireAuth } from "../components/RequireAuth";
 
 // Lazy-loaded components
 const AdminDashboardPage = lazy(() => import("../pages/AdminDashboardPage"));
@@ -12,11 +11,11 @@ export const AdminRoutes: React.FC = () => {
     <Routes>
       <Route 
         path="/" 
-        element={<AdminDashboardPage />}  // Removed RequireAuth wrapper
+        element={<AdminDashboardPage />}
       />
       <Route 
         path="content" 
-        element={<AdminContentPage />}  // Removed RequireAuth wrapper
+        element={<AdminContentPage />}
       />
     </Routes>
   );

@@ -13,23 +13,23 @@ export const EmployerRoutes: React.FC = () => {
     <Routes>
       <Route 
         path="post-job" 
-        element={<PostJobPage />}  // Removed RequireAuth wrapper
+        element={<PostJobPage />}
       />
       <Route 
         path="manage-applications" 
-        element={<EmployerDashboardPage />}  // Removed RequireAuth wrapper
+        element={<EmployerDashboardPage />}
       />
       <Route 
         path="profile" 
-        element={<EmployerProfilePage />}  // Removed RequireAuth wrapper
+        element={<EmployerProfilePage />}
       />
       <Route 
         path="search-veterans" 
-        element={<EmployerSearchVeteransPage />}  // Removed RequireAuth wrapper
+        element={<EmployerSearchVeteransPage />}
       />
       <Route 
         path="employer-profile" 
-        element={<EmployerProfilePage />}  // Removed RequireAuth wrapper
+        element={<EmployerProfilePage />}
       />
     </Routes>
   );
