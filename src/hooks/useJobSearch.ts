@@ -7,9 +7,9 @@ import { JobCache } from '@/utils/jobCache';
 import { debounce, measurePerformance } from '@/utils/performanceUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateCacheKey } from '@/utils/performanceUtils';
-import { searchLightcastJobs } from '@/utils/lightcastApi'; // Fix: use the correct function name
-import { searchJobBankJobs } from '@/utils/jobBankApi'; // Fix: use the correct function name
-import { fetchAndParseJobicyFeed } from '@/utils/jobicyRssParser'; // Fix: use the correct function name
+import { searchLightcastJobs } from '@/utils/lightcastApi';
+import { searchJobBankJobs } from '@/utils/jobBankApi';
+import { fetchAndParseJobicyFeed } from '@/utils/jobicyRssParser';
 
 /**
  * Custom hook for searching jobs with caching and performance optimization
@@ -170,18 +170,18 @@ export function useJobSearch(initialParams: JobSearchParams): JobSearchResults {
             company: job.company || 'Unknown Company',
             location: job.location || 'Location not specified',
             description: job.description || '',
-            category: job.category || 'other',
+            category: job.job_type || 'other', // Map job_type to category
             salaryRange: job.salary_range || 'range1',
-            remote: job.remote || false,
-            clearanceLevel: job.clearance_level || 'none',
-            mosCode: job.mos_code || '',
+            remote: job.job_type?.toLowerCase().includes('remote') || false, // Determine remote status from job_type
+            clearanceLevel: job.requirements?.find((req: string) => req.toLowerCase().includes('clearance')) || 'none',
+            mosCode: job.military_skill_mapping?.[0] || '',
             requiredSkills: job.required_skills || [],
-            preferredSkills: job.preferred_skills || [],
+            preferredSkills: [], // Not available in the DB schema, use empty array
             jobType: job.job_type || 'fulltime',
             date: job.created_at || new Date().toISOString(),
-            industry: job.industry || '',
-            experienceLevel: job.experience_level || '',
-            educationLevel: job.education_level || '',
+            industry: job.company || '', // Use company as fallback for industry
+            experienceLevel: job.requirements?.find((req: string) => req.toLowerCase().includes('experience')) || '',
+            educationLevel: job.requirements?.find((req: string) => req.toLowerCase().includes('education')) || '',
             url: job.application_url || ''
           }));
           
