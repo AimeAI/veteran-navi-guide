@@ -163,7 +163,7 @@ export function useJobSearch(initialParams: JobSearchParams): JobSearchResults {
           .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
 
         if (!error && data) {
-          // Fix: Map the Supabase job data to our Job type to ensure compatibility
+          // Map the Supabase job data to our Job type to ensure compatibility
           const mappedJobs: Job[] = data.map(job => ({
             id: job.id,
             title: job.title || 'Untitled Position',
