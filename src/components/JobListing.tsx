@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useCallback, memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -25,6 +26,35 @@ interface JobListingProps {
   companyDescription?: string;
 }
 
+// Helper functions outside the component to prevent recreation on each render
+const getSourceBadgeColor = (source?: string) => {
+  if (!source) return "secondary";
+  
+  const sourceMap: Record<string, "default" | "destructive" | "outline" | "secondary" | "warning" | "info" | "success" | "purple" | "orange"> = {
+    'jobbank': 'default',
+    'indeed': 'orange',
+    'linkedin': 'purple',
+    'jobicy': 'blue' as "info"
+  };
+  
+  return sourceMap[source.toLowerCase()] || "secondary";
+};
+
+const getLogoColorClass = (company: string) => {
+  const bgColors = [
+    'bg-blue-100 text-blue-800',
+    'bg-green-100 text-green-800',
+    'bg-purple-100 text-purple-800',
+    'bg-orange-100 text-orange-800',
+    'bg-pink-100 text-pink-800',
+    'bg-indigo-100 text-indigo-800',
+    'bg-teal-100 text-teal-800',
+  ];
+  
+  const colorIndex = company.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % bgColors.length;
+  return bgColors[colorIndex];
+};
+
 const JobListing: React.FC<JobListingProps> = ({ 
   jobId, 
   title, 
@@ -45,44 +75,19 @@ const JobListing: React.FC<JobListingProps> = ({
   const [expanded, setExpanded] = useState(false);
   const isJobSaved = savedJobs.some(job => job.id === jobId);
   
-  const cleanHtml = DOMPurify.sanitize(description);
   const MAX_DESCRIPTION_LENGTH = 250;
   const shortDescription = description.length > MAX_DESCRIPTION_LENGTH ? 
     `${description.substring(0, MAX_DESCRIPTION_LENGTH)}...` : 
     description;
   
   const companyInitial = company.charAt(0).toUpperCase();
-  const bgColors = [
-    'bg-blue-100 text-blue-800',
-    'bg-green-100 text-green-800',
-    'bg-purple-100 text-purple-800',
-    'bg-orange-100 text-orange-800',
-    'bg-pink-100 text-pink-800',
-    'bg-indigo-100 text-indigo-800',
-    'bg-teal-100 text-teal-800',
-  ];
-  
-  const colorIndex = company.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % bgColors.length;
-  const logoColorClass = bgColors[colorIndex];
-  
-  const getSourceBadgeColor = (source?: string) => {
-    if (!source) return "secondary";
-    
-    const sourceMap: Record<string, "default" | "destructive" | "outline" | "secondary" | "warning" | "info" | "success" | "purple" | "orange"> = {
-      'jobbank': 'default',
-      'indeed': 'orange',
-      'linkedin': 'purple',
-      'jobicy': 'blue' as "info"
-    };
-    
-    return sourceMap[source.toLowerCase()] || "secondary";
-  };
+  const logoColorClass = getLogoColorClass(company);
   
   const formattedDate = date ? 
     formatDistanceToNow(new Date(date), { addSuffix: true }) : 
     "Recently";
   
-  const handleSaveJob = () => {
+  const handleSaveJob = useCallback(() => {
     if (isJobSaved) {
       toast.info(t("Job already saved"));
       return;
@@ -110,9 +115,14 @@ const JobListing: React.FC<JobListingProps> = ({
     });
     
     toast.success(t("Job saved successfully"));
-  };
+  }, [isJobSaved, jobId, title, company, location, description, date, salaryRange, source, saveJob, t]);
   
-  const highlightMatchingSkills = (text: string) => {
+  const toggleExpanded = useCallback(() => {
+    setExpanded(prev => !prev);
+  }, []);
+  
+  // Memoize this expensive operation
+  const highlightMatchingSkills = useCallback((text: string) => {
     if (!matchingSkills || matchingSkills.length === 0) {
       return text;
     }
@@ -128,8 +138,9 @@ const JobListing: React.FC<JobListingProps> = ({
     });
     
     return highlightedText;
-  };
+  }, [matchingSkills]);
   
+  // Sanitize content - memoize to avoid recalculation on every render
   const sanitizedHighlightedDescription = expanded ? 
     DOMPurify.sanitize(highlightMatchingSkills(description)) : 
     DOMPurify.sanitize(highlightMatchingSkills(shortDescription));
@@ -221,7 +232,7 @@ const JobListing: React.FC<JobListingProps> = ({
         
         {description.length > MAX_DESCRIPTION_LENGTH && (
           <button
-            onClick={() => setExpanded(!expanded)}
+            onClick={toggleExpanded}
             className="mt-1 text-sm text-blue-600 hover:text-blue-800"
           >
             {expanded ? t("Show less") : t("Show more")}
@@ -278,4 +289,5 @@ const JobListing: React.FC<JobListingProps> = ({
   );
 };
 
-export default JobListing;
+// Use React.memo to prevent unnecessary re-renders
+export default memo(JobListing);

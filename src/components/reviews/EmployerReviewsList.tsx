@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { EmployerReview } from '@/types/review';
 import { toast } from 'sonner';
 import { 
@@ -12,9 +12,8 @@ import ReviewCard from './ReviewCard';
 import EmptyReviewsState from './EmptyReviewsState';
 import ReviewsLoadingSkeleton from './ReviewsLoadingSkeleton';
 import { QueryCache } from '@/utils/batchOperations';
-import { PaginatedResponse } from '@/types/jobSearch';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { measurePerformance } from '@/utils/performanceUtils';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 // Create a cache for employer reviews with a 5 minute TTL
 const reviewsCache = new QueryCache<string, EmployerReview[]>(5 * 60 * 1000);
@@ -38,7 +37,7 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalReviews, setTotalReviews] = useState(0);
 
-  // Fetch reviews with caching and batching
+  // Fetch reviews with caching and batching - memoized with useCallback
   const fetchReviews = useCallback(async (page: number = 1) => {
     if (!employerId) return;
     
@@ -59,6 +58,7 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
       // Use executeWithRetry for better connection handling with performance measurement
       const result = await measurePerformance('Fetch employer reviews', () => 
         executeWithRetry(() => 
+          // Fix: Pass only the employerId parameter and move the pagination to options
           getEmployerReviewsOptimized(employerId, {
             page, 
             pageSize
@@ -96,11 +96,12 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
     return () => clearInterval(intervalId);
   }, [employerId, fetchReviews, currentPage]);
 
-  const handlePageChange = (page: number) => {
+  // Memoized handlers to prevent recreation on each render
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
-  const handleHelpful = async (reviewId: string) => {
+  const handleHelpful = useCallback(async (reviewId: string) => {
     // Prevent multiple clicks
     if (helpfulClicks[reviewId]) return;
     
@@ -114,7 +115,7 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
       
       if (success) {
         // Update the local state to increment the helpful count
-        setReviews(reviews.map(review => 
+        setReviews(reviews => reviews.map(review => 
           review.id === reviewId 
             ? { ...review, helpfulCount: (review.helpfulCount || 0) + 1 } 
             : review
@@ -141,9 +142,9 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
       // Reset the click state if there was an error
       setHelpfulClicks(prev => ({ ...prev, [reviewId]: false }));
     }
-  };
+  }, [helpfulClicks, employerId, currentPage, pageSize]);
 
-  const handleReport = async (reviewId: string) => {
+  const handleReport = useCallback(async (reviewId: string) => {
     try {
       const success = await executeWithRetry(() => 
         reportReview(reviewId, 'Reported by user')
@@ -158,7 +159,7 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
       console.error('Error reporting review:', error);
       toast.error('Failed to report review');
     }
-  };
+  }, []);
 
   const loading = isLoading || externalLoading;
   const totalPages = Math.ceil(totalReviews / pageSize);
@@ -234,4 +235,5 @@ const EmployerReviewsList: React.FC<EmployerReviewsListProps> = ({
   );
 };
 
-export default EmployerReviewsList;
+// Use React.memo to prevent unnecessary re-renders
+export default memo(EmployerReviewsList);

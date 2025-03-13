@@ -1,205 +1,168 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Job } from '@/types/job';
-import { JobCache } from '@/utils/jobCache';
-import { toast } from 'sonner';
-import { useJobFetcher } from './useJobFetcher';
 import { JobSearchParams, JobSearchResults } from '@/types/jobSearch';
-
-export type { JobSearchParams, JobSearchResults };
+import { toast } from 'sonner';
+import { JobCache } from '@/utils/jobCache';
+import { debounce, measurePerformance } from '@/utils/performanceUtils';
+import { supabase } from '@/integrations/supabase/client';
+import { generateCacheKey } from '@/utils/performanceUtils';
+import { lightcastSearchJobs } from '@/utils/lightcastApi';
+import { fetchJobBankJobs } from '@/utils/jobBankApi';
+import { fetchJobicyJobs } from '@/utils/jobicyRssParser';
 
 /**
- * Enhanced hook for job search functionality with sorting and improved caching.
- * @param searchParams - Parameters for job search
- * @returns Search results and utility functions
+ * Custom hook for searching jobs with caching and performance optimization
  */
-export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults => {
+export function useJobSearch(initialParams: JobSearchParams): JobSearchResults {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [currentPage, setCurrentPage] = useState(searchParams.page || 1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(initialParams.page || 1);
+  const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
-  const isInitialMount = useRef(true);
-  
-  const [currentSearchParams, setCurrentSearchParams] = useState<JobSearchParams>({
-    ...searchParams,
-    country: searchParams.country || "canada",
-    skills: searchParams.skills || [],
-    sortBy: searchParams.sortBy || "relevant",
-  });
-  
-  const { fetchJobs } = useJobFetcher();
+  const [pageSize, setPageSize] = useState(initialParams.pageSize || 20);
+  const [searchParams, setSearchParams] = useState<JobSearchParams>(initialParams);
 
-  // Update search params when they change
+  // Memoized function to set the current page
+  const setPage = useCallback((page: number) => {
+    setCurrentPage(page);
+    setSearchParams(prev => ({ ...prev, page }));
+  }, []);
+
+  // Update page size with debounce to prevent multiple renders
+  const setPageSizeWithDebounce = useCallback(
+    debounce((size: number) => {
+      setPageSize(size);
+      setSearchParams(prev => ({ ...prev, pageSize: size, page: 1 }));
+      setCurrentPage(1);
+    }, 300),
+    []
+  );
+
+  // Memoized function to refresh jobs
+  const refreshJobs = useCallback(async () => {
+    // Generate a cache key based on search parameters
+    const cacheKey = generateCacheKey('jobSearch', {
+      ...searchParams,
+      page: currentPage,
+      pageSize,
+    });
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Check if we have cached results first
+      if (!searchParams.refresh) {
+        const cachedResults = JobCache.getSearchResults(cacheKey);
+        if (cachedResults) {
+          setJobs(cachedResults.jobs);
+          setTotalPages(cachedResults.totalPages);
+          setTotalJobs(cachedResults.totalJobs);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // If no cached results, fetch new data
+      const result = await measurePerformance('Job search query', async () => {
+        // Dynamically determine which job source to use based on country
+        let fetchedJobs: Job[] = [];
+        let fetchedTotalPages = 1;
+        let fetchedTotalJobs = 0;
+
+        const { keywords, location, country, ...otherParams } = searchParams;
+
+        // Common search params
+        const params = {
+          ...otherParams,
+          page: currentPage,
+          pageSize
+        };
+
+        if (country === 'us') {
+          // Use Lightcast API for US jobs
+          const lightcastResults = await lightcastSearchJobs(keywords, location, params);
+          fetchedJobs = lightcastResults.jobs || [];
+          fetchedTotalPages = lightcastResults.totalPages || 1;
+          fetchedTotalJobs = lightcastResults.totalJobs || 0;
+        } else if (country === 'canada') {
+          // Use JobBank API for Canadian jobs
+          const jobBankResults = await fetchJobBankJobs(keywords, location, params);
+          fetchedJobs = jobBankResults.jobs || [];
+          fetchedTotalPages = jobBankResults.totalPages || 1;
+          fetchedTotalJobs = jobBankResults.totalJobs || 0;
+        } else {
+          // Fallback to Jobicy for other locations
+          const jobicyResults = await fetchJobicyJobs(keywords, location, params);
+          fetchedJobs = jobicyResults.jobs || [];
+          fetchedTotalPages = jobicyResults.totalPages || 1;
+          fetchedTotalJobs = jobicyResults.totalJobs || 0;
+        }
+
+        return {
+          jobs: fetchedJobs,
+          totalPages: fetchedTotalPages,
+          totalJobs: fetchedTotalJobs
+        };
+      });
+
+      // Update state with results
+      setJobs(result.jobs);
+      setTotalPages(result.totalPages);
+      setTotalJobs(result.totalJobs);
+
+      // Cache the results
+      JobCache.saveSearchResults(cacheKey, {
+        jobs: result.jobs,
+        totalPages: result.totalPages,
+        totalJobs: result.totalJobs
+      });
+    } catch (err) {
+      console.error('Error searching jobs:', err);
+      setError(err instanceof Error ? err : new Error('Failed to search jobs'));
+      
+      // Try to get results from Supabase as a fallback
+      try {
+        const { data, error, count } = await supabase
+          .from('jobs')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false })
+          .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
+
+        if (!error && data) {
+          setJobs(data as Job[]);
+          setTotalJobs(count || 0);
+          setTotalPages(Math.ceil((count || 0) / pageSize));
+          toast.info('Using cached job results due to search API issues');
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback job search also failed:', fallbackErr);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchParams, currentPage, pageSize]);
+
+  // Fetch jobs when search parameters change
   useEffect(() => {
-    setCurrentSearchParams(prevParams => ({
-      ...prevParams,
-      keywords: searchParams.keywords,
-      location: searchParams.location,
-      radius: searchParams.radius,
-      jobType: searchParams.jobType,
-      industry: searchParams.industry,
-      experienceLevel: searchParams.experienceLevel,
-      educationLevel: searchParams.educationLevel,
-      remote: searchParams.remote,
-      country: searchParams.country,
-      skills: searchParams.skills,
-      salaryRange: searchParams.salaryRange,
-      sortBy: searchParams.sortBy,
-    }));
+    refreshJobs();
   }, [
-    searchParams.keywords, 
-    searchParams.location, 
-    searchParams.radius, 
+    searchParams.keywords,
+    searchParams.location,
     searchParams.jobType,
-    searchParams.industry,
+    searchParams.country,
     searchParams.experienceLevel,
     searchParams.educationLevel,
     searchParams.remote,
-    searchParams.country,
-    searchParams.skills,
-    searchParams.salaryRange,
+    searchParams.radius,
+    searchParams.industry,
     searchParams.sortBy,
+    currentPage,
+    pageSize,
+    refreshJobs
   ]);
-
-  /**
-   * Sort jobs based on sortBy parameter
-   * @param jobList - List of jobs to sort
-   * @param sortByParam - Sort parameter
-   * @returns Sorted job list
-   */
-  const sortJobs = useCallback((jobList: Job[], sortByParam: string = 'relevant'): Job[] => {
-    // Create a copy of the jobs array to avoid mutating the original
-    let sortedJobs = [...jobList];
-    
-    switch (sortByParam) {
-      case 'date':
-        // Sort by newest first
-        sortedJobs.sort((a, b) => {
-          const dateA = new Date(a.date);
-          const dateB = new Date(b.date);
-          return dateB.getTime() - dateA.getTime();
-        });
-        break;
-        
-      case 'salary-high':
-        // Sort by salary high to low
-        sortedJobs.sort((a, b) => {
-          const salaryRankA = getSalaryRank(a.salaryRange);
-          const salaryRankB = getSalaryRank(b.salaryRange);
-          return salaryRankB - salaryRankA;
-        });
-        break;
-        
-      case 'salary-low':
-        // Sort by salary low to high
-        sortedJobs.sort((a, b) => {
-          const salaryRankA = getSalaryRank(a.salaryRange);
-          const salaryRankB = getSalaryRank(b.salaryRange);
-          return salaryRankA - salaryRankB;
-        });
-        break;
-        
-      case 'skills':
-        // Sort by number of matching skills
-        sortedJobs.sort((a, b) => {
-          const skillsA = a.matchingSkills?.length || 0;
-          const skillsB = b.matchingSkills?.length || 0;
-          return skillsB - skillsA;
-        });
-        break;
-        
-      case 'relevant':
-      default:
-        // By default, use a balanced approach that considers multiple factors
-        sortedJobs.sort((a, b) => {
-          // Consider date (newer jobs rank higher)
-          const dateA = new Date(a.date);
-          const dateB = new Date(b.date);
-          const dateScore = (dateB.getTime() - dateA.getTime()) / (1000 * 60 * 60 * 24); // Difference in days
-          
-          // Consider skills match
-          const skillsA = a.matchingSkills?.length || 0;
-          const skillsB = b.matchingSkills?.length || 0;
-          
-          // Combine factors into a relevance score
-          const scoreA = skillsA * 10 - dateScore * 0.5;
-          const scoreB = skillsB * 10 - dateScore * 0.5;
-          
-          return scoreB - scoreA;
-        });
-        break;
-    }
-    
-    return sortedJobs;
-  }, []);
-
-  /**
-   * Get numerical rank for salary range for sorting
-   * @param salaryRange - Salary range string
-   * @returns Numerical rank
-   */
-  const getSalaryRank = (salaryRange?: string): number => {
-    switch (salaryRange) {
-      case 'range1': return 1; // Under $30k
-      case 'range2': return 2; // $30k - $50k
-      case 'range3': return 3; // $50k - $75k
-      case 'range4': return 4; // $75k - $100k
-      case 'range5': return 5; // $100k+
-      default: return 0;
-    }
-  };
-
-  const executeJobSearch = useCallback(async () => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      // Don't show loading state on initial mount as it causes UI flicker
-      if (JobCache.hasCachedResults()) {
-        setIsLoading(false);
-      }
-    } else {
-      setIsLoading(true);
-    }
-    
-    try {
-      await fetchJobs({
-        ...currentSearchParams,
-        page: currentPage,
-      }, (fetchedJobs) => {
-        // Sort jobs client-side if needed
-        const sortedJobs = sortJobs(fetchedJobs, currentSearchParams.sortBy);
-        setJobs(sortedJobs);
-      }, setTotalPages, setTotalJobs, setError, setIsLoading);
-    } catch (error) {
-      console.error("Error executing job search:", error);
-      toast.error("Failed to load jobs. Please try again.");
-      setIsLoading(false);
-    }
-  }, [currentPage, currentSearchParams, fetchJobs, sortJobs]);
-
-  useEffect(() => {
-    executeJobSearch();
-  }, [executeJobSearch]);
-
-  const setPage = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const refreshJobs = async (): Promise<void> => {
-    const cacheKey = getCacheKey(currentSearchParams, currentPage);
-    JobCache.clearSearchResult(cacheKey);
-    
-    const refreshedParams = {
-      ...currentSearchParams,
-      refresh: true
-    };
-    
-    setCurrentSearchParams(refreshedParams);
-    
-    setIsLoading(true);
-    await executeJobSearch();
-  };
 
   return {
     jobs,
@@ -208,9 +171,9 @@ export const useJobSearch = (searchParams: JobSearchParams): JobSearchResults =>
     currentPage,
     totalPages,
     totalJobs,
+    pageSize,
     setPage,
-    refreshJobs,
+    setPageSize: setPageSizeWithDebounce,
+    refreshJobs
   };
-};
-
-import { getCacheKey } from '@/utils/jobSearchUtils';
+}

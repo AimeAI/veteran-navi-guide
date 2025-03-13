@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useMessages } from '@/context/MessageContext';
 import { useUser } from '@/context/UserContext';
@@ -20,8 +20,8 @@ const MessageNotificationBadge: React.FC<MessageNotificationBadgeProps> = ({ cla
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Function to fetch unread count from the database with caching
-  const fetchUnreadCount = async () => {
+  // Memoize fetchUnreadCount to prevent recreating on each render
+  const fetchUnreadCount = useCallback(async () => {
     if (!user?.email) return;
 
     // Check cache first
@@ -54,7 +54,7 @@ const MessageNotificationBadge: React.FC<MessageNotificationBadgeProps> = ({ cla
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.email, getTotalUnreadCount]);
 
   useEffect(() => {
     // Use context method initially
@@ -64,7 +64,7 @@ const MessageNotificationBadge: React.FC<MessageNotificationBadgeProps> = ({ cla
     if (user?.isAuthenticated) {
       fetchUnreadCount();
       
-      // Set up polling for new messages with staggered intervals to prevent
+      // Set up polling with staggered intervals to prevent
       // all components from refreshing at the exact same time
       const randomOffset = Math.floor(Math.random() * 5000); // Random offset up to 5 seconds
       const intervalId = setInterval(() => {
@@ -78,7 +78,7 @@ const MessageNotificationBadge: React.FC<MessageNotificationBadgeProps> = ({ cla
 
       return () => clearInterval(intervalId);
     }
-  }, [getTotalUnreadCount, refreshMessages, user]);
+  }, [getTotalUnreadCount, refreshMessages, user, fetchUnreadCount]);
 
   // Periodically clean up the cache to prevent memory leaks
   useEffect(() => {
@@ -89,6 +89,7 @@ const MessageNotificationBadge: React.FC<MessageNotificationBadgeProps> = ({ cla
     return () => clearInterval(cleanupInterval);
   }, []);
 
+  // Early return for zero count or loading state to avoid unnecessary renders
   if (unreadCount === 0 || isLoading) {
     return null;
   }
@@ -103,4 +104,5 @@ const MessageNotificationBadge: React.FC<MessageNotificationBadgeProps> = ({ cla
   );
 };
 
-export default MessageNotificationBadge;
+// Use React.memo to prevent unnecessary re-renders
+export default React.memo(MessageNotificationBadge);

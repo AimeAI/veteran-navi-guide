@@ -1,13 +1,16 @@
 
-import React from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { MessageProvider } from "./context/MessageContext";
 import { LanguageProvider } from "./context/LanguageContext";
-import AppLayout from "./components/layout/AppLayout";
-import AppRoutes from "./routes/AppRoutes";
+import { LazyLoadingPlaceholder } from "./utils/codeSplitting";
 import "./App.css";
 import "./i18n";
+
+// Lazy load components to reduce initial bundle size
+const AppLayout = React.lazy(() => import("./components/layout/AppLayout"));
+const AppRoutes = React.lazy(() => import("./routes/AppRoutes"));
 
 function App() {
   return (
@@ -15,9 +18,13 @@ function App() {
       <LanguageProvider>
         <MessageProvider>
           <Router>
-            <AppLayout>
-              <AppRoutes />
-            </AppLayout>
+            <Suspense fallback={<LazyLoadingPlaceholder />}>
+              <AppLayout>
+                <Suspense fallback={<LazyLoadingPlaceholder />}>
+                  <AppRoutes />
+                </Suspense>
+              </AppLayout>
+            </Suspense>
           </Router>
         </MessageProvider>
       </LanguageProvider>
