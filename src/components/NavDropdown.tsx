@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 import { useNavigate } from "react-router-dom";
-import { User, Building, Settings, LogOut } from "lucide-react";
+import { User, Building, Settings, LogOut, MessageSquare } from "lucide-react";
 
 export default function NavDropdown() {
   const { user, logout } = useUser();
@@ -28,6 +28,9 @@ export default function NavDropdown() {
     await logout();
     navigate('/login');
   };
+
+  // Determine the correct messages path based on user role
+  const messagesPath = user.role === 'employer' ? '/employer/messages' : '/messages';
 
   // Profile section for both roles
   const profileSection = (
@@ -47,6 +50,12 @@ export default function NavDropdown() {
           </Link>
         </DropdownMenuItem>
       )}
+      <DropdownMenuItem asChild>
+        <Link to={messagesPath}>
+          <MessageSquare className="mr-2 h-4 w-4" />
+          <span>Messages</span>
+        </Link>
+      </DropdownMenuItem>
     </DropdownMenuGroup>
   );
 

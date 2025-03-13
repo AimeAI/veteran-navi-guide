@@ -3,11 +3,17 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { MessageSquare } from 'lucide-react';
 import MessageNotificationBadge from './MessageNotificationBadge';
+import { useUser } from '@/context/UserContext';
 
 const MessageNavItem: React.FC = () => {
+  const { user } = useUser();
+  
+  // Determine the correct messages path based on user role
+  const messagesPath = user?.role === 'employer' ? '/employer/messages' : '/messages';
+
   return (
     <NavLink 
-      to="/messages" 
+      to={messagesPath} 
       className={({ isActive }) => 
         `relative nav-link ${isActive ? 'font-medium text-primary' : 'text-muted-foreground hover:text-foreground'}`
       }

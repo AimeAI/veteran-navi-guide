@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronRight, Shield } from 'lucide-react';
+import { Menu, X, ChevronRight, Shield, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
 import { useUser } from '@/context/UserContext';
+import { useMessages } from '@/context/MessageContext';
 
 interface MobileMenuSection {
   title: string;
@@ -23,6 +24,7 @@ interface MobileMenuProps {
 const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
   const { t } = useTranslation();
   const { user } = useUser();
+  const { getTotalUnreadCount } = useMessages();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -53,6 +55,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
       document.body.style.overflow = 'auto'; // Reset body overflow when unmounting
     };
   }, [isOpen]);
+
+  // Determine the correct messages path based on user role
+  const messagesPath = user?.role === 'employer' ? '/employer/messages' : '/messages';
 
   return (
     <div className="lg:hidden">
@@ -157,6 +162,19 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ sections }) => {
                     onClick={toggleMenu}
                   >
                     Profile
+                  </Link>
+                  <Link
+                    to={messagesPath}
+                    className="flex items-center justify-center w-full py-2.5 px-4 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 border border-gray-200"
+                    onClick={toggleMenu}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Messages
+                    {getTotalUnreadCount() > 0 && (
+                      <span className="ml-1.5 py-0.5 px-1.5 text-xs bg-primary text-white rounded-full">
+                        {getTotalUnreadCount()}
+                      </span>
+                    )}
                   </Link>
                   <Link
                     to="/user/dashboard"

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, User, BookOpen, Building, ChevronDown, Shield } from 'lucide-react';
+import { Briefcase, User, BookOpen, Building, ChevronDown, Shield, Map } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUser } from '@/context/UserContext';
 import NavDropdown from './NavDropdown';
+import MessageNavItem from './messaging/MessageNavItem';
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
@@ -106,7 +107,10 @@ const Navbar: React.FC = () => {
 
             <div className="hidden lg:flex lg:items-center lg:space-x-4">
               {user ? (
-                <NavDropdown />
+                <div className="flex items-center space-x-2">
+                  <MessageNavItem />
+                  <NavDropdown />
+                </div>
               ) : (
                 <>
                   <Link

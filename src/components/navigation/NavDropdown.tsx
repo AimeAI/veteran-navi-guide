@@ -25,16 +25,21 @@ import {
   LifeBuoy,
   Building,
 } from 'lucide-react';
+import { useMessages } from '@/context/MessageContext';
 
 const NavDropdown: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useUser();
+  const { getTotalUnreadCount } = useMessages();
 
   const handleSignOut = async () => {
     await logout();
     navigate('/');
   };
+
+  // Determine the correct messages path based on user role
+  const messagesPath = user?.role === 'employer' ? '/employer/messages' : '/messages';
 
   return (
     <DropdownMenu>
@@ -79,9 +84,14 @@ const NavDropdown: React.FC = () => {
             <Settings className="mr-2 h-4 w-4" />
             <span>{t('navigation.settings')}</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/messages')}>
+          <DropdownMenuItem onClick={() => navigate(messagesPath)}>
             <MessageSquare className="mr-2 h-4 w-4" />
             <span>{t('navigation.messages')}</span>
+            {getTotalUnreadCount() > 0 && (
+              <span className="ml-auto py-0.5 px-1.5 text-xs bg-primary text-white rounded-full">
+                {getTotalUnreadCount()}
+              </span>
+            )}
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
