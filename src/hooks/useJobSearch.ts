@@ -7,9 +7,9 @@ import { JobCache } from '@/utils/jobCache';
 import { debounce, measurePerformance } from '@/utils/performanceUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateCacheKey } from '@/utils/performanceUtils';
-import { lightcastSearchJobs } from '@/utils/lightcastApi';
-import { fetchJobBankJobs } from '@/utils/jobBankApi';
-import { fetchJobicyJobs } from '@/utils/jobicyRssParser';
+import { searchLightcastJobs } from '@/utils/lightcastApi'; // Fix: use the correct function name
+import { searchJobBankJobs } from '@/utils/jobBankApi'; // Fix: use the correct function name
+import { fetchAndParseJobicyFeed } from '@/utils/jobicyRssParser'; // Fix: use the correct function name
 
 /**
  * Custom hook for searching jobs with caching and performance optimization
@@ -83,22 +83,53 @@ export function useJobSearch(initialParams: JobSearchParams): JobSearchResults {
 
         if (country === 'us') {
           // Use Lightcast API for US jobs
-          const lightcastResults = await lightcastSearchJobs(keywords, location, params);
+          const lightcastResults = await searchLightcastJobs({
+            keywords,
+            location,
+            ...params
+          });
           fetchedJobs = lightcastResults.jobs || [];
           fetchedTotalPages = lightcastResults.totalPages || 1;
           fetchedTotalJobs = lightcastResults.totalJobs || 0;
         } else if (country === 'canada') {
           // Use JobBank API for Canadian jobs
-          const jobBankResults = await fetchJobBankJobs(keywords, location, params);
+          const jobBankResults = await searchJobBankJobs({
+            keywords,
+            location,
+            distance: params.radius,
+            page: params.page,
+            sort: params.sortBy
+          });
           fetchedJobs = jobBankResults.jobs || [];
           fetchedTotalPages = jobBankResults.totalPages || 1;
           fetchedTotalJobs = jobBankResults.totalJobs || 0;
         } else {
           // Fallback to Jobicy for other locations
-          const jobicyResults = await fetchJobicyJobs(keywords, location, params);
-          fetchedJobs = jobicyResults.jobs || [];
-          fetchedTotalPages = jobicyResults.totalPages || 1;
-          fetchedTotalJobs = jobicyResults.totalJobs || 0;
+          const jobs = await fetchAndParseJobicyFeed();
+          // Filter jobs based on keywords and location if provided
+          let filteredJobs = jobs;
+          if (keywords) {
+            const keywordsLower = keywords.toLowerCase();
+            filteredJobs = filteredJobs.filter(job => 
+              job.title.toLowerCase().includes(keywordsLower) || 
+              job.description.toLowerCase().includes(keywordsLower)
+            );
+          }
+          if (location) {
+            const locationLower = location.toLowerCase();
+            filteredJobs = filteredJobs.filter(job => 
+              job.location.toLowerCase().includes(locationLower)
+            );
+          }
+          
+          // Paginate the results
+          const startIdx = (currentPage - 1) * pageSize;
+          const endIdx = startIdx + pageSize;
+          const paginatedJobs = filteredJobs.slice(startIdx, endIdx);
+          
+          fetchedJobs = paginatedJobs;
+          fetchedTotalJobs = filteredJobs.length;
+          fetchedTotalPages = Math.ceil(filteredJobs.length / pageSize);
         }
 
         return {
@@ -132,7 +163,29 @@ export function useJobSearch(initialParams: JobSearchParams): JobSearchResults {
           .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
 
         if (!error && data) {
-          setJobs(data as Job[]);
+          // Fix: Map the Supabase job data to our Job type to ensure compatibility
+          const mappedJobs: Job[] = data.map(job => ({
+            id: job.id,
+            title: job.title || 'Untitled Position',
+            company: job.company || 'Unknown Company',
+            location: job.location || 'Location not specified',
+            description: job.description || '',
+            category: job.category || 'other',
+            salaryRange: job.salary_range || 'range1',
+            remote: job.remote || false,
+            clearanceLevel: job.clearance_level || 'none',
+            mosCode: job.mos_code || '',
+            requiredSkills: job.required_skills || [],
+            preferredSkills: job.preferred_skills || [],
+            jobType: job.job_type || 'fulltime',
+            date: job.created_at || new Date().toISOString(),
+            industry: job.industry || '',
+            experienceLevel: job.experience_level || '',
+            educationLevel: job.education_level || '',
+            url: job.application_url || ''
+          }));
+          
+          setJobs(mappedJobs);
           setTotalJobs(count || 0);
           setTotalPages(Math.ceil((count || 0) / pageSize));
           toast.info('Using cached job results due to search API issues');

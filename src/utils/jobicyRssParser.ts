@@ -1,4 +1,3 @@
-
 import { Job } from "@/context/JobContext";
 import * as xml2js from 'xml2js';
 
@@ -190,6 +189,56 @@ export const fetchAndParseJobicyFeed = async (): Promise<Job[]> => {
   } catch (error) {
     console.error('Error fetching Jobicy RSS feed:', error);
     return [];
+  }
+};
+
+/**
+ * Main function to fetch and filter Jobicy jobs with pagination
+ */
+export const fetchJobicyJobs = async (keywords?: string, location?: string, params?: any): Promise<{
+  jobs: Job[];
+  totalJobs: number;
+  totalPages: number;
+}> => {
+  try {
+    let jobs = await fetchAndParseJobicyFeed();
+    
+    // Filter by keywords if provided
+    if (keywords) {
+      const keywordsLower = keywords.toLowerCase();
+      jobs = jobs.filter(job => 
+        job.title.toLowerCase().includes(keywordsLower) || 
+        job.description.toLowerCase().includes(keywordsLower)
+      );
+    }
+    
+    // Filter by location if provided
+    if (location) {
+      const locationLower = location.toLowerCase();
+      jobs = jobs.filter(job => 
+        job.location.toLowerCase().includes(locationLower)
+      );
+    }
+    
+    // Apply pagination
+    const page = params?.page || 1;
+    const pageSize = params?.pageSize || 20;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedJobs = jobs.slice(start, end);
+    
+    return {
+      jobs: paginatedJobs,
+      totalJobs: jobs.length,
+      totalPages: Math.ceil(jobs.length / pageSize)
+    };
+  } catch (error) {
+    console.error('Error fetching and filtering Jobicy jobs:', error);
+    return {
+      jobs: [],
+      totalJobs: 0,
+      totalPages: 0
+    };
   }
 };
 
