@@ -26,16 +26,12 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      // Create a type-safe query builder approach to avoid deep instantiation errors
-      type QueryBuilder = ReturnType<typeof supabase.from<'jobs'>>;
-      
-      // Start with base query
-      let query: QueryBuilder = supabase.from('jobs').select('*');
+      // Create a base query without type annotations that cause issues
+      let query = supabase.from('jobs').select('*');
       
       // Apply filters one by one
       if (searchFilters.keywords) {
-        const keywordsFilter = `title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`;
-        query = query.or(keywordsFilter);
+        query = query.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
       }
       
       if (searchFilters.location) {
@@ -57,7 +53,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       // Execute query with performance logging
       const { data, error: supabaseError } = await logger.perf('Jobs query execution', 
-        () => query);
+        async () => await query);
       
       if (supabaseError) {
         throw new Error(`Supabase error: ${supabaseError.message}`);
