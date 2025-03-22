@@ -1,81 +1,60 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { Job } from '@/types/job';
-import { JobSearchParams, JobSearchResults } from '@/types/jobSearch';
-import { debounce } from '@/utils/performanceUtils';
+import { Job } from '../types/job';
+import { JobSearchParams } from '@/types/jobSearch';
 import { jobSearchService } from '@/services/jobSearchService';
+import { toast } from 'sonner';
 
-/**
- * Custom hook for searching jobs with caching and performance optimization
- */
-export function useJobSearch(initialParams: JobSearchParams): JobSearchResults {
+export function useJobSearch(initialParams: JobSearchParams) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [currentPage, setCurrentPage] = useState(initialParams.page || 1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
-  const [pageSize, setPageSize] = useState(initialParams.pageSize || 20);
   const [searchParams, setSearchParams] = useState<JobSearchParams>(initialParams);
-
-  // Memoized function to set the current page
-  const setPage = useCallback((page: number) => {
-    setCurrentPage(page);
-    setSearchParams(prev => ({ ...prev, page }));
-  }, []);
-
-  // Update page size with debounce to prevent multiple renders
-  const setPageSizeWithDebounce = useCallback(
-    debounce((size: number) => {
-      setPageSize(size);
-      setSearchParams(prev => ({ ...prev, pageSize: size, page: 1 }));
-      setCurrentPage(1);
-    }, 300),
-    []
-  );
-
-  // Memoized function to refresh jobs
-  const refreshJobs = useCallback(async () => {
+  
+  const fetchJobs = useCallback(async (params: JobSearchParams = searchParams) => {
     setIsLoading(true);
     setError(null);
-
+    
     try {
-      const result = await jobSearchService.searchJobsWithFallback(
-        searchParams,
-        currentPage,
-        pageSize
-      );
+      const { jobs: fetchedJobs, totalPages: pages, totalJobs: total } = 
+        await jobSearchService.searchJobsWithFallback(
+          params,
+          params.page || currentPage,
+          params.pageSize || 10
+        );
       
-      setJobs(result.jobs);
-      setTotalPages(result.totalPages);
-      setTotalJobs(result.totalJobs);
+      setJobs(fetchedJobs);
+      setTotalPages(pages);
+      setTotalJobs(total);
+      
     } catch (err) {
-      console.error('Error searching jobs:', err);
-      setError(err instanceof Error ? err : new Error('Failed to search jobs'));
+      console.error('Error in useJobSearch:', err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
+      toast.error('Failed to load jobs. Please try again later.');
     } finally {
       setIsLoading(false);
     }
-  }, [searchParams, currentPage, pageSize]);
-
-  // Fetch jobs when search parameters change
+  }, [searchParams, currentPage]);
+  
+  // Function to refresh jobs with current parameters
+  const refreshJobs = useCallback(async () => {
+    return fetchJobs();
+  }, [fetchJobs]);
+  
+  // Function to set page and refresh
+  const setPage = useCallback((page: number) => {
+    setCurrentPage(page);
+    fetchJobs({ ...searchParams, page });
+  }, [searchParams, fetchJobs]);
+  
+  // Initial fetch on mount
   useEffect(() => {
-    refreshJobs();
-  }, [
-    searchParams.keywords,
-    searchParams.location,
-    searchParams.jobType,
-    searchParams.country,
-    searchParams.experienceLevel,
-    searchParams.educationLevel,
-    searchParams.remote,
-    searchParams.radius,
-    searchParams.industry,
-    searchParams.sortBy,
-    currentPage,
-    pageSize,
-    refreshJobs
-  ]);
-
+    fetchJobs(initialParams);
+  }, [initialParams, fetchJobs]);
+  
   return {
     jobs,
     isLoading,
@@ -83,9 +62,7 @@ export function useJobSearch(initialParams: JobSearchParams): JobSearchResults {
     currentPage,
     totalPages,
     totalJobs,
-    pageSize,
     setPage,
-    setPageSize: setPageSizeWithDebounce,
     refreshJobs
   };
 }

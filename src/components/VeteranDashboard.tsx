@@ -1,8 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useJobContext, Job } from '@/context/JobContext';
 import { useUser } from '@/context/UserContext';
+import { supabase } from '@/integrations/supabase/client';
+import { mapSupabaseJobToJobModel } from '@/utils/jobMapping';
 import { 
   ClipboardList, 
   Briefcase, 
@@ -26,76 +27,31 @@ const VeteranDashboard: React.FC = () => {
   const { user } = useUser();
   const { savedJobs, appliedJobs } = useJobContext();
   const [recentJobs, setRecentJobs] = useState<Job[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
-    // Fetch recent job listings
+    // Fetch recent job listings from Supabase
     const fetchRecentJobs = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch('/api/jobs/recent');
-        const data = await response.json();
-        setRecentJobs(data.slice(0, 3));
+        const { data, error } = await supabase
+          .from('jobs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3);
+          
+        if (error) {
+          console.error('Error fetching recent jobs:', error);
+          return;
+        }
+        
+        // Map the jobs from Supabase to our Job model
+        const mappedJobs = data.map(mapSupabaseJobToJobModel);
+        setRecentJobs(mappedJobs);
       } catch (error) {
         console.error('Error fetching recent jobs:', error);
-        // Use mock data if fetch fails
-        setRecentJobs([
-          {
-            id: '1',
-            title: 'Software Engineer',
-            company: 'TechCorp',
-            location: 'Toronto, ON',
-            description: 'Develop and maintain software applications using modern technologies',
-            jobType: 'fulltime',
-            date: new Date().toISOString(),
-            category: 'technology',
-            salaryRange: 'range4',
-            remote: false,
-            clearanceLevel: 'none',
-            mosCode: '',
-            requiredSkills: ['JavaScript', 'React', 'Node.js'],
-            preferredSkills: ['TypeScript', 'AWS'],
-            industry: 'technology',
-            experienceLevel: 'mid',
-            educationLevel: 'bachelors',
-          },
-          {
-            id: '2',
-            title: 'Logistics Coordinator',
-            company: 'Supply Chain Inc',
-            location: 'Vancouver, BC',
-            description: 'Coordinate logistics operations and maintain efficiency',
-            jobType: 'fulltime',
-            date: new Date().toISOString(),
-            category: 'logistics',
-            salaryRange: 'range3',
-            remote: false,
-            clearanceLevel: 'confidential',
-            mosCode: 'LOG01',
-            requiredSkills: ['Logistics Management', 'Supply Chain', 'Inventory Control'],
-            preferredSkills: ['SAP', 'Six Sigma'],
-            industry: 'logistics',
-            experienceLevel: 'mid',
-            educationLevel: 'bachelors',
-          },
-          {
-            id: '3',
-            title: 'Security Analyst',
-            company: 'DefenseTech',
-            location: 'Ottawa, ON',
-            description: 'Analyze security requirements and provide recommendations',
-            jobType: 'fulltime',
-            date: new Date().toISOString(),
-            category: 'security',
-            salaryRange: 'range4',
-            remote: true,
-            clearanceLevel: 'secret',
-            mosCode: 'SEC02',
-            requiredSkills: ['Risk Assessment', 'Security Analysis', 'Documentation'],
-            preferredSkills: ['CISSP', 'Security+'],
-            industry: 'defense',
-            experienceLevel: 'senior',
-            educationLevel: 'masters',
-          }
-        ]);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -106,8 +62,8 @@ const VeteranDashboard: React.FC = () => {
   const statuses = {
     saved: savedJobs.length,
     applied: appliedJobs.length,
-    interviews: 2, // Mock data - would come from a real API
-    offers: 1, // Mock data - would come from a real API
+    interviews: 2, // This should be fetched from Supabase in a real implementation
+    offers: 1, // This should be fetched from Supabase in a real implementation
   };
   
   // Get upcoming events/interviews
@@ -131,7 +87,7 @@ const VeteranDashboard: React.FC = () => {
       type: 'followup'
     }
   ];
-
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-CA', { 
@@ -212,7 +168,21 @@ const VeteranDashboard: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentJobs.length > 0 ? (
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-4 border rounded-lg animate-pulse">
+                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full mb-3"></div>
+                    <div className="flex gap-2">
+                      <div className="h-6 bg-gray-200 rounded w-16"></div>
+                      <div className="h-6 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recentJobs.length > 0 ? (
               recentJobs.map((job) => (
                 <div key={job.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex justify-between items-start mb-2">

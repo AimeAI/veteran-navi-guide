@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState } from 'react';
 import { defaultFilters } from '../utils/jobUtils';
 import { useJobOperations } from '../hooks/useJobOperations';
 import { Job, JobFilterState, JobContextProps } from '../types/job';
+import { supabase } from '@/integrations/supabase/client';
+import { mapSupabaseJobToJobModel } from '@/utils/jobMapping';
 
 // Create the context
 const JobContext = createContext<JobContextProps | undefined>(undefined);
@@ -20,22 +22,44 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLoading(true);
     setError(null);
     try {
-      // For now, we'll use the mock job fetching function from jobUtils
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(searchFilters),
-      });
+      // Build the Supabase query based on filters
+      let query = supabase
+        .from('jobs')
+        .select('*');
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch jobs');
+      // Apply filters
+      if (searchFilters.keywords) {
+        query = query.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
       }
       
-      const jobData = await response.json();
+      if (searchFilters.location) {
+        query = query.ilike('location', `%${searchFilters.location}%`);
+      }
+      
+      if (searchFilters.remote) {
+        // Assuming jobs with remote=true are marked as such
+        query = query.eq('remote', true);
+      }
+      
+      if (searchFilters.jobType && searchFilters.jobType !== 'all') {
+        query = query.eq('job_type', searchFilters.jobType);
+      }
+      
+      if (searchFilters.industry && searchFilters.industry !== 'all') {
+        query = query.eq('industry', searchFilters.industry);
+      }
+      
+      const { data, error: supabaseError } = await query;
+      
+      if (supabaseError) {
+        throw new Error(`Supabase error: ${supabaseError.message}`);
+      }
+      
+      // Map Supabase data to our Job model
+      const jobData = data?.map(mapSupabaseJobToJobModel) || [];
       setJobs(jobData);
     } catch (err) {
+      console.error('Error searching jobs:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
     } finally {
       setLoading(false);

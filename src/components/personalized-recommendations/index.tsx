@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from '@/context/UserContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Star, Briefcase, BookOpen, MessageSquare, Calendar } from 'lucide-react';
@@ -10,6 +10,7 @@ import JobsTab from './JobsTab';
 import ResourcesTab from './ResourcesTab';
 import ForumTab from './ForumTab';
 import EventsTab from './EventsTab';
+import { mapSupabaseJobToJobModel } from '@/utils/jobMapping';
 
 /**
  * A card component that displays personalized recommendations for jobs, resources,
@@ -23,90 +24,94 @@ const PersonalizedRecommendations = () => {
     queryFn: async () => {
       console.log('Fetching personalized recommendations for:', user?.email);
       
-      // This would be replaced with actual Supabase fetch
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      // Mock data for demonstration
-      return {
-        jobs: [
-          {
-            id: "job1",
-            title: "Security Specialist",
-            company: "TechDefense Solutions",
-            matchScore: 95,
-            location: "Ottawa, ON",
-            remote: false
-          },
-          {
-            id: "job2",
-            title: "Logistics Coordinator",
-            company: "Supply Chain Enterprises",
-            matchScore: 87,
-            location: "Remote",
-            remote: true
-          },
-          {
-            id: "job3",
-            title: "Project Manager",
-            company: "Veterans Construction Group",
-            matchScore: 82,
-            location: "Toronto, ON",
-            remote: false
-          }
-        ],
-        resources: [
-          {
-            id: "res1",
-            title: "Resume Building for Veterans",
-            category: "Career Development",
-            description: "Learn how to translate military experience to civilian terms",
-            url: "/resources/resume-building",
-            relevanceScore: 90
-          },
-          {
-            id: "res2",
-            title: "Military Benefits Guide",
-            category: "Benefits",
-            description: "Comprehensive guide to veteran benefits in Canada",
-            url: "/resources/benefits-guide",
-            relevanceScore: 85
-          }
-        ],
-        forumTopics: [
-          {
-            id: "forum1",
-            title: "Transitioning to IT Careers",
-            category: "Career Transition",
-            replies: 24,
-            relevanceScore: 88
-          },
-          {
-            id: "forum2",
-            title: "Networking Tips for Veterans",
-            category: "Networking",
-            replies: 15,
-            relevanceScore: 82
-          }
-        ],
-        events: [
-          {
-            id: "event1",
-            title: "Veterans Career Fair",
-            date: "2023-11-15T10:00:00",
-            location: "Ottawa Convention Center",
-            virtual: false,
-            relevanceScore: 94
-          },
-          {
-            id: "event2",
-            title: "Military to Civilian Resume Workshop",
-            date: "2023-11-08T14:00:00",
-            location: "Virtual",
-            virtual: true,
-            relevanceScore: 89
-          }
-        ]
-      };
+      try {
+        // Fetch jobs from Supabase
+        const { data: jobsData, error: jobsError } = await supabase
+          .from('jobs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3);
+          
+        if (jobsError) {
+          console.error('Error fetching jobs:', jobsError);
+          throw new Error(jobsError.message);
+        }
+        
+        const jobs = jobsData.map((job) => {
+          const mappedJob = mapSupabaseJobToJobModel(job);
+          // Add match score (this would typically be calculated based on user skills)
+          return {
+            id: mappedJob.id,
+            title: mappedJob.title,
+            company: mappedJob.company,
+            matchScore: Math.floor(Math.random() * 20) + 80, // Random score between 80-100 for demo
+            location: mappedJob.location,
+            remote: mappedJob.remote
+          };
+        });
+        
+        // Note: These other data sections would typically be fetched from Supabase tables too
+        // For this implementation, we'll keep the mock data for resources, forum and events
+        
+        return {
+          jobs,
+          resources: [
+            {
+              id: "res1",
+              title: "Resume Building for Veterans",
+              category: "Career Development",
+              description: "Learn how to translate military experience to civilian terms",
+              url: "/resources/resume-building",
+              relevanceScore: 90
+            },
+            {
+              id: "res2",
+              title: "Military Benefits Guide",
+              category: "Benefits",
+              description: "Comprehensive guide to veteran benefits in Canada",
+              url: "/resources/benefits-guide",
+              relevanceScore: 85
+            }
+          ],
+          forumTopics: [
+            {
+              id: "forum1",
+              title: "Transitioning to IT Careers",
+              category: "Career Transition",
+              replies: 24,
+              relevanceScore: 88
+            },
+            {
+              id: "forum2",
+              title: "Networking Tips for Veterans",
+              category: "Networking",
+              replies: 15,
+              relevanceScore: 82
+            }
+          ],
+          events: [
+            {
+              id: "event1",
+              title: "Veterans Career Fair",
+              date: "2023-11-15T10:00:00",
+              location: "Ottawa Convention Center",
+              virtual: false,
+              relevanceScore: 94
+            },
+            {
+              id: "event2",
+              title: "Military to Civilian Resume Workshop",
+              date: "2023-11-08T14:00:00",
+              location: "Virtual",
+              virtual: true,
+              relevanceScore: 89
+            }
+          ]
+        };
+      } catch (error) {
+        console.error("Error fetching personalized recommendations:", error);
+        throw error;
+      }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -120,7 +125,7 @@ const PersonalizedRecommendations = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <TabLoader error={error as Error | null} isLoading={false} children={
+        <TabLoader error={error as Error | null} isLoading={isLoading} children={
           <Tabs defaultValue="jobs" className="w-full">
             <TabsList className="grid grid-cols-4 mb-4">
               <TabsTrigger value="jobs" className="flex items-center">
