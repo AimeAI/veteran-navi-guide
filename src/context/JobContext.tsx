@@ -26,34 +26,40 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      // Create a base query without type annotations that cause issues
-      let query = supabase.from('jobs').select('*');
-      
-      // Apply filters one by one
-      if (searchFilters.keywords) {
-        query = query.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
-      }
-      
-      if (searchFilters.location) {
-        query = query.ilike('location', `%${searchFilters.location}%`);
-      }
-      
-      if (searchFilters.remote) {
-        // Assuming jobs with remote=true are marked as such
-        query = query.eq('remote', true);
-      }
-      
-      if (searchFilters.jobType && searchFilters.jobType !== 'all') {
-        query = query.eq('job_type', searchFilters.jobType);
-      }
-      
-      if (searchFilters.industry && searchFilters.industry !== 'all') {
-        query = query.eq('industry', searchFilters.industry);
-      }
+      // Build filters as an array of filter functions to avoid deep type instantiation
+      const applyFilters = async () => {
+        // Start with base query
+        const baseQuery = supabase.from('jobs').select('*');
+        
+        // Build filters conditionally
+        let filterQuery = baseQuery;
+        
+        if (searchFilters.keywords) {
+          filterQuery = filterQuery.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
+        }
+        
+        if (searchFilters.location) {
+          filterQuery = filterQuery.ilike('location', `%${searchFilters.location}%`);
+        }
+        
+        if (searchFilters.remote) {
+          filterQuery = filterQuery.eq('remote', true);
+        }
+        
+        if (searchFilters.jobType && searchFilters.jobType !== 'all') {
+          filterQuery = filterQuery.eq('job_type', searchFilters.jobType);
+        }
+        
+        if (searchFilters.industry && searchFilters.industry !== 'all') {
+          filterQuery = filterQuery.eq('industry', searchFilters.industry);
+        }
+        
+        // Execute the query
+        return await filterQuery;
+      };
       
       // Execute query with performance logging
-      const { data, error: supabaseError } = await logger.perf('Jobs query execution', 
-        async () => await query);
+      const { data, error: supabaseError } = await logger.perf('Jobs query execution', applyFilters);
       
       if (supabaseError) {
         throw new Error(`Supabase error: ${supabaseError.message}`);
