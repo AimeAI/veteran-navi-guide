@@ -22,34 +22,35 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLoading(true);
     setError(null);
     try {
-      // Build the Supabase query based on filters
-      let query = supabase
-        .from('jobs')
-        .select('*');
+      // Start with base query
+      const baseQuery = supabase.from('jobs').select('*');
       
-      // Apply filters
+      // Apply filters - using explicit type annotations to avoid deep instantiation
+      let finalQuery = baseQuery;
+      
       if (searchFilters.keywords) {
-        query = query.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
+        finalQuery = finalQuery.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
       }
       
       if (searchFilters.location) {
-        query = query.ilike('location', `%${searchFilters.location}%`);
+        finalQuery = finalQuery.ilike('location', `%${searchFilters.location}%`);
       }
       
       if (searchFilters.remote) {
         // Assuming jobs with remote=true are marked as such
-        query = query.eq('remote', true);
+        finalQuery = finalQuery.eq('remote', true);
       }
       
       if (searchFilters.jobType && searchFilters.jobType !== 'all') {
-        query = query.eq('job_type', searchFilters.jobType);
+        finalQuery = finalQuery.eq('job_type', searchFilters.jobType);
       }
       
       if (searchFilters.industry && searchFilters.industry !== 'all') {
-        query = query.eq('industry', searchFilters.industry);
+        finalQuery = finalQuery.eq('industry', searchFilters.industry);
       }
       
-      const { data, error: supabaseError } = await query;
+      // Execute query
+      const { data, error: supabaseError } = await finalQuery;
       
       if (supabaseError) {
         throw new Error(`Supabase error: ${supabaseError.message}`);
