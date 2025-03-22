@@ -6,7 +6,7 @@ import { Job, JobFilterState, JobContextProps } from '../types/job';
 import { supabase } from '@/integrations/supabase/client';
 import { mapSupabaseJobToJobModel } from '@/utils/jobMapping';
 
-// Create the context
+// Create the context with a more explicit type definition
 const JobContext = createContext<JobContextProps | undefined>(undefined);
 
 // Context Provider component
@@ -71,23 +71,24 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setFilters(defaultFilters);
   };
 
+  // Create the context value explicitly to help TypeScript resolve types
+  const contextValue: JobContextProps = {
+    jobs,
+    savedJobs,
+    appliedJobs,
+    loading,
+    error,
+    filters,
+    setFilters,
+    saveJob,
+    unsaveJob,
+    applyToJob,
+    searchJobs,
+    clearFilters,
+  };
+
   return (
-    <JobContext.Provider
-      value={{
-        jobs,
-        savedJobs,
-        appliedJobs,
-        loading,
-        error,
-        filters,
-        setFilters,
-        saveJob,
-        unsaveJob,
-        applyToJob,
-        searchJobs,
-        clearFilters,
-      }}
-    >
+    <JobContext.Provider value={contextValue}>
       {children}
     </JobContext.Provider>
   );
