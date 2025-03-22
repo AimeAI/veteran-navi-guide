@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { QueryCache } from './batchOperations';
+import { config } from '@/config/environment';
+import logger from '@/utils/logger';
 
 // Global API rate limiter instance
 const globalRateLimiter = new QueryCache<string, number>(60000); // 1 minute cache
@@ -15,7 +17,7 @@ const globalRateLimiter = new QueryCache<string, number>(60000); // 1 minute cac
 export async function cachedFetch<T>(
   cacheKey: string,
   fetchFn: () => Promise<T>,
-  ttlMs: number = 5 * 60 * 1000 // Default 5 minutes cache
+  ttlMs: number = config.cacheTimeMs // Use environment configured cache time
 ): Promise<T> {
   // Check if we have this item in sessionStorage cache
   const cachedData = sessionStorage.getItem(cacheKey);
@@ -24,67 +26,70 @@ export async function cachedFetch<T>(
     try {
       const parsed = JSON.parse(cachedData);
       if (parsed.expiry > Date.now()) {
-        console.log(`🔍 Cache hit for ${cacheKey}`);
+        logger.debug(`Cache hit for ${cacheKey}`);
         return parsed.data as T;
       }
-      console.log(`🔍 Cache expired for ${cacheKey}`);
+      logger.debug(`Cache expired for ${cacheKey}`);
       sessionStorage.removeItem(cacheKey);
     } catch (error) {
-      console.error('Error parsing cached data:', error);
+      logger.error('Error parsing cached data:', error);
       sessionStorage.removeItem(cacheKey);
     }
   }
   
   // If not in cache or expired, fetch fresh data
-  console.log(`🔍 Cache miss for ${cacheKey}, fetching fresh data`);
-  const data = await fetchFn();
+  logger.debug(`Cache miss for ${cacheKey}, fetching fresh data`);
   
-  // Cache the new result
-  try {
-    sessionStorage.setItem(cacheKey, JSON.stringify({
-      data,
-      expiry: Date.now() + ttlMs
-    }));
-  } catch (e) {
-    // Handle potential QuotaExceededError
-    console.warn('Failed to cache response, possibly due to storage limits:', e);
+  return await logger.perf(`API request: ${cacheKey}`, async () => {
+    const data = await fetchFn();
     
-    // Clean up older cache entries if we hit storage limits
+    // Cache the new result
     try {
-      const keys = [];
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        if (key && key.startsWith('cache:')) {
-          keys.push(key);
-        }
-      }
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        data,
+        expiry: Date.now() + ttlMs
+      }));
+    } catch (e) {
+      // Handle potential QuotaExceededError
+      logger.warn('Failed to cache response, possibly due to storage limits:', e);
       
-      if (keys.length > 10) { // If we have more than 10, remove the oldest ones
-        // Sort by expiry time
-        keys.sort((a, b) => {
-          const aData = JSON.parse(sessionStorage.getItem(a) || '{}');
-          const bData = JSON.parse(sessionStorage.getItem(b) || '{}');
-          return (aData.expiry || 0) - (bData.expiry || 0);
-        });
-        
-        // Remove the oldest 20% of entries
-        const toRemove = Math.max(1, Math.floor(keys.length * 0.2));
-        for (let i = 0; i < toRemove; i++) {
-          sessionStorage.removeItem(keys[i]);
+      // Clean up older cache entries if we hit storage limits
+      try {
+        const keys = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('cache:')) {
+            keys.push(key);
+          }
         }
         
-        // Try to cache again
-        sessionStorage.setItem(cacheKey, JSON.stringify({
-          data,
-          expiry: Date.now() + ttlMs
-        }));
+        if (keys.length > 10) { // If we have more than 10, remove the oldest ones
+          // Sort by expiry time
+          keys.sort((a, b) => {
+            const aData = JSON.parse(sessionStorage.getItem(a) || '{}');
+            const bData = JSON.parse(sessionStorage.getItem(b) || '{}');
+            return (aData.expiry || 0) - (bData.expiry || 0);
+          });
+          
+          // Remove the oldest 20% of entries
+          const toRemove = Math.max(1, Math.floor(keys.length * 0.2));
+          for (let i = 0; i < toRemove; i++) {
+            sessionStorage.removeItem(keys[i]);
+          }
+          
+          // Try to cache again
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            data,
+            expiry: Date.now() + ttlMs
+          }));
+        }
+      } catch (e2) {
+        logger.error('Failed to manage cache storage:', e2);
       }
-    } catch (e2) {
-      console.error('Failed to manage cache storage:', e2);
     }
-  }
-  
-  return data;
+    
+    return data;
+  });
 }
 
 /**
@@ -125,7 +130,7 @@ export async function paginatedQuery<T>(
     const { count, error: countError } = await modifiedCountQuery;
     
     if (countError) {
-      console.error('Error getting count for paginated query:', countError);
+      logger.error('Error getting count for paginated query:', countError);
       throw countError;
     }
     
@@ -147,7 +152,7 @@ export async function paginatedQuery<T>(
     const { data, error: dataError } = await modifiedDataQuery;
     
     if (dataError) {
-      console.error('Error executing paginated query:', dataError);
+      logger.error('Error executing paginated query:', dataError);
       throw dataError;
     }
     
@@ -188,7 +193,7 @@ export function clearApiCache(): void {
   }
   
   keysToRemove.forEach(key => sessionStorage.removeItem(key));
-  console.log(`Cleared ${keysToRemove.length} cached API responses`);
+  logger.info(`Cleared ${keysToRemove.length} cached API responses`);
 }
 
 /**

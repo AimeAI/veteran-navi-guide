@@ -5,6 +5,8 @@ import { useJobOperations } from '../hooks/useJobOperations';
 import { Job, JobFilterState, JobContextProps } from '../types/job';
 import { supabase } from '@/integrations/supabase/client';
 import { mapSupabaseJobToJobModel } from '@/utils/jobMapping';
+import logger from '@/utils/logger';
+import { config } from '@/config/environment';
 
 // Create the context with a more explicit type definition
 const JobContext = createContext<JobContextProps | undefined>(undefined);
@@ -19,38 +21,43 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Function to search for jobs
   const searchJobs = async (searchFilters: JobFilterState) => {
+    logger.info('Searching for jobs with filters', searchFilters);
     setLoading(true);
     setError(null);
+    
     try {
+      // Create a type-safe query builder approach to avoid deep instantiation errors
+      type QueryBuilder = ReturnType<typeof supabase.from<'jobs'>>;
+      
       // Start with base query
-      const baseQuery = supabase.from('jobs').select('*');
+      let query: QueryBuilder = supabase.from('jobs').select('*');
       
-      // Apply filters - using explicit type annotations to avoid deep instantiation
-      let finalQuery = baseQuery;
-      
+      // Apply filters one by one
       if (searchFilters.keywords) {
-        finalQuery = finalQuery.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
+        const keywordsFilter = `title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`;
+        query = query.or(keywordsFilter);
       }
       
       if (searchFilters.location) {
-        finalQuery = finalQuery.ilike('location', `%${searchFilters.location}%`);
+        query = query.ilike('location', `%${searchFilters.location}%`);
       }
       
       if (searchFilters.remote) {
         // Assuming jobs with remote=true are marked as such
-        finalQuery = finalQuery.eq('remote', true);
+        query = query.eq('remote', true);
       }
       
       if (searchFilters.jobType && searchFilters.jobType !== 'all') {
-        finalQuery = finalQuery.eq('job_type', searchFilters.jobType);
+        query = query.eq('job_type', searchFilters.jobType);
       }
       
       if (searchFilters.industry && searchFilters.industry !== 'all') {
-        finalQuery = finalQuery.eq('industry', searchFilters.industry);
+        query = query.eq('industry', searchFilters.industry);
       }
       
-      // Execute query
-      const { data, error: supabaseError } = await finalQuery;
+      // Execute query with performance logging
+      const { data, error: supabaseError } = await logger.perf('Jobs query execution', 
+        () => query);
       
       if (supabaseError) {
         throw new Error(`Supabase error: ${supabaseError.message}`);
@@ -59,8 +66,12 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Map Supabase data to our Job model
       const jobData = data?.map(mapSupabaseJobToJobModel) || [];
       setJobs(jobData);
+      
+      // Log successful search in debug mode
+      logger.debug(`Found ${jobData.length} jobs matching search criteria`);
+      
     } catch (err) {
-      console.error('Error searching jobs:', err);
+      logger.error('Error searching jobs:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch jobs'));
     } finally {
       setLoading(false);
@@ -69,6 +80,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Function to clear filters
   const clearFilters = () => {
+    logger.debug('Clearing search filters');
     setFilters(defaultFilters);
   };
 

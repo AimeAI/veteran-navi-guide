@@ -1,7 +1,8 @@
-
 /**
  * Performance utility functions for optimizing application performance
  */
+import { config } from '@/config/environment';
+import logger from '@/utils/logger';
 
 // A simple performance monitor that measures execution time
 export const measurePerformance = (
@@ -9,13 +10,7 @@ export const measurePerformance = (
   fn: (...args: any[]) => any, 
   ...args: any[]
 ): any => {
-  const start = performance.now();
-  try {
-    return fn(...args);
-  } finally {
-    const end = performance.now();
-    console.log(`⚡️ ${name} executed in ${(end - start).toFixed(2)}ms`);
-  }
+  return logger.perf(name, () => fn(...args));
 };
 
 // Cache results of expensive operations with optional expiration
@@ -24,18 +19,18 @@ const cache: Record<string, { value: any; expiry: number }> = {};
 export const memoizeWithExpiry = <T>(
   fn: (...args: any[]) => T,
   keyFn: (...args: any[]) => string = (...args) => JSON.stringify(args),
-  expiryMs = 5 * 60 * 1000 // 5 minutes default
+  expiryMs = config.cacheTimeMs // Use environment configured cache time
 ): ((...args: any[]) => T) => {
   return (...args: any[]): T => {
     const key = keyFn(...args);
     const now = Date.now();
     
     if (key in cache && cache[key].expiry > now) {
-      console.log(`🔍 Cache hit for ${key}`);
+      logger.debug(`🔍 Cache hit for ${key}`);
       return cache[key].value;
     }
     
-    console.log(`🔍 Cache miss for ${key}`);
+    logger.debug(`🔍 Cache miss for ${key}`);
     const result = fn(...args);
     cache[key] = {
       value: result,
@@ -82,9 +77,9 @@ export const optimizeImageLoading = (imgElement: HTMLImageElement): void => {
   
   // Add decoded callback for timing
   imgElement.decode().then(() => {
-    console.log(`🖼️ Image decoded: ${imgElement.src}`);
+    logger.debug(`🖼️ Image decoded: ${imgElement.src}`);
   }).catch(err => {
-    console.error(`Image decode error for ${imgElement.src}:`, err);
+    logger.error(`Image decode error for ${imgElement.src}:`, err);
   });
 };
 
@@ -92,7 +87,7 @@ export const optimizeImageLoading = (imgElement: HTMLImageElement): void => {
 export const enhancedFetch = async (
   url: string,
   options: RequestInit = {},
-  cacheTime = 5 * 60 * 1000, // 5 minutes
+  cacheTime = config.cacheTimeMs, // Use environment configured cache time
   timeout = 8000 // 8 seconds
 ): Promise<Response> => {
   const cacheKey = `fetch:${url}:${JSON.stringify(options)}`;
@@ -102,16 +97,16 @@ export const enhancedFetch = async (
     try {
       const { data, expiry } = JSON.parse(cachedResponse);
       if (expiry > Date.now()) {
-        console.log(`📦 Using cached response for ${url}`);
+        logger.debug(`📦 Using cached response for ${url}`);
         return new Response(new Blob([JSON.stringify(data)]), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
         });
       }
-      console.log(`📦 Cache expired for ${url}`);
+      logger.debug(`📦 Cache expired for ${url}`);
       sessionStorage.removeItem(cacheKey);
     } catch (error) {
-      console.error('Error parsing cached data:', error);
+      logger.error('Error parsing cached data:', error);
       sessionStorage.removeItem(cacheKey);
     }
   }
@@ -201,7 +196,7 @@ export function measureRenderPerformance(callback: () => void): void {
 export const connectionHealthMonitor = {
   failedRequests: 0,
   lastCheckTime: Date.now(),
-  maxFailedRequests: 3,
+  maxFailedRequests: config.maxApiRetries, // Use environment configured max retries
   checkInterval: 30000, // 30 seconds
   
   recordSuccess() {
