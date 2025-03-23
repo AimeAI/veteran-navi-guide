@@ -7,4 +7,15 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/config/environment';
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Create the Supabase client
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true
+  }
+});
+
+// For development debugging
+if (import.meta.env.MODE === 'development' && import.meta.env.VITE_DEBUG === 'true') {
+  console.log('🔌 Supabase client initialized with URL:', SUPABASE_URL);
+}

@@ -21,10 +21,13 @@ interface EnvironmentConfig {
   enableAdvancedSearch: boolean;
   enableRealTimeNotifications: boolean;
   
-  // API limits and caching
-  cacheTimeMs: number;
+  // API configuration
+  apiTimeoutMs: number;
   maxApiRetries: number;
   apiRateLimitPerMinute: number;
+  
+  // Cache settings
+  cacheTimeMs: number;
   
   // Debug settings
   debug: boolean;
@@ -41,10 +44,13 @@ const defaultConfig: EnvironmentConfig = {
   enableAdvancedSearch: false,
   enableRealTimeNotifications: false,
   
-  // API defaults
-  cacheTimeMs: 5 * 60 * 1000, // 5 minutes
+  // API configuration
+  apiTimeoutMs: 30000, // 30 seconds
   maxApiRetries: 3,
   apiRateLimitPerMinute: 60,
+  
+  // Cache settings
+  cacheTimeMs: 5 * 60 * 1000, // 5 minutes
   
   // Debug settings
   debug: false,
@@ -70,6 +76,7 @@ const environmentConfigs: Record<string, Partial<EnvironmentConfig>> = {
     enableMilitarySkillsMatcher: true,
     enableAdvancedSearch: true,
     cacheTimeMs: 15 * 60 * 1000, // 15 minutes in production for better performance
+    maxApiRetries: 5, // More retries in production
   },
 };
 
@@ -97,6 +104,24 @@ const processEnvVars = (): Partial<EnvironmentConfig> => {
   
   if (import.meta.env.VITE_ENABLE_REAL_TIME_NOTIFICATIONS) {
     envConfig.enableRealTimeNotifications = import.meta.env.VITE_ENABLE_REAL_TIME_NOTIFICATIONS === 'true';
+  }
+  
+  // API configurations
+  if (import.meta.env.VITE_API_TIMEOUT_MS) {
+    envConfig.apiTimeoutMs = parseInt(import.meta.env.VITE_API_TIMEOUT_MS as string, 10);
+  }
+  
+  if (import.meta.env.VITE_MAX_API_RETRIES) {
+    envConfig.maxApiRetries = parseInt(import.meta.env.VITE_MAX_API_RETRIES as string, 10);
+  }
+  
+  if (import.meta.env.VITE_API_RATE_LIMIT) {
+    envConfig.apiRateLimitPerMinute = parseInt(import.meta.env.VITE_API_RATE_LIMIT as string, 10);
+  }
+  
+  // Cache settings
+  if (import.meta.env.VITE_CACHE_TIME_MS) {
+    envConfig.cacheTimeMs = parseInt(import.meta.env.VITE_CACHE_TIME_MS as string, 10);
   }
   
   // Debug settings
@@ -136,9 +161,11 @@ export const config = buildConfig();
 export const SUPABASE_URL = config.supabaseUrl;
 export const SUPABASE_ANON_KEY = config.supabaseAnonKey;
 export const DEBUG_MODE = config.debug;
+export const API_TIMEOUT = config.apiTimeoutMs;
+export const MAX_API_RETRIES = config.maxApiRetries;
 
 // Helper to check feature flags
-export const isFeatureEnabled = (featureName: keyof EnvironmentConfig): boolean => {
+export const isFeatureEnabled = (featureName: keyof Pick<EnvironmentConfig, 'enableMilitarySkillsMatcher' | 'enableAdvancedSearch' | 'enableRealTimeNotifications'>): boolean => {
   return Boolean(config[featureName]);
 };
 

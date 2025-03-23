@@ -1,6 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { QueryCache } from './batchOperations';
-import { config } from '@/config/environment';
+import { config, MAX_API_RETRIES } from '@/config/environment';
 import logger from '@/utils/logger';
 
 // Global API rate limiter instance
@@ -37,58 +38,77 @@ export async function cachedFetch<T>(
     }
   }
   
-  // If not in cache or expired, fetch fresh data
+  // If not in cache or expired, fetch fresh data with retries
   logger.debug(`Cache miss for ${cacheKey}, fetching fresh data`);
   
   return await logger.perf(`API request: ${cacheKey}`, async () => {
-    const data = await fetchFn();
+    let lastError = null;
     
-    // Cache the new result
-    try {
-      sessionStorage.setItem(cacheKey, JSON.stringify({
-        data,
-        expiry: Date.now() + ttlMs
-      }));
-    } catch (e) {
-      // Handle potential QuotaExceededError
-      logger.warn('Failed to cache response, possibly due to storage limits:', e);
-      
-      // Clean up older cache entries if we hit storage limits
+    // Retry the fetch operation up to MAX_API_RETRIES times
+    for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
       try {
-        const keys = [];
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);
-          if (key && key.startsWith('cache:')) {
-            keys.push(key);
-          }
-        }
+        const data = await fetchFn();
         
-        if (keys.length > 10) { // If we have more than 10, remove the oldest ones
-          // Sort by expiry time
-          keys.sort((a, b) => {
-            const aData = JSON.parse(sessionStorage.getItem(a) || '{}');
-            const bData = JSON.parse(sessionStorage.getItem(b) || '{}');
-            return (aData.expiry || 0) - (bData.expiry || 0);
-          });
-          
-          // Remove the oldest 20% of entries
-          const toRemove = Math.max(1, Math.floor(keys.length * 0.2));
-          for (let i = 0; i < toRemove; i++) {
-            sessionStorage.removeItem(keys[i]);
-          }
-          
-          // Try to cache again
+        // Cache the new result
+        try {
           sessionStorage.setItem(cacheKey, JSON.stringify({
             data,
             expiry: Date.now() + ttlMs
           }));
+        } catch (e) {
+          // Handle potential QuotaExceededError
+          logger.warn('Failed to cache response, possibly due to storage limits:', e);
+          
+          // Clean up older cache entries if we hit storage limits
+          try {
+            const keys = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+              const key = sessionStorage.key(i);
+              if (key && key.startsWith('cache:')) {
+                keys.push(key);
+              }
+            }
+            
+            if (keys.length > 10) { // If we have more than 10, remove the oldest ones
+              // Sort by expiry time
+              keys.sort((a, b) => {
+                const aData = JSON.parse(sessionStorage.getItem(a) || '{}');
+                const bData = JSON.parse(sessionStorage.getItem(b) || '{}');
+                return (aData.expiry || 0) - (bData.expiry || 0);
+              });
+              
+              // Remove the oldest 20% of entries
+              const toRemove = Math.max(1, Math.floor(keys.length * 0.2));
+              for (let i = 0; i < toRemove; i++) {
+                sessionStorage.removeItem(keys[i]);
+              }
+              
+              // Try to cache again
+              sessionStorage.setItem(cacheKey, JSON.stringify({
+                data,
+                expiry: Date.now() + ttlMs
+              }));
+            }
+          } catch (e2) {
+            logger.error('Failed to manage cache storage:', e2);
+          }
         }
-      } catch (e2) {
-        logger.error('Failed to manage cache storage:', e2);
+        
+        return data;
+      } catch (error) {
+        lastError = error;
+        logger.warn(`API request attempt ${attempt} failed: ${error}`);
+        
+        // Only wait and retry if we haven't reached the max retries yet
+        if (attempt < MAX_API_RETRIES) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Exponential backoff up to 10 seconds
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
     }
     
-    return data;
+    // If we've exhausted all retries, throw the last error
+    throw lastError || new Error('Failed to fetch data after multiple attempts');
   });
 }
 
