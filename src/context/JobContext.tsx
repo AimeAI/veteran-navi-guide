@@ -26,40 +26,45 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      // Build filters as an array of filter functions to avoid deep type instantiation
-      const applyFilters = async () => {
-        // Start with base query
-        const baseQuery = supabase.from('jobs').select('*');
-        
-        // Build filters conditionally
-        let filterQuery = baseQuery;
+      // Using a string-based approach to avoid TypeScript deep instantiation issues
+      const fetchJobs = async () => {
+        // Build query parts as strings first
+        let conditions = [];
+        let query = supabase.from('jobs').select('*');
         
         if (searchFilters.keywords) {
-          filterQuery = filterQuery.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
+          conditions.push(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
         }
         
+        // Apply OR condition if we have keyword filters
+        if (conditions.length > 0) {
+          query = query.or(conditions.join(','));
+        }
+        
+        // Apply other filters as regular conditions
         if (searchFilters.location) {
-          filterQuery = filterQuery.ilike('location', `%${searchFilters.location}%`);
+          query = query.ilike('location', `%${searchFilters.location}%`);
         }
         
         if (searchFilters.remote) {
-          filterQuery = filterQuery.eq('remote', true);
+          query = query.eq('remote', true);
         }
         
         if (searchFilters.jobType && searchFilters.jobType !== 'all') {
-          filterQuery = filterQuery.eq('job_type', searchFilters.jobType);
+          query = query.eq('job_type', searchFilters.jobType);
         }
         
         if (searchFilters.industry && searchFilters.industry !== 'all') {
-          filterQuery = filterQuery.eq('industry', searchFilters.industry);
+          query = query.eq('industry', searchFilters.industry);
         }
         
-        // Execute the query
-        return await filterQuery;
+        // Execute the query and return the result
+        return await query;
       };
       
       // Execute query with performance logging
-      const { data, error: supabaseError } = await logger.perf('Jobs query execution', applyFilters);
+      const result = await logger.perf('Jobs query execution', fetchJobs);
+      const { data, error: supabaseError } = result;
       
       if (supabaseError) {
         throw new Error(`Supabase error: ${supabaseError.message}`);
