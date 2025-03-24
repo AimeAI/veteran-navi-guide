@@ -26,47 +26,45 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      // Using a direct approach to avoid TypeScript deep instantiation issues
-      const fetchJobs = async () => {
-        // Create a base query without type annotations
-        const query = supabase.from('jobs').select('*');
+      // Create a function that builds and executes the query without complex chaining
+      const executeQuery = async () => {
+        // First, get a reference to the jobs table
+        let query = supabase.from('jobs').select('*');
         
-        // Apply filters sequentially without chaining
-        let finalQuery = query;
+        // Apply filters one by one to avoid deep type chains
         
-        // Apply keyword filter using OR
+        // Apply keyword filter (title OR description)
         if (searchFilters.keywords) {
-          // Build the OR filter string
-          const keywordFilter = `title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`;
-          finalQuery = finalQuery.or(keywordFilter);
+          // Build a simple filter string instead of using the .or() method
+          query = query.filter('title.ilike.%' + searchFilters.keywords + '%,description.ilike.%' + searchFilters.keywords + '%');
         }
         
         // Apply location filter if present
         if (searchFilters.location) {
-          finalQuery = finalQuery.ilike('location', `%${searchFilters.location}%`);
+          query = query.ilike('location', `%${searchFilters.location}%`);
         }
         
         // Apply remote filter if enabled
         if (searchFilters.remote) {
-          finalQuery = finalQuery.eq('remote', true);
+          query = query.eq('remote', true);
         }
         
         // Apply job type filter if specified
         if (searchFilters.jobType && searchFilters.jobType !== 'all') {
-          finalQuery = finalQuery.eq('job_type', searchFilters.jobType);
+          query = query.eq('job_type', searchFilters.jobType);
         }
         
         // Apply industry filter if specified
         if (searchFilters.industry && searchFilters.industry !== 'all') {
-          finalQuery = finalQuery.eq('industry', searchFilters.industry);
+          query = query.eq('industry', searchFilters.industry);
         }
         
         // Execute the query and return the result
-        return await finalQuery;
+        return await query;
       };
       
       // Execute the query with performance logging
-      const result = await logger.perf('Jobs query execution', fetchJobs);
+      const result = await logger.perf('Jobs query execution', executeQuery);
       
       if (result.error) {
         throw new Error(`Supabase error: ${result.error.message}`);
