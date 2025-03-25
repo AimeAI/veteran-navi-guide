@@ -26,17 +26,17 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      // Create a function that builds and executes the query without complex chaining
-      const executeQuery = async () => {
-        // First, get a reference to the jobs table
+      // Use a simpler approach to avoid deep type instantiation issues
+      const fetchData = async () => {
+        // Start with a basic query
         let query = supabase.from('jobs').select('*');
         
-        // Apply filters one by one to avoid deep type chains
+        // Apply filters individually using string conditions where possible
         
-        // Apply keyword filter (title OR description)
+        // Handle keywords (title OR description) using a custom filter string
         if (searchFilters.keywords) {
-          // Build a simple filter string instead of using the .or() method
-          query = query.filter('title.ilike.%' + searchFilters.keywords + '%,description.ilike.%' + searchFilters.keywords + '%');
+          // Using a simpler approach with filter method that accepts a string
+          query = query.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
         }
         
         // Apply location filter if present
@@ -59,12 +59,12 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           query = query.eq('industry', searchFilters.industry);
         }
         
-        // Execute the query and return the result
+        // Execute and return the query
         return await query;
       };
       
       // Execute the query with performance logging
-      const result = await logger.perf('Jobs query execution', executeQuery);
+      const result = await logger.perf('Jobs query execution', fetchData);
       
       if (result.error) {
         throw new Error(`Supabase error: ${result.error.message}`);
