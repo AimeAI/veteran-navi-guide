@@ -26,16 +26,13 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      // Use a simpler approach to avoid deep type instantiation issues
+      // Build query using a more direct approach to avoid deep type instantiation
       const fetchData = async () => {
         // Start with a basic query
         let query = supabase.from('jobs').select('*');
         
-        // Apply filters individually using string conditions where possible
-        
-        // Handle keywords (title OR description) using a custom filter string
+        // Apply keyword filter (title OR description) using string syntax
         if (searchFilters.keywords) {
-          // Using a simpler approach with filter method that accepts a string
           query = query.or(`title.ilike.%${searchFilters.keywords}%,description.ilike.%${searchFilters.keywords}%`);
         }
         
@@ -59,7 +56,7 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           query = query.eq('industry', searchFilters.industry);
         }
         
-        // Execute and return the query
+        // Execute the query
         return await query;
       };
       
