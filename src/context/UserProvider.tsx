@@ -20,17 +20,24 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const initializeAuth = async () => {
       setIsLoading(true);
-      
+
+      // Skip auth if Supabase is not configured
+      if (!supabase) {
+        console.log('⚠️ Auth disabled - Supabase not configured');
+        setIsLoading(false);
+        return;
+      }
+
       // Get current session
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       setSession(currentSession);
-      
+
       if (currentSession?.user) {
         setSupabaseUser(currentSession.user);
-        
+
         // Fetch user profile
         const { profile, error } = await userProfileService.fetchUserProfile(currentSession.user);
-        
+
         if (profile) {
           setUser(profile);
         }
@@ -38,21 +45,21 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(null);
         setSupabaseUser(null);
       }
-      
+
       setIsLoading(false);
-      
+
       // Set up auth subscription for real-time updates
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, newSession) => {
           console.log("Auth state changed:", event);
           setSession(newSession);
           setSupabaseUser(newSession?.user || null);
-          
+
           if (event === 'SIGNED_IN' && newSession?.user) {
             setIsLoading(true);
             // Fetch user profile on sign in
             const { profile } = await userProfileService.fetchUserProfile(newSession.user);
-            
+
             if (profile) {
               setUser(profile);
               toast.success("Welcome back!");
@@ -64,13 +71,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
       );
-      
+
       // Cleanup subscription on unmount
       return () => {
         subscription.unsubscribe();
       };
     };
-    
+
     initializeAuth();
   }, []);
 
