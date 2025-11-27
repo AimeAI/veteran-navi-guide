@@ -1,69 +1,77 @@
+# Canadian Veteran Employment Directory
 
-# Veteran Career Compass
+**BETA ACCESS** - A comprehensive directory of 237+ Defense & GovTech employers actively hiring Canadian veterans.
 
-A platform to help military veterans find employment opportunities and transition to civilian careers.
+## What Is This?
 
-## Job Search API Integration
+The Canadian Veteran Employment Directory is a free resource that connects military veterans with employers who value their skills and experience. Instead of fake job listings or outdated postings, this directory provides **direct links to employer career pages** so you can apply directly.
 
-The job search functionality now uses a Supabase Edge Function to proxy requests to the Canadian Job Bank website. This helps avoid CORS issues and provides a more reliable experience.
+### Key Features
 
-### Deploying the Job Search Proxy Function
+- **237+ Verified Employers** - Defense contractors, public safety, government, tech, logistics, and more
+- **Direct Career Links** - No middleman, apply directly on employer websites
+- **Sector Filtering** - Filter by Defense, Public Safety, Tech & Cybersecurity, Government, etc.
+- **Location Search** - Find employers in your city or province
+- **Military Job Translator** - Translate your military occupation codes to civilian job titles
+- **Job Fairs & Events** - Upcoming veteran hiring events across Canada
 
-To deploy the job search proxy function:
+### Employer Sectors
 
-1. Make sure you have the Supabase CLI installed:
-   ```bash
-   npm install -g supabase
-   ```
+- Defense Contractors (Lockheed Martin, General Dynamics, Raytheon, etc.)
+- Public Safety (Police services, Fire departments, Corrections)
+- Government (Federal, Provincial, Municipal agencies)
+- Tech & Cybersecurity
+- Logistics & Transportation
+- Construction & Trades
+- Healthcare
+- Utilities & Energy
+- Manufacturing
 
-2. Login to your Supabase account:
-   ```bash
-   supabase login
-   ```
+## How To Use
 
-3. Link your project:
-   ```bash
-   supabase link --project-ref your-project-ref
-   ```
-
-4. Deploy the function:
-   ```bash
-   supabase functions deploy job-search-proxy --no-verify-jwt
-   ```
-
-### Accessing the Job Search API
-
-The job search API can be accessed at:
-```
-https://[YOUR_SUPABASE_URL]/functions/v1/job-search-proxy
-```
-
-Parameters:
-- `keywords`: Job search keywords
-- `location`: Job location
-- `distance`: Search radius in kilometers
-- `page`: Page number for pagination
-- `source`: Job source (default: 'jobbank')
-
-Example:
-```
-https://your-project.supabase.co/functions/v1/job-search-proxy?keywords=software&location=Toronto&distance=50&page=1
-```
+1. **Browse Employers** - Visit the main directory to see all indexed employers
+2. **Filter by Sector** - Click sector buttons to narrow down by industry
+3. **Search** - Use the search box to find specific companies
+4. **Filter by Location** - Enter your city to find local employers
+5. **Apply** - Click "View Careers" to go directly to the employer's job page
 
 ## Local Development
-
-To run this project locally:
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Features
+The app runs at `http://localhost:8080`
 
-- Military-to-civilian skill translation
-- Job search with military background matching
-- Resume builder with military experience highlighting
-- Career counseling resources
-- Interview preparation tools
+## Beta Feedback
 
+This is a beta release and we want your feedback!
+
+**Submit feedback and report issues:**
+- GitHub Issues: [github.com/your-repo/issues](https://github.com/your-repo/issues)
+- Email: feedback@aimeintelligence.com
+
+**What we want to know:**
+- Missing employers you think should be listed
+- Broken career page links
+- Feature requests
+- General usability feedback
+
+## Built By
+
+**Mani Mehramooz**
+AIME INTELLIGENCE
+[www.aimeintelligence.com](https://www.aimeintelligence.com)
+[LinkedIn](https://www.linkedin.com/in/manimehramooz)
+
+## Tech Stack
+
+- React + TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui components
+
+## License
+
+MIT

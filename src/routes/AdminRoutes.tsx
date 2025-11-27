@@ -1,22 +1,17 @@
 
-import React, { lazy } from "react";
+import React, { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 // Lazy-loaded components
-const AdminDashboardPage = lazy(() => import("../pages/AdminDashboardPage"));
-const AdminContentPage = lazy(() => import("../pages/AdminContentPage"));
+const UnderConstruction = lazy(() => import("../pages/UnderConstruction"));
 
 export const AdminRoutes: React.FC = () => {
   return (
-    <Routes>
-      <Route 
-        path="/" 
-        element={<AdminDashboardPage />}
-      />
-      <Route 
-        path="content" 
-        element={<AdminContentPage />}
-      />
-    </Routes>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+      <Routes>
+        {/* All admin routes under construction */}
+        <Route path="/*" element={<UnderConstruction />} />
+      </Routes>
+    </Suspense>
   );
 };

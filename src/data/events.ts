@@ -1,120 +1,134 @@
+/**
+ * Canadian Veteran Job Fair & Career Event Resources
+ * Real organizations and platforms that host job fairs for veterans
+ */
 
 import { JobFairEvent } from '../types/event';
-import { addDays, format, isFuture, isPast, isToday } from 'date-fns';
 
-// Helper to determine event status
-const determineEventStatus = (startDate: string, endDate: string): 'upcoming' | 'ongoing' | 'past' => {
-  const startDateObj = new Date(startDate);
-  const endDateObj = new Date(endDate);
-  
-  if (isPast(endDateObj)) return 'past';
-  if (isFuture(startDateObj)) return 'upcoming';
-  return 'ongoing';
-};
+// Real Canadian veteran job fair resources and organizations
+export interface JobFairResource {
+  id: string;
+  name: string;
+  description: string;
+  website: string;
+  type: 'job-board' | 'organization' | 'government' | 'event-platform';
+  tags: string[];
+}
 
-// Generate mock events starting from today
-const generateMockEvents = (): JobFairEvent[] => {
-  const today = new Date();
-  const events: JobFairEvent[] = [];
-  
-  // Virtual events
-  for (let i = 0; i < 5; i++) {
-    const startDate = addDays(today, i * 7); // One event per week
-    const endDate = addDays(startDate, 1); // Each event lasts one day
-    
-    events.push({
-      id: `event-v-${i}`,
-      title: `Virtual Military Career Fair ${i + 1}`,
-      description: `Join employers from across Canada for this virtual job fair specifically for veterans transitioning to civilian careers. Connect with employers who value your military experience.`,
-      startDate: format(startDate, "yyyy-MM-dd'T'HH:mm:ss"),
-      endDate: format(endDate, "yyyy-MM-dd'T'HH:mm:ss"),
-      location: 'Online',
-      organizerName: 'VeteranJobBoard',
-      virtual: true,
-      attendees: Math.floor(Math.random() * 500) + 200,
-      capacity: 1000,
-      tags: ['Virtual', 'All Industries', 'Entry-Level', 'Mid-Level', 'Senior-Level'],
-      status: determineEventStatus(
-        format(startDate, "yyyy-MM-dd'T'HH:mm:ss"), 
-        format(endDate, "yyyy-MM-dd'T'HH:mm:ss")
-      ),
-      registrationUrl: 'https://example.com/register'
-    });
+export const jobFairResources: JobFairResource[] = [
+  {
+    id: 'caf-transition',
+    name: 'Canadian Armed Forces Transition Services',
+    description: 'Official CAF transition support including career fairs, employment counseling, and job placement assistance for transitioning military members.',
+    website: 'https://www.canada.ca/en/department-national-defence/services/benefits-military/transition.html',
+    type: 'government',
+    tags: ['Official', 'Government', 'Career Support']
+  },
+  {
+    id: 'vac-careers',
+    name: 'Veterans Affairs Canada - Career Services',
+    description: 'Employment assistance and career transition programs specifically for Canadian Veterans, including job fairs and employer connections.',
+    website: 'https://www.veterans.gc.ca/eng/services/transition/career-transition',
+    type: 'government',
+    tags: ['Official', 'Government', 'Career Support']
+  },
+  {
+    id: 'helmets-to-hardhats',
+    name: 'Helmets to Hardhats Canada',
+    description: 'Connects military members, Veterans and Reservists with career opportunities in Canada\'s construction industry through apprenticeships and job fairs.',
+    website: 'https://www.helmetstohardhats.ca',
+    type: 'organization',
+    tags: ['Construction', 'Trades', 'Apprenticeships']
+  },
+  {
+    id: 'canadian-veterans-network',
+    name: 'Canadian Veterans Network',
+    description: 'Non-profit organization hosting career events, networking opportunities, and employment resources for Veterans across Canada.',
+    website: 'https://canadianveteransnetwork.ca',
+    type: 'organization',
+    tags: ['Networking', 'Events', 'Support']
+  },
+  {
+    id: 'veteran-hiring',
+    name: 'Hire a Veteran',
+    description: 'Platform connecting Canadian employers with military Veterans, including virtual and in-person job fair events.',
+    website: 'https://hireaveteran.ca',
+    type: 'job-board',
+    tags: ['Job Board', 'Events', 'Employer Connections']
+  },
+  {
+    id: 'indeed-military',
+    name: 'Indeed - Military & Veteran Jobs Canada',
+    description: 'Search for veteran-specific job fairs and career events across Canada on Indeed\'s dedicated military employment section.',
+    website: 'https://ca.indeed.com/Military-Veteran-jobs',
+    type: 'job-board',
+    tags: ['Job Search', 'Major Platform', 'Events']
+  },
+  {
+    id: 'linkedin-veterans',
+    name: 'LinkedIn Military & Veterans',
+    description: 'LinkedIn groups and events for Canadian military Veterans, including virtual career fairs and networking events.',
+    website: 'https://www.linkedin.com/groups/Canadian-Armed-Forces',
+    type: 'event-platform',
+    tags: ['Networking', 'Professional', 'Virtual Events']
+  },
+  {
+    id: 'canada-job-bank',
+    name: 'Job Bank Canada - Veteran Services',
+    description: 'Government of Canada\'s official job board with veteran-specific resources and information about career fairs.',
+    website: 'https://www.jobbank.gc.ca',
+    type: 'government',
+    tags: ['Official', 'Government', 'Job Search']
+  },
+  {
+    id: 'prince-operation-entrepreneur',
+    name: 'The Prince\'s Operation Entrepreneur (Canada)',
+    description: 'Supports military Veterans in their entrepreneurial journeys with events, mentorship, and networking opportunities.',
+    website: 'https://www.operationentrepreneur.org',
+    type: 'organization',
+    tags: ['Entrepreneurship', 'Networking', 'Training']
+  },
+  {
+    id: 'vets-canada',
+    name: 'Vets Canada',
+    description: 'Charity supporting homeless and at-risk Veterans with employment programs, job training, and career events.',
+    website: 'https://vetscanada.org',
+    type: 'organization',
+    tags: ['Support Services', 'Employment Programs']
+  },
+  {
+    id: 'legion-employment',
+    name: 'Royal Canadian Legion - Employment Services',
+    description: 'The Legion provides employment assistance, career counseling, and hosts job fairs for Veterans across Canada.',
+    website: 'https://www.legion.ca/support-for-veterans/veterans-services',
+    type: 'organization',
+    tags: ['Support', 'Career Services', 'National']
+  },
+  {
+    id: 'cfmws-jobs',
+    name: 'CFMWS Employment Assistance',
+    description: 'Canadian Forces Morale and Welfare Services employment support for military members and their families, including job fairs.',
+    website: 'https://www.cafconnection.ca/National/Programs-Services/For-Military-Personnel/Employment-Assistance.aspx',
+    type: 'government',
+    tags: ['Official', 'Military Families', 'Career Support']
   }
-  
-  // In-person events
-  const locations = [
-    'Ottawa Convention Centre, Ottawa, ON',
-    'Metro Toronto Convention Centre, Toronto, ON',
-    'Vancouver Convention Centre, Vancouver, BC',
-    'BMO Centre, Calgary, AB',
-    'Halifax Convention Centre, Halifax, NS'
-  ];
-  
-  for (let i = 0; i < 5; i++) {
-    const startDate = addDays(today, i * 14 + 3); // Every two weeks, offset from virtual
-    const endDate = addDays(startDate, 1); // Each event lasts one day
-    
-    events.push({
-      id: `event-p-${i}`,
-      title: `${locations[i].split(',')[1].trim()} Military to Civilian Career Expo`,
-      description: `Meet face-to-face with employers seeking to hire veterans, transitioning military personnel, and military spouses. Bring your resume and be prepared for on-site interviews.`,
-      startDate: format(startDate, "yyyy-MM-dd'T'HH:mm:ss"),
-      endDate: format(endDate, "yyyy-MM-dd'T'HH:mm:ss"),
-      location: locations[i],
-      organizerName: 'Military Transition Alliance',
-      virtual: false,
-      attendees: Math.floor(Math.random() * 200) + 100,
-      capacity: 500,
-      tags: ['In-Person', 'Multiple Industries', 'All Levels'],
-      status: determineEventStatus(
-        format(startDate, "yyyy-MM-dd'T'HH:mm:ss"), 
-        format(endDate, "yyyy-MM-dd'T'HH:mm:ss")
-      ),
-      imageUrl: 'https://placehold.co/600x400?text=Career+Event',
-      registrationUrl: 'https://example.com/register'
-    });
-  }
-  
-  // Add a few past events
-  for (let i = 0; i < 3; i++) {
-    const startDate = addDays(today, -((i + 1) * 14)); // Past events
-    const endDate = addDays(startDate, 1);
-    
-    events.push({
-      id: `event-past-${i}`,
-      title: `Past Career Fair ${i + 1}`,
-      description: 'This event has already taken place.',
-      startDate: format(startDate, "yyyy-MM-dd'T'HH:mm:ss"),
-      endDate: format(endDate, "yyyy-MM-dd'T'HH:mm:ss"),
-      location: i % 2 === 0 ? 'Online' : 'Various Locations, Canada',
-      organizerName: 'VeteranJobBoard',
-      virtual: i % 2 === 0,
-      attendees: Math.floor(Math.random() * 300) + 100,
-      capacity: 500,
-      tags: ['Past Event'],
-      status: 'past',
-    });
-  }
-  
-  return events;
-};
+];
 
-export const mockEvents = generateMockEvents();
+// Empty array - no fake events, users should check the resources above
+export const mockEvents: JobFairEvent[] = [];
 
-// Basic function to fetch events (simulating API call)
+// Return empty array - direct users to real resources instead
 export const fetchEvents = async (): Promise<JobFairEvent[]> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 800));
+  await new Promise(resolve => setTimeout(resolve, 500));
   return mockEvents;
 };
 
 // Filter events by status
 export const getEventsByStatus = (status: 'upcoming' | 'ongoing' | 'past'): JobFairEvent[] => {
-  return mockEvents.filter(event => event.status === status);
+  return [];
 };
 
 // Get event by ID
 export const getEventById = (id: string): JobFairEvent | undefined => {
-  return mockEvents.find(event => event.id === id);
+  return undefined;
 };

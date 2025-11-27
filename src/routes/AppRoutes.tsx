@@ -2,8 +2,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import JobSearch from "../pages/JobSearch";
-import JobBoardPage from "../pages/JobBoardPage";
 import DevRouteWrapper from "../components/DevRouteWrapper";
 
 // Lazy-loaded components from GeneralRoutes
@@ -16,6 +14,10 @@ const TopicDetail = lazy(() => import("../pages/TopicDetail"));
 const AbTestingPage = lazy(() => import("../pages/AbTestingPage"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const AllRoutes = lazy(() => import("../pages/AllRoutes"));
+const DefenseJobsPage = lazy(() => import("../pages/DefenseJobsPage"));
+const MilitaryTranslatorPage = lazy(() => import("../pages/MilitaryTranslatorPage"));
+const ActiveJobsPage = lazy(() => import("../pages/ActiveJobsPage"));
+const UnderConstruction = lazy(() => import("../pages/UnderConstruction"));
 
 // Import route components
 import { AuthRoutes } from "./AuthRoutes";
@@ -23,6 +25,7 @@ import { UserRoutes } from "./UserRoutes";
 import { EmployerRoutes } from "./EmployerRoutes";
 import { ResourceRoutes } from "./ResourceRoutes";
 import { AdminRoutes } from "./AdminRoutes";
+import { RequireAuth } from "@/components/RequireAuth";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -34,22 +37,34 @@ const AppRoutes: React.FC = () => {
         <Route path="/dev/*" element={<DevRouteWrapper><AllRoutes /></DevRouteWrapper>} />
 
         {/* General Routes */}
-        <Route path="/" element={<Index />} />
-        <Route path="/job-search" element={<JobSearch />} />
-        <Route path="/jobs/search" element={<JobSearch />} />
-        <Route path="/job-board" element={<JobBoardPage />} />
-        <Route path="/job/:id" element={<JobDetailsPage />} />
-        <Route path="/vetted-jobs" element={<VettedJobsPage />} />
+        <Route path="/" element={<DefenseJobsPage />} />
+        <Route path="/defense-jobs" element={<DefenseJobsPage />} />
+        <Route path="/military-translator" element={<MilitaryTranslatorPage />} />
+        <Route path="/jobs" element={<ActiveJobsPage />} />
+        <Route path="/job-search" element={<ActiveJobsPage />} />
+        <Route path="/jobs/search" element={<UnderConstruction />} />
+        <Route path="/job-board" element={<UnderConstruction />} />
+        <Route path="/job/:id" element={<UnderConstruction />} />
+        <Route path="/vetted-jobs" element={<UnderConstruction />} />
         <Route path="/events" element={<JobFairsEventsPage />} />
-        <Route path="/resources/forums" element={<CommunityForums />} />
-        <Route path="/topic/:topicId" element={<TopicDetail />} />
+        <Route path="/resources/forums" element={<UnderConstruction />} />
+        <Route path="/topic/:topicId" element={<UnderConstruction />} />
         
         {/* Nested Routes */}
         <Route path="/auth/*" element={<AuthRoutes />} />
         <Route path="/user/*" element={<UserRoutes />} />
         <Route path="/employer/*" element={<EmployerRoutes />} />
         <Route path="/resources/*" element={<ResourceRoutes />} />
-        <Route path="/admin/*" element={<AdminRoutes />} />
+
+        {/* Admin Routes - Protected by role-based auth */}
+        <Route
+          path="/admin/*"
+          element={
+            <RequireAuth roles={['admin']}>
+              <AdminRoutes />
+            </RequireAuth>
+          }
+        />
         
         {/* Direct profile routes for backward compatibility */}
         <Route path="/profile" element={<Navigate to="/user/profile" replace />} />

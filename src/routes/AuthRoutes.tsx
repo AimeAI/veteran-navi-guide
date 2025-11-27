@@ -1,20 +1,17 @@
 
-import React, { lazy } from "react";
+import React, { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 // Lazy-loaded components
-const AuthPage = lazy(() => import("../pages/AuthPage"));
-const AuthCallbackPage = lazy(() => import("../pages/AuthCallbackPage"));
-const ForgotPasswordPage = lazy(() => import("../pages/ForgotPasswordPage"));
-const VerifyEmailPage = lazy(() => import("../pages/VerifyEmailPage"));
+const UnderConstruction = lazy(() => import("../pages/UnderConstruction"));
 
 export const AuthRoutes: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<AuthPage />} />
-      <Route path="callback" element={<AuthCallbackPage />} />
-      <Route path="forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="verify-email" element={<VerifyEmailPage />} />
-    </Routes>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+      <Routes>
+        {/* All auth routes under construction */}
+        <Route path="/*" element={<UnderConstruction />} />
+      </Routes>
+    </Suspense>
   );
 };

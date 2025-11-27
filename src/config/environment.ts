@@ -35,23 +35,25 @@ interface EnvironmentConfig {
 }
 
 // Default configuration
+// IMPORTANT: Supabase credentials MUST be provided via environment variables
+// Do not hardcode credentials in this file
 const defaultConfig: EnvironmentConfig = {
-  supabaseUrl: 'https://ykperxxuwqolbfvhuqig.supabase.co',
-  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrcGVyeHh1d3FvbGJmdmh1cWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwODE3OTIsImV4cCI6MjA1MzY1Nzc5Mn0.-WvuM5Xtfo4Q2oFwWQrXiJm5UTxnUqupOPsDRQ2DDOU',
-  
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+
   // Feature flags - disabled by default
   enableMilitarySkillsMatcher: false,
   enableAdvancedSearch: false,
   enableRealTimeNotifications: false,
-  
+
   // API configuration
   apiTimeoutMs: 30000, // 30 seconds
   maxApiRetries: 3,
   apiRateLimitPerMinute: 60,
-  
+
   // Cache settings
   cacheTimeMs: 5 * 60 * 1000, // 5 minutes
-  
+
   // Debug settings
   debug: false,
   logLevel: 'error',

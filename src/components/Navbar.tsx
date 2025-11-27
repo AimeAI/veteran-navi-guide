@@ -20,48 +20,26 @@ const Navbar: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useUser();
   
-  // Navigation data
+  // Navigation data - ONLY working features shown
   const navSections = [
     {
-      title: t('navigation.jobSearch'),
+      title: 'Jobs',
       icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
       items: [
-        { label: t('navigation.jobSearch'), href: '/job-search' },
-        { label: t('navigation.savedJobs'), href: '/user/saved' },
-        { label: t('navigation.recommendedJobs'), href: '/user/recommended' },
-        { label: t('navigation.jobAlerts'), href: '/user/job-alerts' },
-        { label: t('navigation.jobFairs'), href: '/events' },
-        { label: t('navigation.vettedJobs'), href: '/vetted-jobs', icon: <Shield className="h-3 w-3 ml-1 text-primary" /> },
-      ],
-    },
-    {
-      title: t('navigation.profile'),
-      icon: <User className="h-4 w-4" aria-hidden="true" />,
-      items: [
-        { label: t('navigation.profile'), href: '/user/profile' },
-        { label: t('navigation.resume'), href: '/user/profile/resume' },
-        { label: t('navigation.applicationHistory'), href: '/user/history' },
-        { label: t('navigation.settings'), href: '/user/profile/settings' },
+        { label: 'Defense Employers', href: '/defense-jobs' },
+        { label: 'Job Search', href: '/job-search' },
+        { label: 'Job Fairs & Events', href: '/events' },
       ],
     },
     {
       title: t('navigation.resources'),
       icon: <BookOpen className="h-4 w-4" aria-hidden="true" />,
       items: [
+        { label: 'Military Job Translator', href: '/military-translator' },
         { label: t('navigation.careerCounseling'), href: '/resources/career-counseling' },
         { label: t('navigation.resumeAssistance'), href: '/resources/resume-assistance' },
         { label: t('navigation.interviewPrep'), href: '/resources/interview-prep' },
         { label: t('navigation.militaryTransition'), href: '/resources/military-transition' },
-        { label: t('navigation.communityForums'), href: '/resources/forums' },
-      ],
-    },
-    {
-      title: t('navigation.employers'),
-      icon: <Building className="h-4 w-4" aria-hidden="true" />,
-      items: [
-        { label: t('navigation.postJob'), href: '/employer/post-job' },
-        { label: t('navigation.manageApplications'), href: '/employer/manage-applications' },
-        { label: t('navigation.searchVeterans'), href: '/employer/search-veterans' },
       ],
     },
   ];
@@ -105,31 +83,7 @@ const Navbar: React.FC = () => {
 
             <MobileMenu sections={navSections} />
 
-            <div className="hidden lg:flex lg:items-center lg:space-x-4">
-              {user ? (
-                <div className="flex items-center space-x-2">
-                  <MessageNavItem />
-                  <NavDropdown />
-                </div>
-              ) : (
-                <>
-                  <Link
-                    to="/auth"
-                    className="px-3 py-2 text-sm font-medium rounded-md hover:bg-nav-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    aria-label="Log in to your account"
-                  >
-                    {t('common.login')}
-                  </Link>
-                  <Link
-                    to="/auth?tab=signup"
-                    className="px-3 py-2 text-sm font-medium text-white bg-primary rounded-md shadow-sm hover:bg-primary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-                    aria-label="Create a new account"
-                  >
-                    {t('common.signup')}
-                  </Link>
-                </>
-              )}
-            </div>
+            {/* Auth buttons removed - feature not yet implemented */}
           </div>
         </div>
       </div>

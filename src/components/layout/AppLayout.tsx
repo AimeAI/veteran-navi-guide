@@ -4,7 +4,6 @@ import Navbar from "./Navbar";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { Toaster } from "../ui/sonner";
 import EmailVerificationBanner from "../EmailVerificationBanner";
-import SecurityMonitor from "../security/SecurityMonitor";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -30,7 +29,26 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Suspense>
       </main>
       <Toaster position="top-right" />
-      <SecurityMonitor />
+      <footer className="py-4 text-center text-sm text-muted-foreground border-t">
+        Built by{" "}
+        <a
+          href="https://www.linkedin.com/in/manimehramooz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+        >
+          Mani Mehramooz
+        </a>
+        {" "}| AIME INTELLIGENCE |{" "}
+        <a
+          href="https://www.aimeintelligence.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+        >
+          www.aimeintelligence.com
+        </a>
+      </footer>
     </div>
   );
 };
